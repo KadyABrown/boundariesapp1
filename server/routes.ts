@@ -10,6 +10,8 @@ import {
   insertRelationshipProfileSchema,
   insertEmotionalCheckInSchema,
   insertBehavioralFlagSchema,
+  insertFlagExampleSchema,
+  insertUserSavedFlagSchema,
 } from "@shared/schema";
 import { z } from "zod";
 
@@ -394,6 +396,169 @@ export async function registerRoutes(app: Express): Promise<Server> {
     } catch (error) {
       console.error("Error exporting data:", error);
       res.status(500).json({ message: "Failed to export data" });
+    }
+  });
+
+  // Flag Example Bank routes
+  app.get('/api/flag-examples', async (req: any, res) => {
+    try {
+      const { type, theme, search } = req.query;
+      
+      let flags;
+      if (search) {
+        flags = await storage.searchFlagExamples(search as string);
+      } else if (type) {
+        flags = await storage.getFlagExamplesByType(type as string);
+      } else if (theme) {
+        flags = await storage.getFlagExamplesByTheme(theme as string);
+      } else {
+        flags = await storage.getAllFlagExamples();
+      }
+      
+      res.json(flags);
+    } catch (error) {
+      console.error("Error fetching flag examples:", error);
+      res.status(500).json({ message: "Failed to fetch flag examples" });
+    }
+  });
+
+  app.post('/api/flag-examples', isAuthenticated, async (req: any, res) => {
+    try {
+      const flagData = insertFlagExampleSchema.parse(req.body);
+      const flag = await storage.createFlagExample(flagData);
+      res.json(flag);
+    } catch (error) {
+      if (error instanceof z.ZodError) {
+        res.status(400).json({ message: "Invalid flag data", errors: error.errors });
+      } else {
+        console.error("Error creating flag example:", error);
+        res.status(500).json({ message: "Failed to create flag example" });
+      }
+    }
+  });
+
+  app.put('/api/flag-examples/:id', isAuthenticated, async (req: any, res) => {
+    try {
+      const id = parseInt(req.params.id);
+      const updates = insertFlagExampleSchema.partial().parse(req.body);
+      const flag = await storage.updateFlagExample(id, updates);
+      res.json(flag);
+    } catch (error) {
+      if (error instanceof z.ZodError) {
+        res.status(400).json({ message: "Invalid flag data", errors: error.errors });
+      } else {
+        console.error("Error updating flag example:", error);
+        res.status(500).json({ message: "Failed to update flag example" });
+      }
+    }
+  });
+
+  app.delete('/api/flag-examples/:id', isAuthenticated, async (req: any, res) => {
+    try {
+      const id = parseInt(req.params.id);
+      await storage.deleteFlagExample(id);
+      res.json({ message: "Flag example deleted successfully" });
+    } catch (error) {
+      console.error("Error deleting flag example:", error);
+      res.status(500).json({ message: "Failed to delete flag example" });
+    }
+  });
+
+  // User saved flags routes
+  app.get('/api/saved-flags', isAuthenticated, async (req: any, res) => {
+    try {
+      const userId = req.user.claims.sub;
+      const savedFlags = await storage.getUserSavedFlags(userId);
+      res.json(savedFlags);
+    } catch (error) {
+      console.error("Error fetching saved flags:", error);
+      res.status(500).json({ message: "Failed to fetch saved flags" });
+    }
+  });
+
+  app.post('/api/saved-flags', isAuthenticated, async (req: any, res) => {
+    try {
+      const userId = req.user.claims.sub;
+      const { flagExampleId, personalNotes } = req.body;
+      const savedFlag = await storage.saveFlag(userId, flagExampleId, personalNotes);
+      res.json(savedFlag);
+    } catch (error) {
+      console.error("Error saving flag:", error);
+      res.status(500).json({ message: "Failed to save flag" });
+    }
+  });
+
+  app.delete('/api/saved-flags/:flagExampleId', isAuthenticated, async (req: any, res) => {
+    try {
+      const userId = req.user.claims.sub;
+      const flagExampleId = parseInt(req.params.flagExampleId);
+      await storage.removeSavedFlag(userId, flagExampleId);
+      res.json({ message: "Flag removed from saved list" });
+    } catch (error) {
+      console.error("Error removing saved flag:", error);
+      res.status(500).json({ message: "Failed to remove saved flag" });
+    }
+  });
+
+  app.put('/api/saved-flags/:id/notes', isAuthenticated, async (req: any, res) => {
+    try {
+      const id = parseInt(req.params.id);
+      const { notes } = req.body;
+      const updatedFlag = await storage.updateSavedFlagNotes(id, notes);
+      res.json(updatedFlag);
+    } catch (error) {
+      console.error("Error updating saved flag notes:", error);
+      res.status(500).json({ message: "Failed to update notes" });
+    }
+  });
+
+  // Development route to seed sample flag examples
+  app.post('/api/seed-flags', async (req: any, res) => {
+    try {
+      const sampleFlags = [
+        {
+          flagType: 'green',
+          title: 'Respects your boundaries like a pro',
+          description: 'This person consistently honors your stated limits without pushback, guilt-tripping, or repeated boundary testing.',
+          exampleScenario: 'When you say "I need some space tonight to recharge," they respond with "Of course! Let me know when you feel ready to connect again."',
+          emotionalImpact: 'Creates safety, trust, and emotional security in the relationship. Reduces anxiety and builds confidence in expressing needs.',
+          addressability: 'always_worth_addressing',
+          actionSteps: 'Express appreciation: "I really value how you respect my boundaries. It makes me feel safe and heard."',
+          theme: 'respect',
+          severity: 'moderate'
+        },
+        {
+          flagType: 'red',
+          title: 'Dismisses your feelings',
+          description: 'Regularly invalidates your emotions or tells you that your feelings are wrong, overreacting, or unreasonable.',
+          exampleScenario: 'When you express hurt about something they did, they say "You\'re being too sensitive" or "That\'s not what I meant, you\'re overreacting."',
+          emotionalImpact: 'Erodes self-trust, creates self-doubt, and can lead to emotional suppression and anxiety.',
+          addressability: 'sometimes_worth_addressing',
+          actionSteps: 'Set clear boundaries: "My feelings are valid. I need you to listen and acknowledge them, not dismiss them."',
+          theme: 'emotional_safety',
+          severity: 'moderate'
+        },
+        {
+          flagType: 'green',
+          title: 'Communicates openly about conflicts',
+          description: 'Addresses disagreements directly, honestly, and constructively without avoiding difficult conversations.',
+          exampleScenario: 'Says "I noticed we had different opinions about that decision. Can we talk through it together and find a solution that works for both of us?"',
+          emotionalImpact: 'Builds trust, prevents resentment from building, and strengthens the relationship through honest dialogue.',
+          addressability: 'always_worth_addressing',
+          actionSteps: 'Acknowledge and reciprocate: "I appreciate how you approach conflicts with honesty. It helps me feel safe to be open too."',
+          theme: 'communication',
+          severity: 'minor'
+        }
+      ];
+
+      for (const flag of sampleFlags) {
+        await storage.createFlagExample(flag);
+      }
+
+      res.json({ message: `Seeded ${sampleFlags.length} flag examples` });
+    } catch (error) {
+      console.error("Error seeding flags:", error);
+      res.status(500).json({ message: "Failed to seed flags" });
     }
   });
 

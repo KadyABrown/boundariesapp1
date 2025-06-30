@@ -7,6 +7,8 @@ import {
   relationshipProfiles,
   emotionalCheckIns,
   behavioralFlags,
+  flagExamples,
+  userSavedFlags,
   type User,
   type UpsertUser,
   type Boundary,
@@ -23,6 +25,10 @@ import {
   type InsertEmotionalCheckIn,
   type BehavioralFlag,
   type InsertBehavioralFlag,
+  type FlagExample,
+  type InsertFlagExample,
+  type UserSavedFlag,
+  type InsertUserSavedFlag,
 } from "@shared/schema";
 import { db } from "./db";
 import { eq, desc, and, gte, lte, sql, count } from "drizzle-orm";
@@ -84,6 +90,21 @@ export interface IStorage {
     averageSafetyRating: number;
     checkInCount: number;
   }>;
+  
+  // Flag Example Bank operations
+  createFlagExample(example: InsertFlagExample): Promise<FlagExample>;
+  getAllFlagExamples(): Promise<FlagExample[]>;
+  getFlagExamplesByType(flagType: string): Promise<FlagExample[]>;
+  getFlagExamplesByTheme(theme: string): Promise<FlagExample[]>;
+  searchFlagExamples(query: string): Promise<FlagExample[]>;
+  updateFlagExample(id: number, updates: Partial<InsertFlagExample>): Promise<FlagExample>;
+  deleteFlagExample(id: number): Promise<void>;
+  
+  // User saved flags operations
+  saveFlag(userId: string, flagExampleId: number, notes?: string): Promise<UserSavedFlag>;
+  getUserSavedFlags(userId: string): Promise<UserSavedFlag[]>;
+  removeSavedFlag(userId: string, flagExampleId: number): Promise<void>;
+  updateSavedFlagNotes(id: number, notes: string): Promise<UserSavedFlag>;
 }
 
 export class DatabaseStorage implements IStorage {
@@ -452,6 +473,117 @@ export class DatabaseStorage implements IStorage {
       averageSafetyRating: safetyData[0]?.avg || 0,
       checkInCount: checkInCount[0]?.count || 0,
     };
+  }
+
+  // Flag Example Bank operations
+  async createFlagExample(example: InsertFlagExample): Promise<FlagExample> {
+    const [created] = await db
+      .insert(flagExamples)
+      .values(example)
+      .returning();
+    return created;
+  }
+
+  async getAllFlagExamples(): Promise<FlagExample[]> {
+    return await db
+      .select()
+      .from(flagExamples)
+      .where(eq(flagExamples.isActive, true))
+      .orderBy(flagExamples.theme, flagExamples.flagType);
+  }
+
+  async getFlagExamplesByType(flagType: string): Promise<FlagExample[]> {
+    return await db
+      .select()
+      .from(flagExamples)
+      .where(and(
+        eq(flagExamples.flagType, flagType),
+        eq(flagExamples.isActive, true)
+      ))
+      .orderBy(flagExamples.theme);
+  }
+
+  async getFlagExamplesByTheme(theme: string): Promise<FlagExample[]> {
+    return await db
+      .select()
+      .from(flagExamples)
+      .where(and(
+        eq(flagExamples.theme, theme),
+        eq(flagExamples.isActive, true)
+      ))
+      .orderBy(flagExamples.flagType);
+  }
+
+  async searchFlagExamples(query: string): Promise<FlagExample[]> {
+    const searchTerm = `%${query.toLowerCase()}%`;
+    return await db
+      .select()
+      .from(flagExamples)
+      .where(and(
+        eq(flagExamples.isActive, true),
+        sql`(
+          lower(${flagExamples.title}) LIKE ${searchTerm} OR
+          lower(${flagExamples.description}) LIKE ${searchTerm} OR
+          lower(${flagExamples.theme}) LIKE ${searchTerm} OR
+          lower(${flagExamples.exampleScenario}) LIKE ${searchTerm}
+        )`
+      ))
+      .orderBy(flagExamples.theme, flagExamples.flagType);
+  }
+
+  async updateFlagExample(id: number, updates: Partial<InsertFlagExample>): Promise<FlagExample> {
+    const [updated] = await db
+      .update(flagExamples)
+      .set({ ...updates, updatedAt: new Date() })
+      .where(eq(flagExamples.id, id))
+      .returning();
+    return updated;
+  }
+
+  async deleteFlagExample(id: number): Promise<void> {
+    await db
+      .update(flagExamples)
+      .set({ isActive: false, updatedAt: new Date() })
+      .where(eq(flagExamples.id, id));
+  }
+
+  // User saved flags operations
+  async saveFlag(userId: string, flagExampleId: number, notes?: string): Promise<UserSavedFlag> {
+    const [saved] = await db
+      .insert(userSavedFlags)
+      .values({
+        userId,
+        flagExampleId,
+        personalNotes: notes || null,
+      })
+      .returning();
+    return saved;
+  }
+
+  async getUserSavedFlags(userId: string): Promise<UserSavedFlag[]> {
+    return await db
+      .select()
+      .from(userSavedFlags)
+      .where(eq(userSavedFlags.userId, userId))
+      .orderBy(desc(userSavedFlags.createdAt));
+  }
+
+  async removeSavedFlag(userId: string, flagExampleId: number): Promise<void> {
+    await db
+      .delete(userSavedFlags)
+      .where(and(
+        eq(userSavedFlags.userId, userId),
+        eq(userSavedFlags.flagExampleId, flagExampleId)
+      ));
+  }
+
+  async updateSavedFlagNotes(id: number, notes: string): Promise<UserSavedFlag> {
+    const [updated] = await db
+      .update(userSavedFlags)
+      .set({ personalNotes: notes })
+      .where(eq(userSavedFlags.id, id))
+      .returning();
+    return updated;
   }
 }
 

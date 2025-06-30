@@ -56,6 +56,14 @@ The system is built as a modern React SPA with an Express.js backend, using Post
 - **Relationship Analytics**: Health scores, flag counts, safety ratings, and trend analysis
 - **Privacy Controls**: Per-relationship privacy settings and secure data management
 
+### Red & Green Flag Example Bank
+- **Educational Reference Library**: Pre-written collection of behavioral examples with detailed explanations
+- **Comprehensive Flag Details**: Each flag includes description, real-life scenarios, emotional impact, and action steps
+- **Advanced Search & Filtering**: Search by text, filter by flag type (red/green), theme, severity, and addressability
+- **Personal Collection**: Save flags to personal library with custom notes and cross-reference with relationships
+- **CSV Import Capability**: Import custom flag libraries from spreadsheet data
+- **Integration Points**: Connect flag examples to relationship tracking and behavioral checklists
+
 ### Analytics & Insights
 - **Dashboard Statistics**: Real-time boundary respect rates and trends
 - **Progress Tracking**: Weekly and daily performance metrics

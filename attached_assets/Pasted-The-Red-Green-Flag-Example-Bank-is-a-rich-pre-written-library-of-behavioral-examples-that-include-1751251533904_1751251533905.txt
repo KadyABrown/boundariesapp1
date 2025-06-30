@@ -1,0 +1,93 @@
+The Red & Green Flag Example Bank is a rich, pre-written library of behavioral examples that includes:
+
+Flag Type: Green 💚 or Red 🚩
+
+Behavior/Description: Core behavior (e.g., "Respects your boundaries like a pro")
+
+Explanation: Why that behavior matters
+
+Example Scenario: A real-life action that reflects the flag
+
+Emotional Impact: Why the behavior is helpful or harmful
+
+Addressability: Whether it’s worth addressing or a dealbreaker
+
+Suggested Action Steps: What to say or do in response
+
+Theme: A category like “Trust”
+
+🔧 Developer Prompt: Red & Green Flag Example Bank
+📌 Feature Title: Red & Green Flag Example Bank
+
+Purpose:
+Provide users with a built-in educational reference library to help them identify, interpret, and act on emotional or behavioral patterns in relationships. Helps inform the Dating Behavior Checklist and Relationship Entries with insight-backed clarity.
+
+🧠 Core Objectives:
+
+Educate users on red/green flags using examples and explanations
+
+Enable in-app learning and cross-referencing during reflection and tracking
+
+Help users clarify their own emotional response and boundaries
+
+🔧 Components & Functionality:
+
+Flag Library (Master View)
+
+Sortable list or card view of all flags
+
+Filters:
+
+Type: Green / Red
+
+Theme: Trust, Communication, Reliability, Emotional Safety, etc.
+
+Severity: Minor, Moderate, Dealbreaker
+
+Addressability: Worth discussing / Dealbreaker
+
+Flag Card Structure
+Each card includes:
+
+Flag Type: Red/Green visual tag
+
+Headline Behavior: e.g., "Respects your boundaries like a pro"
+
+Detailed Description: Behavior explanation
+
+Example Scenario: What this might look like IRL
+
+Impact: Emotional/relational consequences
+
+Addressability: "Always worth addressing," "Never worth addressing," etc.
+
+Action Steps: Specific dialogue examples, journaling prompts, or scripts
+
+Tag(s)/Theme: Communication, Trust, Intimacy, Consistency, etc.
+
+Integration Points
+
+From the Dating Checklist: User clicks a flag box and is shown flag definition
+
+From a Journal/Reflection Entry: User adds a flag to their journal
+
+AI Suggestion Mode (Optional): AI recommends a flag based on emotional journal or checklist trends
+
+Favorites & Notes
+
+User can save certain flags to “My Flag Bank”
+
+Option to add personal notes to a flag (e.g., “I saw this with Alex”)
+
+Search Functionality
+
+Search by phrase (“financial secrecy”), type, theme, or keyword
+
+Optional Enhancements:
+
+Link flag insights to the Relationship Entry timeline
+
+Weekly flag spotlight in the user’s home dashboard (“Red Flag of the Week: Emotional Manipulation”)
+
+Audio or video explanations of flags for accessibility and engagement
+

@@ -4,7 +4,7 @@ import { useAuth } from "@/hooks/useAuth";
 import { Button } from "@/components/ui/button";
 import { Sheet, SheetContent, SheetTrigger } from "@/components/ui/sheet";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
-import { Shield, Menu, Bell, BarChart3, BookOpen, Settings, Target, Heart } from "lucide-react";
+import { Shield, Menu, Bell, BarChart3, BookOpen, Settings, Target, Heart, Flag } from "lucide-react";
 
 export default function Navigation() {
   const [location, setLocation] = useLocation();
@@ -15,8 +15,8 @@ export default function Navigation() {
     { name: "Dashboard", href: "/", icon: BarChart3, current: location === "/" },
     { name: "Boundaries", href: "/boundaries", icon: Target, current: location === "/boundaries" },
     { name: "Relationships", href: "/relationships", icon: Heart, current: location === "/relationships" || location.startsWith("/relationships/") },
+    { name: "Flag Examples", href: "/flag-examples", icon: Flag, current: location === "/flag-examples" },
     { name: "Insights", href: "/insights", icon: BarChart3, current: location === "/insights" },
-    { name: "Journal", href: "/journal", icon: BookOpen, current: location === "/journal" },
   ];
 
   const handleNavigation = (href: string) => {

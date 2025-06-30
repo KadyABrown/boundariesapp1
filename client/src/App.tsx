@@ -10,6 +10,7 @@ import Boundaries from "@/pages/boundaries";
 import Relationships from "@/pages/relationships";
 import RelationshipDetail from "@/pages/relationship-detail";
 import Insights from "@/pages/insights";
+import FlagExamples from "@/pages/flag-examples";
 import NotFound from "@/pages/not-found";
 
 function Router() {
@@ -28,6 +29,7 @@ function Router() {
             {(params) => <RelationshipDetail profileId={params.id} />}
           </Route>
           <Route path="/insights" component={Insights} />
+          <Route path="/flag-examples" component={FlagExamples} />
         </>
       )}
       <Route component={NotFound} />

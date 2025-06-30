@@ -126,12 +126,42 @@ export const behavioralFlags = pgTable("behavioral_flags", {
   updatedAt: timestamp("updated_at").defaultNow(),
 });
 
+// Flag Example Bank - Master library of all flag definitions
+export const flagExamples = pgTable("flag_examples", {
+  id: serial("id").primaryKey(),
+  flagType: varchar("flag_type", { length: 10 }).notNull(), // green, red
+  title: varchar("title", { length: 200 }).notNull(),
+  description: text("description").notNull(),
+  exampleScenario: text("example_scenario").notNull(),
+  emotionalImpact: text("emotional_impact").notNull(),
+  addressability: varchar("addressability", { length: 50 }).notNull(), // always_worth_addressing, sometimes_worth_addressing, dealbreaker
+  actionSteps: text("action_steps").notNull(),
+  theme: varchar("theme", { length: 50 }).notNull(), // trust, communication, reliability, emotional_safety, etc
+  severity: varchar("severity", { length: 20 }).notNull(), // minor, moderate, dealbreaker
+  isActive: boolean("is_active").default(true),
+  createdAt: timestamp("created_at").defaultNow(),
+  updatedAt: timestamp("updated_at").defaultNow(),
+});
+
+// User's saved flags from the example bank
+export const userSavedFlags = pgTable("user_saved_flags", {
+  id: serial("id").primaryKey(),
+  userId: varchar("user_id").notNull().references(() => users.id, { onDelete: "cascade" }),
+  flagExampleId: integer("flag_example_id").notNull().references(() => flagExamples.id, { onDelete: "cascade" }),
+  personalNotes: text("personal_notes"),
+  createdAt: timestamp("created_at").defaultNow(),
+});
+
 // Relations
 export const usersRelations = relations(users, ({ many, one }) => ({
   boundaries: many(boundaries),
   boundaryEntries: many(boundaryEntries),
   reflectionEntries: many(reflectionEntries),
   settings: one(userSettings),
+  relationshipProfiles: many(relationshipProfiles),
+  emotionalCheckIns: many(emotionalCheckIns),
+  behavioralFlags: many(behavioralFlags),
+  savedFlags: many(userSavedFlags),
 }));
 
 export const boundariesRelations = relations(boundaries, ({ one, many }) => ({
@@ -198,6 +228,21 @@ export const behavioralFlagsRelations = relations(behavioralFlags, ({ one }) => 
   }),
 }));
 
+export const flagExamplesRelations = relations(flagExamples, ({ many }) => ({
+  savedByUsers: many(userSavedFlags),
+}));
+
+export const userSavedFlagsRelations = relations(userSavedFlags, ({ one }) => ({
+  user: one(users, {
+    fields: [userSavedFlags.userId],
+    references: [users.id],
+  }),
+  flagExample: one(flagExamples, {
+    fields: [userSavedFlags.flagExampleId],
+    references: [flagExamples.id],
+  }),
+}));
+
 // Schemas for validation
 export type UpsertUser = typeof users.$inferInsert;
 export type User = typeof users.$inferSelect;
@@ -254,3 +299,18 @@ export const insertBehavioralFlagSchema = createInsertSchema(behavioralFlags).om
 });
 export type InsertBehavioralFlag = z.infer<typeof insertBehavioralFlagSchema>;
 export type BehavioralFlag = typeof behavioralFlags.$inferSelect;
+
+export const insertFlagExampleSchema = createInsertSchema(flagExamples).omit({
+  id: true,
+  createdAt: true,
+  updatedAt: true,
+});
+export type InsertFlagExample = z.infer<typeof insertFlagExampleSchema>;
+export type FlagExample = typeof flagExamples.$inferSelect;
+
+export const insertUserSavedFlagSchema = createInsertSchema(userSavedFlags).omit({
+  id: true,
+  createdAt: true,
+});
+export type InsertUserSavedFlag = z.infer<typeof insertUserSavedFlagSchema>;
+export type UserSavedFlag = typeof userSavedFlags.$inferSelect;
