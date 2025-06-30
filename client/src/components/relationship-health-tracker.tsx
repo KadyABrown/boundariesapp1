@@ -174,10 +174,10 @@ export default function RelationshipHealthTracker({ profileId, profileName }: Re
   const healthPercentage = Math.max(0, Math.min(100, (healthScore + 20) * 2.5)); // Scale to 0-100%
 
   const getHealthStatus = () => {
-    if (healthScore >= 5) return { label: "Healthy", color: "bg-green-500", icon: Heart };
-    if (healthScore >= 0) return { label: "Neutral", color: "bg-yellow-500", icon: MessageCircle };
-    if (healthScore >= -5) return { label: "Concerning", color: "bg-orange-500", icon: AlertTriangle };
-    return { label: "Unhealthy", color: "bg-red-500", icon: Shield };
+    if (healthScore >= 5) return { label: "Going Well", color: "bg-green-500", icon: Heart };
+    if (healthScore >= 0) return { label: "Balanced", color: "bg-blue-500", icon: MessageCircle };
+    if (healthScore >= -3) return { label: "Mixed Signals", color: "bg-yellow-500", icon: AlertTriangle };
+    return { label: "Needs Attention", color: "bg-orange-500", icon: Shield };
   };
 
   const healthStatus = getHealthStatus();
@@ -228,10 +228,10 @@ export default function RelationshipHealthTracker({ profileId, profileName }: Re
             </div>
 
             <div className="text-xs text-neutral-500">
-              Score: {healthScore} ({healthScore >= 0 ? "Positive" : "Negative"})
+              Score: {healthScore} ({healthScore >= 0 ? "Positive Trend" : "Challenging Trend"})
               {healthScore < -3 && (
                 <span className="block text-orange-600 font-medium mt-1">
-                  Consider reviewing this relationship pattern
+                  Consider reflecting on this relationship pattern
                 </span>
               )}
             </div>

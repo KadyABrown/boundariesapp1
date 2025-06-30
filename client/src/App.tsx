@@ -26,9 +26,7 @@ function Router() {
           <Route path="/" component={Dashboard} />
           <Route path="/boundaries" component={Boundaries} />
           <Route path="/relationships" component={Relationships} />
-          <Route path="/relationships/:id">
-            {(params) => <RelationshipDetail profileId={params.id} />}
-          </Route>
+          <Route path="/relationships/:id" component={RelationshipDetail} />
           <Route path="/insights" component={Insights} />
           <Route path="/flag-examples" component={FlagExamples} />
 
