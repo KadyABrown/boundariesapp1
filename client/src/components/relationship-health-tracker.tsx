@@ -120,17 +120,17 @@ export default function RelationshipHealthTracker({ profileId, profileName }: Re
       
       if (!selectedFlagData) throw new Error("Flag not found");
 
-      return apiRequest({
-        url: `/api/relationships/${profileId}/flags`,
-        method: "POST",
-        body: {
+      return apiRequest(
+        "POST",
+        `/api/relationships/${profileId}/flags`,
+        {
           flagCategory: selectedCategory,
           flagName: selectedFlag,
           flagType: selectedFlagData.type,
           isPresent: true,
           notes: flagNotes
         }
-      });
+      );
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['/api/relationships'] });
@@ -147,11 +147,11 @@ export default function RelationshipHealthTracker({ profileId, profileName }: Re
   // Add check-in mutation
   const addCheckInMutation = useMutation({
     mutationFn: async (data: any) => {
-      return apiRequest({
-        url: `/api/relationships/${profileId}/check-ins`,
-        method: "POST",
-        body: data
-      });
+      return apiRequest(
+        "POST",
+        `/api/relationships/${profileId}/check-ins`,
+        data
+      );
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['/api/relationships'] });
