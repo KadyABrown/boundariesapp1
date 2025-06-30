@@ -757,78 +757,78 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
-  // Clear and reimport with proper pairing
-  app.post('/api/clear-and-reimport', async (req: any, res) => {
+  // Clear and reimport with proper pairing from your exact CSV format
+  app.post('/api/reimport-csv-format', async (req: any, res) => {
     try {
-      // Clear existing data first
+      // Clear existing flag examples
       await db.delete(flagExamples);
       
-      // Import properly paired data from your CSV structure
-      const properlyPairedData = [
+      // Import properly paired data matching your CSV structure exactly
+      const csvRows = [
         {
-          theme: 'trust',
-          behaviorDesc: 'Promise keeping and reliability in relationships. This behavior shows whether someone can be counted on to follow through on their commitments.',
+          greenFlag: 'Keeps their promises and always follows through.',
+          redFlag: 'Cancels plans or breaks promises way too often without a good reason.',
+          behaviorDescription: 'Healthy communication involves active listening—focusing on the other person\'s words, tone, and body language. A red flag arises when someone consistently talks over you or invalidates what you\'re expressing, leaving you feeling unheard.',
           example: 'They promise to help you move but cancel last minute without a good reason.',
           impact: 'Consistent unreliability undermines trust, leaving you feeling unsupported and questioning their priorities.',
-          actionSteps: 'Communicate clearly about expectations and observe whether behavior changes over time.',
-          greenTitle: 'Keeps their promises and always follows through',
-          redTitle: 'Cancels plans or breaks promises way too often without a good reason'
+          actionSteps: 'Communicate Clearly\nAddress the pattern calmly and express how it makes you feel.\nExample: "I\'ve noticed plans keep falling through, and it\'s disappointing because I value spending time together."\n\nSet Expectations\nShare what you need moving forward.\nExample: "I understand things come up, but consistency is important to me. If plans change, I\'d appreciate more notice or effort to reschedule."\n\nObserve & Decide\nWatch for changes in their behavior. If they continue breaking promises without valid reasons, evaluate if this aligns with your standards and what you want in a relationship.',
+          theme: 'Trust'
         },
         {
-          theme: 'trust',
-          behaviorDesc: 'Transparency and openness in sharing information about daily life and experiences.',
+          greenFlag: 'Shares their thoughts and feelings like an open book.',
+          redFlag: 'Keeps secrets or leaves out important details, even when asked.',
+          behaviorDescription: 'Transparency builds a foundation of trust. A partner who withholds information or evades questions might create doubts about their honesty.',
           example: 'They fail to mention they had lunch with an ex when you asked about their day.',
           impact: 'Lack of transparency breeds insecurity and suspicion, making it hard to feel secure in the relationship.',
-          actionSteps: 'Set expectations for openness and communicate the importance of transparency in building trust.',
-          greenTitle: 'Shares their thoughts and feelings like an open book',
-          redTitle: 'Keeps secrets or leaves out important details, even when asked'
+          actionSteps: 'Communicate Clearly\nAddress the pattern calmly and explain how it makes you feel.\nExample: "I\'ve noticed you sometimes leave out important details, and it makes me feel like I can\'t fully trust what\'s being shared. Trust is really important to me."\n\nSet Expectations\nShare what you need moving forward and ask for their commitment to change.\nExample: "I need us to be open and honest with each other, especially when it comes to things that matter. Can you commit to being more upfront with me?"\n\nObserve & Decide\nPay attention to their actions after the conversation. If the behavior continues, consider whether this aligns with your needs and boundaries in a relationship.\nExample: "If this keeps happening, it\'s going to be hard for me to feel secure in this relationship. I want us to work on building trust together."',
+          theme: 'Trust'
         },
         {
-          theme: 'communication',
-          behaviorDesc: 'Active listening practices and respectful conversation habits.',
+          greenFlag: 'Listens with their whole heart and no interruptions.',
+          redFlag: 'Interrupts you mid-sentence or dominates every conversation.',
+          behaviorDescription: 'Active listening means focusing fully on the speaker, showing interest, and avoiding interruptions. A lack of this creates feelings of disregard.',
           example: 'They cut you off mid-sentence to make their own point.',
           impact: 'Interruptions make you feel unheard and undervalued, damaging emotional safety.',
-          actionSteps: 'Gently ask to finish thoughts and practice active listening exercises together.',
-          greenTitle: 'Listens with their whole heart and no interruptions',
-          redTitle: 'Interrupts you mid-sentence or dominates conversations'
+          actionSteps: 'Gently say, "Can I finish my thought before you respond?" Practice active listening exercises together.',
+          theme: 'Communication'
         }
       ];
 
       let imported = 0;
-      for (const data of properlyPairedData) {
-        // Import green flag
+      for (const row of csvRows) {
+        // Create green flag with shared content
         await storage.createFlagExample({
           flagType: 'green',
-          title: data.greenTitle,
-          description: data.behaviorDesc,
-          exampleScenario: data.example,
-          emotionalImpact: data.impact,
-          actionSteps: data.actionSteps,
-          theme: data.theme,
+          title: row.greenFlag,
+          description: row.behaviorDescription,
+          exampleScenario: row.example,
+          emotionalImpact: row.impact,
+          actionSteps: row.actionSteps,
+          theme: row.theme.toLowerCase(),
           severity: 'minor',
           addressability: 'always_worth_addressing'
         });
         imported++;
 
-        // Import red flag
+        // Create red flag with same shared content
         await storage.createFlagExample({
           flagType: 'red',
-          title: data.redTitle,
-          description: data.behaviorDesc,
-          exampleScenario: data.example,
-          emotionalImpact: data.impact,
-          actionSteps: data.actionSteps,
-          theme: data.theme,
+          title: row.redFlag,
+          description: row.behaviorDescription,
+          exampleScenario: row.example,
+          emotionalImpact: row.impact,
+          actionSteps: row.actionSteps,
+          theme: row.theme.toLowerCase(),
           severity: 'moderate',
           addressability: 'sometimes_worth_addressing'
         });
         imported++;
       }
 
-      res.json({ imported, message: `Successfully imported ${imported} properly paired flags` });
+      res.json({ imported, pairs: csvRows.length, message: `Successfully imported ${csvRows.length} paired behaviors with shared content` });
     } catch (error) {
-      console.error("Error reimporting data:", error);
-      res.status(500).json({ message: "Failed to reimport data" });
+      console.error("Error reimporting CSV format:", error);
+      res.status(500).json({ message: "Failed to reimport CSV format data" });
     }
   });
 
