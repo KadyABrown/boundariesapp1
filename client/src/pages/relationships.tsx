@@ -139,19 +139,30 @@ export default function Relationships() {
     },
   });
 
+  const [formData, setFormData] = useState({
+    name: "",
+    nickname: "",
+    relationshipType: "",
+    dateMet: "",
+    howMet: "",
+    currentStatus: "active",
+    isPrivate: false,
+  });
+
   const handleSubmit = (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
-    const formData = new FormData(e.currentTarget);
     
     const profileData = {
-      name: formData.get("name") as string,
-      nickname: formData.get("nickname") as string,
-      relationshipType: formData.get("relationshipType") as string,
-      dateMet: formData.get("dateMet") ? new Date(formData.get("dateMet") as string) : null,
-      howMet: formData.get("howMet") as string,
-      currentStatus: formData.get("currentStatus") as string,
-      isPrivate: formData.get("isPrivate") === "on",
+      name: formData.name,
+      nickname: formData.nickname || null,
+      relationshipType: formData.relationshipType,
+      dateMet: formData.dateMet ? new Date(formData.dateMet) : null,
+      howMet: formData.howMet || null,
+      currentStatus: formData.currentStatus,
+      isPrivate: formData.isPrivate,
     };
+
+    console.log("Submitting profile data:", profileData);
 
     if (editingProfile) {
       updateProfileMutation.mutate({ id: editingProfile.id, ...profileData });
@@ -162,13 +173,46 @@ export default function Relationships() {
 
   const openEditDialog = (profile: any) => {
     setEditingProfile(profile);
+    setFormData({
+      name: profile.name || "",
+      nickname: profile.nickname || "",
+      relationshipType: profile.relationshipType || "",
+      dateMet: profile.dateMet ? new Date(profile.dateMet).toISOString().split('T')[0] : "",
+      howMet: profile.howMet || "",
+      currentStatus: profile.currentStatus || "active",
+      isPrivate: profile.isPrivate || false,
+    });
     setIsDialogOpen(true);
   };
 
   const openCreateDialog = () => {
     setEditingProfile(null);
+    setFormData({
+      name: "",
+      nickname: "",
+      relationshipType: "",
+      dateMet: "",
+      howMet: "",
+      currentStatus: "active",
+      isPrivate: false,
+    });
     setIsDialogOpen(true);
   };
+
+  // Reset form when dialog closes
+  useEffect(() => {
+    if (!isDialogOpen) {
+      setFormData({
+        name: "",
+        nickname: "",
+        relationshipType: "",
+        dateMet: "",
+        howMet: "",
+        currentStatus: "active",
+        isPrivate: false,
+      });
+    }
+  }, [isDialogOpen]);
 
   if (isLoading || !isAuthenticated) {
     return <div className="min-h-screen bg-neutral-50 flex items-center justify-center">
@@ -226,7 +270,8 @@ export default function Relationships() {
                     <Input
                       id="name"
                       name="name"
-                      defaultValue={editingProfile?.name || ""}
+                      value={formData.name}
+                      onChange={(e) => setFormData(prev => ({ ...prev, name: e.target.value }))}
                       placeholder="Their name"
                       required
                     />
@@ -237,7 +282,8 @@ export default function Relationships() {
                     <Input
                       id="nickname"
                       name="nickname"
-                      defaultValue={editingProfile?.nickname || ""}
+                      value={formData.nickname}
+                      onChange={(e) => setFormData(prev => ({ ...prev, nickname: e.target.value }))}
                       placeholder="What you call them"
                     />
                   </div>
@@ -246,7 +292,12 @@ export default function Relationships() {
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                   <div>
                     <Label htmlFor="relationshipType">Relationship Type</Label>
-                    <Select name="relationshipType" defaultValue={editingProfile?.relationshipType || ""} required>
+                    <Select 
+                      name="relationshipType" 
+                      value={formData.relationshipType} 
+                      onValueChange={(value) => setFormData(prev => ({ ...prev, relationshipType: value }))}
+                      required
+                    >
                       <SelectTrigger>
                         <SelectValue placeholder="Select relationship type" />
                       </SelectTrigger>
@@ -261,7 +312,12 @@ export default function Relationships() {
 
                   <div>
                     <Label htmlFor="currentStatus">Current Status</Label>
-                    <Select name="currentStatus" defaultValue={editingProfile?.currentStatus || "active"} required>
+                    <Select 
+                      name="currentStatus" 
+                      value={formData.currentStatus} 
+                      onValueChange={(value) => setFormData(prev => ({ ...prev, currentStatus: value }))}
+                      required
+                    >
                       <SelectTrigger>
                         <SelectValue placeholder="Select status" />
                       </SelectTrigger>
@@ -281,13 +337,18 @@ export default function Relationships() {
                       id="dateMet"
                       name="dateMet"
                       type="date"
-                      defaultValue={editingProfile?.dateMet ? new Date(editingProfile.dateMet).toISOString().split('T')[0] : ""}
+                      value={formData.dateMet}
+                      onChange={(e) => setFormData(prev => ({ ...prev, dateMet: e.target.value }))}
                     />
                   </div>
 
                   <div>
                     <Label htmlFor="howMet">How You Met</Label>
-                    <Select name="howMet" defaultValue={editingProfile?.howMet || ""}>
+                    <Select 
+                      name="howMet" 
+                      value={formData.howMet} 
+                      onValueChange={(value) => setFormData(prev => ({ ...prev, howMet: value }))}
+                    >
                       <SelectTrigger>
                         <SelectValue placeholder="How did you meet?" />
                       </SelectTrigger>
@@ -307,7 +368,8 @@ export default function Relationships() {
                   <Switch
                     id="isPrivate"
                     name="isPrivate"
-                    defaultChecked={editingProfile?.isPrivate || false}
+                    checked={formData.isPrivate}
+                    onCheckedChange={(checked) => setFormData(prev => ({ ...prev, isPrivate: checked }))}
                   />
                   <Label htmlFor="isPrivate">Keep this profile private</Label>
                 </div>

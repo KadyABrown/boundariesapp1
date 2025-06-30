@@ -209,14 +209,20 @@ export async function registerRoutes(app: Express): Promise<Server> {
   app.post('/api/relationships', isAuthenticated, async (req: any, res) => {
     try {
       const userId = req.user.claims.sub;
+      console.log("Creating relationship profile for user:", userId);
+      console.log("Request body:", req.body);
+      
       const profileData = insertRelationshipProfileSchema.parse({
         ...req.body,
         userId,
       });
+      
+      console.log("Parsed profile data:", profileData);
       const profile = await storage.createRelationshipProfile(profileData);
       res.json(profile);
     } catch (error) {
       if (error instanceof z.ZodError) {
+        console.error("Validation errors:", error.errors);
         res.status(400).json({ message: "Invalid profile data", errors: error.errors });
       } else {
         console.error("Error creating relationship profile:", error);
