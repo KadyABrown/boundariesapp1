@@ -82,7 +82,6 @@ const flagOptions = [
 ];
 
 export default function RelationshipHealthTracker({ profileId, profileName }: RelationshipHealthTrackerProps) {
-  console.log("RelationshipHealthTracker profileId:", profileId, "type:", typeof profileId);
   const [selectedCategory, setSelectedCategory] = useState<string>("");
   const [selectedFlag, setSelectedFlag] = useState<string>("");
   const [flagNotes, setFlagNotes] = useState("");

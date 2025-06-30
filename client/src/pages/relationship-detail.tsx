@@ -158,10 +158,12 @@ export default function RelationshipDetail() {
         </div>
 
         {/* Health Tracking System */}
-        <RelationshipHealthTracker 
-          profileId={profile.id} 
-          profileName={profile.nickname || profile.name}
-        />
+        {profile && (
+          <RelationshipHealthTracker 
+            profileId={profile.id} 
+            profileName={profile.nickname || profile.name}
+          />
+        )}
       </div>
     </div>
   );
