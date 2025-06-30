@@ -136,7 +136,7 @@ export const flagExamples = pgTable("flag_examples", {
   emotionalImpact: text("emotional_impact").notNull(),
   addressability: varchar("addressability", { length: 50 }).notNull(), // always_worth_addressing, sometimes_worth_addressing, dealbreaker
   actionSteps: text("action_steps").notNull(),
-  theme: varchar("theme", { length: 50 }).notNull(), // trust, communication, reliability, emotional_safety, etc
+  theme: varchar("theme", { length: 100 }).notNull(), // trust, communication, reliability, emotional_safety, etc
   severity: varchar("severity", { length: 20 }).notNull(), // minor, moderate, dealbreaker
   isActive: boolean("is_active").default(true),
   createdAt: timestamp("created_at").defaultNow(),

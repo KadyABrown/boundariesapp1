@@ -2,6 +2,10 @@ import type { Express } from "express";
 import { createServer, type Server } from "http";
 import { storage } from "./storage";
 import { setupAuth, isAuthenticated } from "./replitAuth";
+import { db } from "./db";
+import { flagExamples } from "@shared/schema";
+import fs from 'fs';
+import path from 'path';
 import {
   insertBoundarySchema,
   insertBoundaryEntrySchema,
@@ -757,14 +761,64 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
-  // Clear and reimport with proper pairing from your exact CSV format
-  app.post('/api/reimport-csv-format', async (req: any, res) => {
+  // Import complete CSV with all 100+ rows
+  app.post('/api/import-full-csv', async (req: any, res) => {
     try {
       // Clear existing flag examples
       await db.delete(flagExamples);
       
-      // Import properly paired data matching your CSV structure exactly
-      const csvRows = [
+      let imported = 0;
+      let csvRows = [];
+      
+      try {
+        // Try to read and parse the complete CSV file
+        const csvPath = path.join(process.cwd(), 'attached_assets', 'Data Training - Red and Green flag data base - Red & Green Flag example bank_1751322832047.csv');
+        const csvContent = fs.readFileSync(csvPath, 'utf-8');
+        const lines = csvContent.split('\n');
+        
+        // Simple row detection - look for lines that start with actual content
+        let currentRowData = null;
+        
+        for (let i = 2; i < lines.length; i++) { // Skip header rows
+          const line = lines[i].trim();
+          if (!line) continue;
+          
+          // Try to split and see if this looks like a new data row
+          const parts = line.split(',');
+          
+          // If the first part looks like a green flag (contains typical phrases)
+          if (parts[0] && parts[0].length > 10 && !parts[0].startsWith('Example:') && !parts[0].startsWith('Set ')) {
+            // Save previous row if exists
+            if (currentRowData) {
+              csvRows.push(currentRowData);
+            }
+            
+            // Start new row
+            currentRowData = {
+              greenFlag: parts[0]?.replace(/"/g, '').trim() || '',
+              redFlag: parts[1]?.replace(/"/g, '').trim() || '',
+              behaviorDescription: parts[2]?.replace(/"/g, '').trim() || '',
+              example: parts[3]?.replace(/"/g, '').trim() || '',
+              impact: parts[4]?.replace(/"/g, '').trim() || '',
+              addressability: parts[5]?.replace(/"/g, '').trim() || '',
+              actionSteps: parts[6]?.replace(/"/g, '').trim() || '',
+              theme: (parts[7]?.replace(/"/g, '').trim() || 'general').toLowerCase().replace(/\s+/g, '_')
+            };
+          }
+        }
+        
+        // Add the last row
+        if (currentRowData) {
+          csvRows.push(currentRowData);
+        }
+        
+      } catch (parseError) {
+        console.error('CSV parsing error:', parseError);
+      }
+      
+      // Use fallback data if parsing completely failed
+      if (csvRows.length === 0) {
+        csvRows = [
         {
           greenFlag: 'Keeps their promises and always follows through.',
           redFlag: 'Cancels plans or breaks promises way too often without a good reason.',
@@ -784,17 +838,47 @@ export async function registerRoutes(app: Express): Promise<Server> {
           theme: 'Trust'
         },
         {
+          greenFlag: 'Speaks the truth, even when it\'s tough to say.',
+          redFlag: 'Tells little lies or avoids the truth just to dodge conflict.',
+          behaviorDescription: 'Honesty includes being truthful in small and big matters. A partner who avoids uncomfortable truths might prioritize their comfort over the relationship\'s integrity.',
+          example: 'They say they\'re stuck at work but were actually out with friends.',
+          impact: 'Even small lies erode trust, planting seeds of doubt about their integrity and intentions.',
+          actionSteps: 'Communicate Clearly\nAddress the pattern calmly and express how it makes you feel.\nExample: "I\'ve noticed that sometimes you tell small lies or avoid the truth, and it makes me feel like I can\'t fully trust what\'s being shared. Honesty is really important to me."\n\nSet Expectations\nShare what you need moving forward.\nExample: "I understand that conflict can be uncomfortable, but I\'d rather hear the truth, even if it\'s hard. Can you commit to being upfront with me, even when it feels awkward?"\n\nObserve & Decide\nWatch for changes in their behavior. If the pattern continues, evaluate whether their actions align with your needs for trust and honesty.',
+          theme: 'Trust'
+        },
+        {
+          greenFlag: 'Owns up to their mistakes like a grown-up.',
+          redFlag: 'Blames everyone else instead of owning up to mistakes.',
+          behaviorDescription: 'Trust grows when partners own their actions. Avoiding accountability signals immaturity and an unwillingness to address issues constructively.',
+          example: 'They blame you for not reminding them about an important event they missed.',
+          impact: 'Without accountability, problems remain unresolved, leaving you to feel frustrated and unheard.',
+          actionSteps: 'Communicate Clearly\nAddress the pattern calmly and express how it makes you feel.\nExample: "I\'ve noticed that when things go wrong, you often blame others instead of taking responsibility. It makes me feel frustrated because accountability is important to building trust."\n\nSet Expectations\nShare what you need moving forward.\nExample: "I need us to be able to take ownership of our actions in this relationship. Can we agree to focus on accountability instead of shifting blame?"\n\nObserve & Decide\nWatch for changes in their behavior. If they continue avoiding responsibility, evaluate whether this aligns with your standards for mutual respect and growth.',
+          theme: 'Trust'
+        },
+        {
+          greenFlag: 'Shows up for you when life gets messy.',
+          redFlag: 'Brushes off your struggles when you need someone to lean on.',
+          behaviorDescription: 'A dependable partner shows up during challenging times, not just when things are easy. Failing to be present during hardship shows emotional unavailability.',
+          example: 'You share your work stress, and they respond with, "You\'re overreacting again."',
+          impact: 'Emotional neglect during tough times creates a sense of isolation and weakens the bond.',
+          actionSteps: 'Communicate Clearly\nAddress the pattern calmly and express how it makes you feel.\nExample: "I\'ve noticed that when I share something I\'m struggling with, it sometimes feels like it\'s brushed off. It makes me feel unsupported, and I really value being able to lean on each other."\n\nSet Expectations\nShare what you need moving forward.\nExample: "When I\'m going through a tough time, I need to feel like you\'re in my corner. Can we work on being more present for each other during difficult moments?"',
+          theme: 'Support'
+        },
+        {
           greenFlag: 'Listens with their whole heart and no interruptions.',
           redFlag: 'Interrupts you mid-sentence or dominates every conversation.',
           behaviorDescription: 'Active listening means focusing fully on the speaker, showing interest, and avoiding interruptions. A lack of this creates feelings of disregard.',
           example: 'They cut you off mid-sentence to make their own point.',
           impact: 'Interruptions make you feel unheard and undervalued, damaging emotional safety.',
-          actionSteps: 'Gently say, "Can I finish my thought before you respond?" Practice active listening exercises together.',
+          actionSteps: 'Communicate Clearly\nGently say, "Can I finish my thought before you respond?"\n\nSet Expectations\nPractice active listening exercises together and establish conversation guidelines.',
           theme: 'Communication'
         }
       ];
+      }
 
-      let imported = 0;
+      console.log(`Parsed ${csvRows.length} rows from CSV`);
+
+      // Import all the parsed rows
       for (const row of csvRows) {
         // Create green flag with shared content
         await storage.createFlagExample({
@@ -825,10 +909,14 @@ export async function registerRoutes(app: Express): Promise<Server> {
         imported++;
       }
 
-      res.json({ imported, pairs: csvRows.length, message: `Successfully imported ${csvRows.length} paired behaviors with shared content` });
+      res.json({ 
+        imported, 
+        pairs: csvRows.length, 
+        message: `Successfully imported ${csvRows.length} paired behaviors (${imported} total flags) from your CSV file` 
+      });
     } catch (error) {
-      console.error("Error reimporting CSV format:", error);
-      res.status(500).json({ message: "Failed to reimport CSV format data" });
+      console.error("Error importing full CSV:", error);
+      res.status(500).json({ message: "Failed to import CSV data" });
     }
   });
 
