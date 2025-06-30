@@ -1,0 +1,108 @@
+📱 Project Brief: Relationship Boundary Tracker App
+
+Overview
+Transform the “Know Thyself Digital Boundaries Tracker” (currently a downloadable PDF/journal) into a fully functional mobile and web app. Help users define, track, reflect on, and refine their personal, emotional, and relational boundaries over time.
+
+Core Features
+
+User Profile & Onboarding
+
+Simple sign-up/login (email, social auth).
+
+Guided onboarding to customize boundary categories (e.g., physical, emotional, digital, relational).
+
+Boundary Definition & Goals
+
+User-friendly forms to define each boundary (title, description, importance level, related values).
+
+Ability to set intentions or goals (e.g., “practice saying no to group invites once a month”).
+
+Daily/Weekly Tracking
+
+Prompts to record experiences (“I expressed a boundary with X today…”).
+
+Emojis/tags to track emotional impact.
+
+Calendar or timeline view of entries.
+
+Reflection & Insights
+
+Periodic reminders (“Time for your weekly reflection!”).
+
+Analytics dashboard: boundary activity over time, success rates, emotional trends, custom charts.
+
+Notes/journal section for deeper reflection.
+
+Resources & Guidance
+
+Integrated tips on healthy boundaries, conflict scripts, boundary self-care.
+
+Ability to save, bookmark, or mark resources as favorite.
+
+Notifications & Reminders
+
+Push notifications for tracking prompts, reflections, and progress check‑ins.
+
+Configurable frequency.
+
+Privacy & Security
+
+End-to-end encryption of user entries and personal data.
+
+In‑app passcode or biometric lock to secure journal/private content.
+
+Export & Backup
+
+Export data as PDF/CSV.
+
+Cloud backup options or local storage for data safety.
+
+Design & Branding
+
+A clean, intuitive UX, inspired by the PDF version’s branding (colors, typography, aesthetic).
+
+Light and dark mode support.
+
+Technical Requirements
+
+Platforms: iOS, Android, optional responsive web version
+
+Suggested Stack:
+
+Front-end: React Native or Flutter
+
+Back-end: Node.js/Express or Firebase
+
+Database: Firestore, MongoDB, or PostgreSQL
+
+Authentication: OAuth + JWT or Firebase Auth
+
+Compliance: GDPR, CCPA (depending on user base)
+
+Optional Enhancements
+
+Community feature: share reflections or strategies anonymously or with friends
+
+AI assistant: suggest boundary phrasing, reflection prompts, daily encouragement based on user data
+
+Habit‑building tools: habit streaks, micro‑tasks, progress badges
+
+Deliverables
+
+Wireframes/mockups of key flows (onboarding, tracking, dashboard, journal)
+
+Functional prototype or MVP
+
+Fully coded app with push notifications, encryption, exports
+
+Documentation: setup guide, API docs, developer notes
+
+Testing plan & test results (unit, integration, UI testing)
+
+Timeline & Budget
+
+Phase 1 (4–6 weeks): Onboarding → Boundary definition → Basic tracking
+
+Phase 2 (4–6 weeks): Reflections → Dashboard → Notifications → Export feature
+
+Ongoing: Maintenance, bug fixes, feature enhancements
