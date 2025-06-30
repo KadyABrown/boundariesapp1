@@ -15,7 +15,7 @@ export default function Navigation() {
     { name: "Dashboard", href: "/", icon: BarChart3, current: location === "/" },
     { name: "Boundaries", href: "/boundaries", icon: Target, current: location === "/boundaries" },
     { name: "Relationships", href: "/relationships", icon: Heart, current: location === "/relationships" || location.startsWith("/relationships/") },
-    { name: "Pattern Guide", href: "/paired-flags", icon: BookOpen, current: location === "/paired-flags" },
+
     { name: "Flag Examples", href: "/flag-examples", icon: Flag, current: location === "/flag-examples" },
     { name: "Insights", href: "/insights", icon: BarChart3, current: location === "/insights" },
   ];

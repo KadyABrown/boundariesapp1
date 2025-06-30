@@ -1,493 +1,307 @@
-import { useState, useEffect, useRef } from "react";
-import { useQuery, useMutation } from "@tanstack/react-query";
-import { useAuth } from "@/hooks/useAuth";
-import { useToast } from "@/hooks/use-toast";
-import { isUnauthorizedError } from "@/lib/authUtils";
-import { apiRequest, queryClient } from "@/lib/queryClient";
-import Navigation from "@/components/navigation";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { useState } from "react";
+import { useQuery } from "@tanstack/react-query";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { Label } from "@/components/ui/label";
+import { 
+  Dialog, 
+  DialogContent, 
+  DialogHeader, 
+  DialogTitle, 
+  DialogTrigger 
+} from "@/components/ui/dialog";
 import { Textarea } from "@/components/ui/textarea";
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { Badge } from "@/components/ui/badge";
-import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
+import { 
+  Select, 
+  SelectContent, 
+  SelectItem, 
+  SelectTrigger, 
+  SelectValue 
+} from "@/components/ui/select";
 import { 
   Search, 
   Filter, 
-  Heart, 
-  AlertTriangle, 
-  BookmarkPlus, 
-  BookmarkCheck,
-  Plus,
   Upload,
-  FileSpreadsheet 
+  FileSpreadsheet,
+  Download
 } from "lucide-react";
+import { useToast } from "@/hooks/use-toast";
+import { queryClient } from "@/lib/queryClient";
+import PairedFlagCard from "@/components/paired-flag-card";
+
+interface PairedFlag {
+  theme: string;
+  greenFlag?: {
+    id: number;
+    title: string;
+    description: string;
+    exampleScenario: string;
+    emotionalImpact: string;
+    actionSteps: string;
+  };
+  redFlag?: {
+    id: number;
+    title: string;
+    description: string;
+    exampleScenario: string;
+    emotionalImpact: string;
+    actionSteps: string;
+  };
+}
 
 export default function FlagExamples() {
-  const { isAuthenticated, isLoading } = useAuth();
-  const { toast } = useToast();
-  
+  const [selectedTheme, setSelectedTheme] = useState<string>("all");
   const [searchQuery, setSearchQuery] = useState("");
-  const [selectedType, setSelectedType] = useState("all");
-  const [selectedTheme, setSelectedTheme] = useState("all");
-  const [isCreateDialogOpen, setIsCreateDialogOpen] = useState(false);
   const [isImportDialogOpen, setIsImportDialogOpen] = useState(false);
-  const fileInputRef = useRef<HTMLInputElement>(null);
+  const [csvData, setCsvData] = useState("");
+  const { toast } = useToast();
 
-  // Fetch flag examples with filters
-  const { data: flagExamples = [], isLoading: flagsLoading } = useQuery({
-    queryKey: ['/api/flag-examples', { type: selectedType, theme: selectedTheme, search: searchQuery }],
-    queryFn: async () => {
-      const params = new URLSearchParams();
-      if (selectedType !== "all") params.append("type", selectedType);
-      if (selectedTheme !== "all") params.append("theme", selectedTheme);
-      if (searchQuery) params.append("search", searchQuery);
+  // Fetch paired flags data
+  const { data: pairedFlags = [], isLoading } = useQuery<PairedFlag[]>({
+    queryKey: ['/api/paired-flags'],
+  });
+
+  // Filter flags based on search and theme
+  const filteredFlags = pairedFlags.filter(flag => {
+    const matchesTheme = selectedTheme === "all" || flag.theme.toLowerCase() === selectedTheme.toLowerCase();
+    const matchesSearch = searchQuery === "" || 
+      flag.theme.toLowerCase().includes(searchQuery.toLowerCase()) ||
+      flag.greenFlag?.title.toLowerCase().includes(searchQuery.toLowerCase()) ||
+      flag.redFlag?.title.toLowerCase().includes(searchQuery.toLowerCase());
+    
+    return matchesTheme && matchesSearch;
+  });
+
+  // Get unique themes for filter dropdown
+  const themes = Array.from(new Set(pairedFlags.map(flag => flag.theme))).sort();
+
+  const handleImportCSV = async () => {
+    if (!csvData.trim()) {
+      toast({
+        title: "No Data",
+        description: "Please paste your CSV data first",
+        variant: "destructive",
+      });
+      return;
+    }
+
+    try {
+      const response = await fetch('/api/import-paired-csv', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ csvData }),
+      });
+
+      const result = await response.json();
       
-      const url = `/api/flag-examples${params.toString() ? `?${params}` : ''}`;
-      const response = await fetch(url);
-      if (!response.ok) throw new Error(`${response.status}: ${await response.text()}`);
-      return response.json();
-    },
-    retry: false,
-  });
-
-  // Fetch user's saved flags
-  const { data: savedFlags = [] } = useQuery({
-    queryKey: ['/api/saved-flags'],
-    retry: false,
-    enabled: isAuthenticated,
-  });
-
-  const saveFlag = useMutation({
-    mutationFn: async (flagId: number) => {
-      await apiRequest("POST", "/api/saved-flags", { flagExampleId: flagId });
-    },
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['/api/saved-flags'] });
-      toast({
-        title: "Success",
-        description: "Flag saved to your collection",
-      });
-    },
-    onError: (error) => {
-      if (isUnauthorizedError(error)) {
+      if (response.ok) {
         toast({
-          title: "Unauthorized",
-          description: "You are logged out. Logging in again...",
-          variant: "destructive",
+          title: "Import Successful",
+          description: result.message,
         });
-        setTimeout(() => {
-          window.location.href = "/api/login";
-        }, 500);
-        return;
+        queryClient.invalidateQueries({ queryKey: ['/api/paired-flags'] });
+        setIsImportDialogOpen(false);
+        setCsvData("");
+      } else {
+        throw new Error(result.message);
       }
-      toast({
-        title: "Error",
-        description: "Failed to save flag",
-        variant: "destructive",
-      });
-    },
-  });
-
-  const removeFlag = useMutation({
-    mutationFn: async (flagId: number) => {
-      await apiRequest("DELETE", `/api/saved-flags/${flagId}`);
-    },
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['/api/saved-flags'] });
-      toast({
-        title: "Success",
-        description: "Flag removed from your collection",
-      });
-    },
-    onError: (error) => {
-      toast({
-        title: "Error",
-        description: "Failed to remove flag",
-        variant: "destructive",
-      });
-    },
-  });
-
-  // CSV Import mutation
-  const importCSV = useMutation({
-    mutationFn: async (csvData: string) => {
-      return await apiRequest('/api/flag-examples/import-csv', 'POST', { csvData });
-    },
-    onSuccess: (data: any) => {
-      queryClient.invalidateQueries({ queryKey: ['/api/flag-examples'] });
-      toast({
-        title: "CSV Import Successful",
-        description: `Imported ${data.imported} flag examples`,
-      });
-      setIsImportDialogOpen(false);
-    },
-    onError: (error) => {
-      if (isUnauthorizedError(error)) {
-        toast({
-          title: "Unauthorized",
-          description: "You are logged out. Logging in again...",
-          variant: "destructive",
-        });
-        setTimeout(() => {
-          window.location.href = "/api/login";
-        }, 500);
-        return;
-      }
+    } catch (error) {
       toast({
         title: "Import Failed",
-        description: error.message,
+        description: "Failed to import CSV data. Please check the format.",
         variant: "destructive",
       });
-    },
-  });
-
-  const handleFileUpload = (event: React.ChangeEvent<HTMLInputElement>) => {
-    const file = event.target.files?.[0];
-    if (!file) return;
-
-    const reader = new FileReader();
-    reader.onload = (e) => {
-      const csvData = e.target?.result as string;
-      importCSV.mutate(csvData);
-    };
-    reader.readAsText(file);
+    }
   };
 
   const downloadTemplate = () => {
-    const template = `type,theme,behavior,example,impact,worthAddressing,actionSteps
-red,Trust,Lies about small things,"Says they were 'stuck in traffic' when they were actually hanging out with friends","Erodes trust and makes you question other statements",sometimes,Have a direct conversation about honesty and set clear expectations
-green,Communication,Active listening,"When you're talking they put down their phone and make eye contact","Creates feeling of being valued and heard",always,Acknowledge and appreciate this behavior openly
-red,Respect,Dismisses your feelings,"When you express concern they say 'you're overreacting' or 'it's not that serious'","Invalidates emotions and creates self-doubt",dealbreaker,Set firm boundary that your feelings are valid and deserve respect
-green,Emotional Safety,Validates emotions,"When you're upset they say 'I can see you're really hurt by this'","Creates safety to be vulnerable and authentic",always,Express gratitude for their emotional support`;
-    
+    const template = `,,Red & Green Flag example bank,,,,,
+Green Flag 💚,Red Flag 🚩,Behavior/Description,Example,Impact (Why it Matters),Worth Addressing? (Red Flags),Action Steps (How to Address It),Theme
+Keeps their promises and always follows through.,Cancels plans or breaks promises way too often without a good reason.,"Healthy communication involves active listening—focusing on the other person's words, tone, and body language. A red flag arises when someone consistently talks over you or invalidates what you're expressing, leaving you feeling unheard.",They promise to help you move but cancel last minute without a good reason.,"Consistent unreliability undermines trust, leaving you feeling unsupported and questioning their priorities.",Always worth addressing,"Communicate Clearly
+Address the pattern calmly and express how it makes you feel.
+Example: "I've noticed plans keep falling through, and it's disappointing because I value spending time together."
+
+Set Expectations
+Share what you need moving forward.
+Example: "I understand things come up, but consistency is important to me. If plans change, I'd appreciate more notice or effort to reschedule."
+
+Observe & Decide
+Watch for changes in their behavior. If they continue breaking promises without valid reasons, evaluate if this aligns with your standards and what you want in a relationship.",Trust`;
+
     const blob = new Blob([template], { type: 'text/csv' });
-    const url = window.URL.createObjectURL(blob);
+    const url = URL.createObjectURL(blob);
     const a = document.createElement('a');
     a.href = url;
-    a.download = 'relationship-flags-template.csv';
+    a.download = 'paired-flags-template.csv';
+    document.body.appendChild(a);
     a.click();
-    window.URL.revokeObjectURL(url);
-  };
-
-  // Get unique themes for filter dropdown
-  const themes = Array.from(new Set(flagExamples.map((flag: any) => flag.theme))).sort() as string[];
-
-  const isFlagSaved = (flagId: number) => {
-    return Array.isArray(savedFlags) && savedFlags.some((saved: any) => saved.flagExampleId === flagId);
-  };
-
-  const handleSaveToggle = (flagId: number) => {
-    if (isFlagSaved(flagId)) {
-      removeFlag.mutate(flagId);
-    } else {
-      saveFlag.mutate(flagId);
-    }
-  };
-
-  const getSeverityColor = (severity: string) => {
-    switch (severity) {
-      case "minor": return "bg-blue-100 text-blue-700 border-blue-200";
-      case "moderate": return "bg-yellow-100 text-yellow-700 border-yellow-200";
-      case "dealbreaker": return "bg-red-100 text-red-700 border-red-200";
-      default: return "bg-neutral-100 text-neutral-700 border-neutral-200";
-    }
-  };
-
-  const getAddressabilityColor = (addressability: string) => {
-    switch (addressability) {
-      case "always_worth_addressing": return "bg-green-100 text-green-700 border-green-200";
-      case "sometimes_worth_addressing": return "bg-yellow-100 text-yellow-700 border-yellow-200";
-      case "dealbreaker": return "bg-red-100 text-red-700 border-red-200";
-      default: return "bg-neutral-100 text-neutral-700 border-neutral-200";
-    }
-  };
-
-  const formatAddressability = (addressability: string) => {
-    return addressability.replace(/_/g, ' ').replace(/\b\w/g, l => l.toUpperCase());
+    document.body.removeChild(a);
+    URL.revokeObjectURL(url);
   };
 
   if (isLoading) {
-    return <div className="min-h-screen bg-neutral-50 flex items-center justify-center">
-      <div className="text-center">
-        <div className="w-8 h-8 bg-primary rounded-lg flex items-center justify-center mx-auto mb-4 animate-pulse">
-          <span className="text-white text-sm">B</span>
+    return (
+      <div className="container mx-auto p-6">
+        <div className="flex items-center justify-center h-64">
+          <div className="text-center">
+            <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-neutral-600 mx-auto mb-4"></div>
+            <p className="text-neutral-600">Loading relationship patterns...</p>
+          </div>
         </div>
-        <p className="text-neutral-600">Loading...</p>
       </div>
-    </div>;
+    );
   }
 
   return (
-    <div className="min-h-screen bg-neutral-50">
-      <Navigation />
-      
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
-        <div className="flex items-center justify-between mb-8">
-          <div>
-            <h1 className="text-3xl font-bold text-neutral-800">Red & Green Flag Example Bank</h1>
-            <p className="text-neutral-600 mt-2">Educational reference library for relationship patterns</p>
-          </div>
-          
-          <div className="flex gap-3">
-            <Button 
-              variant="outline" 
-              onClick={() => {
-                fetch('/api/import-user-csv', { method: 'POST' })
-                  .then(res => res.json())
-                  .then(data => {
-                    toast({
-                      title: "Import Successful",
-                      description: data.message,
-                    });
-                    queryClient.invalidateQueries({ queryKey: ['/api/flag-examples'] });
-                  })
-                  .catch(() => {
-                    toast({
-                      title: "Import Failed",
-                      description: "Failed to import your flag data",
-                      variant: "destructive",
-                    });
+    <div className="container mx-auto p-6 max-w-6xl">
+      {/* Header */}
+      <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center mb-8 gap-4">
+        <div>
+          <h1 className="text-3xl font-bold text-neutral-800">Red & Green Flag Example Bank</h1>
+          <p className="text-neutral-600 mt-2">Educational reference library for relationship patterns</p>
+        </div>
+        
+        <div className="flex gap-3 flex-wrap">
+          <Button 
+            variant="outline" 
+            onClick={() => {
+              fetch('/api/import-user-csv', { method: 'POST' })
+                .then(res => res.json())
+                .then(data => {
+                  toast({
+                    title: "Sample Data Loaded",
+                    description: data.message,
                   });
-              }}
-            >
-              <FileSpreadsheet className="w-4 h-4 mr-2" />
-              Import Your Data
-            </Button>
-            
-            <Dialog open={isImportDialogOpen} onOpenChange={setIsImportDialogOpen}>
-              <DialogTrigger asChild>
-                <Button variant="outline">
-                  <Upload className="w-4 h-4 mr-2" />
-                  Import CSV
-                </Button>
-              </DialogTrigger>
-              <DialogContent>
-                <DialogHeader>
-                  <DialogTitle>Import Flag Examples</DialogTitle>
-                </DialogHeader>
-                <div className="space-y-4">
-                  <p className="text-sm text-neutral-600">
-                    Upload a CSV or Excel file with relationship flag data. Expected columns: 
-                    <strong>type</strong> (red/green), <strong>theme</strong>, <strong>behavior</strong>, <strong>example</strong>, <strong>impact</strong>, <strong>worthAddressing</strong> (yes/no/always/dealbreaker), <strong>actionSteps</strong>
+                  queryClient.invalidateQueries({ queryKey: ['/api/paired-flags'] });
+                })
+                .catch(() => {
+                  toast({
+                    title: "Load Failed",
+                    description: "Failed to load sample data",
+                    variant: "destructive",
+                  });
+                });
+            }}
+          >
+            <FileSpreadsheet className="w-4 h-4 mr-2" />
+            Load Sample Data
+          </Button>
+          
+          <Dialog open={isImportDialogOpen} onOpenChange={setIsImportDialogOpen}>
+            <DialogTrigger asChild>
+              <Button variant="outline">
+                <Upload className="w-4 h-4 mr-2" />
+                Import CSV
+              </Button>
+            </DialogTrigger>
+            <DialogContent className="max-w-2xl">
+              <DialogHeader>
+                <DialogTitle>Import Your Paired Flag Data</DialogTitle>
+              </DialogHeader>
+              
+              <div className="space-y-4">
+                <div>
+                  <p className="text-sm text-neutral-600 mb-2">
+                    Paste your CSV data with paired green/red flags per row:
                   </p>
-                  <Button 
-                    variant="outline" 
-                    onClick={downloadTemplate}
-                    className="w-full"
-                  >
-                    Download CSV Template
-                  </Button>
-                  <Input 
-                    type="file" 
-                    accept=".csv,.xlsx,.xls" 
-                    ref={fileInputRef}
-                    onChange={handleFileUpload}
-                    disabled={importCSV.isPending}
+                  <Textarea
+                    placeholder="Green Flag,Red Flag,Description,Example,Impact,Worth Addressing,Action Steps,Theme"
+                    value={csvData}
+                    onChange={(e) => setCsvData(e.target.value)}
+                    className="min-h-48 font-mono text-sm"
                   />
-                  <Button 
-                    className="w-full" 
-                    onClick={() => fileInputRef.current?.click()}
-                    disabled={importCSV.isPending}
-                  >
-                    <FileSpreadsheet className="w-4 h-4 mr-2" />
-                    {importCSV.isPending ? "Uploading..." : "Upload File"}
+                </div>
+                
+                <div className="flex gap-2">
+                  <Button onClick={handleImportCSV} className="flex-1">
+                    Import Data
+                  </Button>
+                  <Button variant="outline" onClick={downloadTemplate}>
+                    <Download className="w-4 h-4 mr-2" />
+                    Download Template
                   </Button>
                 </div>
-              </DialogContent>
-            </Dialog>
-            
-            {isAuthenticated && (
-              <Dialog open={isCreateDialogOpen} onOpenChange={setIsCreateDialogOpen}>
-                <DialogTrigger asChild>
-                  <Button>
-                    <Plus className="w-4 h-4 mr-2" />
-                    Add Flag
-                  </Button>
-                </DialogTrigger>
-                <DialogContent className="max-w-4xl">
-                  <DialogHeader>
-                    <DialogTitle>Create New Flag Example</DialogTitle>
-                  </DialogHeader>
-                  <div className="text-sm text-neutral-600 mb-4">
-                    Create a custom flag example for your personal reference library.
-                  </div>
-                  {/* Flag creation form would go here */}
-                </DialogContent>
-              </Dialog>
+              </div>
+            </DialogContent>
+          </Dialog>
+        </div>
+      </div>
+
+      {/* Search and Filter */}
+      <div className="flex flex-col sm:flex-row gap-4 mb-6">
+        <div className="relative flex-1">
+          <Search className="absolute left-3 top-3 h-4 w-4 text-neutral-400" />
+          <Input
+            placeholder="Search patterns or themes..."
+            value={searchQuery}
+            onChange={(e) => setSearchQuery(e.target.value)}
+            className="pl-10"
+          />
+        </div>
+        
+        <Select value={selectedTheme} onValueChange={setSelectedTheme}>
+          <SelectTrigger className="w-full sm:w-48">
+            <Filter className="w-4 h-4 mr-2" />
+            <SelectValue placeholder="Filter by theme" />
+          </SelectTrigger>
+          <SelectContent>
+            <SelectItem value="all">All Themes</SelectItem>
+            {themes.map((theme) => (
+              <SelectItem key={theme} value={theme.toLowerCase()}>
+                {theme.replace(/_/g, ' ').replace(/\b\w/g, l => l.toUpperCase())}
+              </SelectItem>
+            ))}
+          </SelectContent>
+        </Select>
+      </div>
+
+      {/* Results Count */}
+      <div className="mb-6">
+        <p className="text-sm text-neutral-600">
+          Showing {filteredFlags.length} of {pairedFlags.length} relationship patterns
+        </p>
+      </div>
+
+      {/* Paired Flag Cards */}
+      <div className="space-y-8">
+        {filteredFlags.length === 0 ? (
+          <div className="text-center py-12">
+            <div className="text-neutral-400 mb-4">
+              <FileSpreadsheet className="w-12 h-12 mx-auto mb-2" />
+            </div>
+            <h3 className="text-lg font-medium text-neutral-600 mb-2">No patterns found</h3>
+            <p className="text-neutral-500 mb-4">
+              {searchQuery || selectedTheme !== "all" 
+                ? "Try adjusting your search or filter" 
+                : "Import your CSV data to see relationship patterns"}
+            </p>
+            {pairedFlags.length === 0 && (
+              <Button 
+                variant="outline" 
+                onClick={() => setIsImportDialogOpen(true)}
+              >
+                <Upload className="w-4 h-4 mr-2" />
+                Import Your Data
+              </Button>
             )}
           </div>
-        </div>
-
-        {/* Search and Filter Controls */}
-        <div className="mb-6 space-y-4">
-          <div className="flex flex-col sm:flex-row gap-4">
-            <div className="flex-1">
-              <Label htmlFor="search" className="sr-only">Search flags</Label>
-              <div className="relative">
-                <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-neutral-400 w-4 h-4" />
-                <Input
-                  id="search"
-                  placeholder="Search by title, description, theme, or scenario..."
-                  value={searchQuery}
-                  onChange={(e) => setSearchQuery(e.target.value)}
-                  className="pl-10"
-                />
-              </div>
-            </div>
-            
-            <div className="flex gap-3">
-              <Select value={selectedType} onValueChange={setSelectedType}>
-                <SelectTrigger className="w-[140px]">
-                  <Filter className="w-4 h-4 mr-2" />
-                  <SelectValue />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="all">All Types</SelectItem>
-                  <SelectItem value="green">Green Flags</SelectItem>
-                  <SelectItem value="red">Red Flags</SelectItem>
-                </SelectContent>
-              </Select>
-              
-              <Select value={selectedTheme} onValueChange={setSelectedTheme}>
-                <SelectTrigger className="w-[160px]">
-                  <SelectValue />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="all">All Themes</SelectItem>
-                  {themes.map((theme) => (
-                    <SelectItem key={theme} value={theme}>
-                      {theme.charAt(0).toUpperCase() + theme.slice(1)}
-                    </SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
-            </div>
-          </div>
-        </div>
-
-        {/* Flag Examples Grid */}
-        {flagsLoading ? (
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-            {[1, 2, 3, 4, 5, 6].map((i) => (
-              <Card key={i} className="animate-pulse">
-                <CardHeader>
-                  <div className="h-4 bg-neutral-200 rounded w-3/4"></div>
-                  <div className="h-3 bg-neutral-200 rounded w-1/2"></div>
-                </CardHeader>
-                <CardContent>
-                  <div className="space-y-2">
-                    <div className="h-3 bg-neutral-200 rounded"></div>
-                    <div className="h-3 bg-neutral-200 rounded w-4/5"></div>
-                  </div>
-                </CardContent>
-              </Card>
-            ))}
-          </div>
-        ) : flagExamples.length === 0 ? (
-          <div className="text-center py-12">
-            <div className="w-16 h-16 bg-neutral-100 rounded-full flex items-center justify-center mx-auto mb-4">
-              <Search className="w-8 h-8 text-neutral-400" />
-            </div>
-            <h3 className="text-lg font-medium text-neutral-800 mb-2">No flags found</h3>
-            <p className="text-neutral-600">
-              {searchQuery || selectedType !== "all" || selectedTheme !== "all"
-                ? "Try adjusting your search or filters"
-                : "The flag example library is empty. Import some examples to get started."}
-            </p>
-          </div>
         ) : (
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-            {flagExamples.map((flag: any) => (
-              <Card key={flag.id} className="border-0 shadow-lg bg-white hover:shadow-xl transition-shadow">
-                <CardHeader className="pb-3">
-                  <div className="flex items-start justify-between">
-                    <div className="flex items-center gap-2">
-                      {flag.flagType === "green" ? (
-                        <Heart className="w-5 h-5 text-green-600" />
-                      ) : (
-                        <AlertTriangle className="w-5 h-5 text-red-600" />
-                      )}
-                      <Badge 
-                        variant="secondary" 
-                        className={flag.flagType === "green" 
-                          ? "bg-green-100 text-green-700 border-green-200" 
-                          : "bg-red-100 text-red-700 border-red-200"
-                        }
-                      >
-                        {flag.flagType === "green" ? "Green Flag" : "Red Flag"}
-                      </Badge>
-                    </div>
-                    
-                    {isAuthenticated && (
-                      <Button
-                        variant="ghost"
-                        size="sm"
-                        onClick={() => handleSaveToggle(flag.id)}
-                        disabled={saveFlag.isPending || removeFlag.isPending}
-                      >
-                        {isFlagSaved(flag.id) ? (
-                          <BookmarkCheck className="w-4 h-4 text-blue-600" />
-                        ) : (
-                          <BookmarkPlus className="w-4 h-4" />
-                        )}
-                      </Button>
-                    )}
-                  </div>
-                  
-                  <CardTitle className="text-lg leading-tight">{flag.title}</CardTitle>
-                  
-                  <div className="flex flex-wrap gap-2">
-                    <Badge variant="outline" className="text-xs">
-                      {flag.theme.charAt(0).toUpperCase() + flag.theme.slice(1)}
-                    </Badge>
-                    <Badge 
-                      variant="outline" 
-                      className={`text-xs ${getSeverityColor(flag.severity)}`}
-                    >
-                      {flag.severity.charAt(0).toUpperCase() + flag.severity.slice(1)}
-                    </Badge>
-                  </div>
-                </CardHeader>
-                
-                <CardContent className="space-y-4">
-                  <div>
-                    <h4 className="font-medium text-sm text-neutral-700 mb-1">Description</h4>
-                    <p className="text-sm text-neutral-600 leading-relaxed">{flag.description}</p>
-                  </div>
-                  
-                  <div>
-                    <h4 className="font-medium text-sm text-neutral-700 mb-1">Example Scenario</h4>
-                    <p className="text-sm text-neutral-600 leading-relaxed italic">"{flag.exampleScenario}"</p>
-                  </div>
-                  
-                  <div>
-                    <h4 className="font-medium text-sm text-neutral-700 mb-1">Emotional Impact</h4>
-                    <p className="text-sm text-neutral-600 leading-relaxed">{flag.emotionalImpact}</p>
-                  </div>
-                  
-                  <div>
-                    <h4 className="font-medium text-sm text-neutral-700 mb-2">Addressability</h4>
-                    <Badge 
-                      variant="outline" 
-                      className={`text-xs ${getAddressabilityColor(flag.addressability)}`}
-                    >
-                      {formatAddressability(flag.addressability)}
-                    </Badge>
-                  </div>
-                  
-                  <div>
-                    <h4 className="font-medium text-sm text-neutral-700 mb-1">Suggested Action Steps</h4>
-                    <p className="text-sm text-neutral-600 leading-relaxed">{flag.actionSteps}</p>
-                  </div>
-                </CardContent>
-              </Card>
-            ))}
-          </div>
+          filteredFlags.map((flag, index) => (
+            <PairedFlagCard 
+              key={`${flag.theme}-${index}`}
+              data={flag}
+            />
+          ))
         )}
       </div>
+
+      {/* Footer */}
+      {filteredFlags.length > 0 && (
+        <div className="text-center mt-12 pt-8 border-t border-neutral-200">
+          <p className="text-sm text-neutral-500">
+            Educational reference library for healthy relationship patterns
+          </p>
+        </div>
+      )}
     </div>
   );
 }
