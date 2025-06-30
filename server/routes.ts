@@ -679,14 +679,14 @@ export async function registerRoutes(app: Express): Promise<Server> {
                 theme: theme.trim(),
                 greenFlag: {
                   title: greenFlag.replace(/💚/g, '').trim(),
-                  description: behaviorDesc || greenFlag,
+                  description: behaviorDesc,
                   exampleScenario: example,
                   emotionalImpact: impact,
                   actionSteps: actionSteps
                 },
                 redFlag: {
                   title: redFlag.replace(/🚩/g, '').trim(),
-                  description: behaviorDesc || redFlag,
+                  description: behaviorDesc,
                   exampleScenario: example,
                   emotionalImpact: impact,
                   actionSteps: actionSteps,
@@ -754,6 +754,81 @@ export async function registerRoutes(app: Express): Promise<Server> {
     } catch (error) {
       console.error("Error importing paired CSV:", error);
       res.status(500).json({ message: "Failed to import paired CSV data" });
+    }
+  });
+
+  // Clear and reimport with proper pairing
+  app.post('/api/clear-and-reimport', async (req: any, res) => {
+    try {
+      // Clear existing data first
+      await db.delete(flagExamples);
+      
+      // Import properly paired data from your CSV structure
+      const properlyPairedData = [
+        {
+          theme: 'trust',
+          behaviorDesc: 'Promise keeping and reliability in relationships. This behavior shows whether someone can be counted on to follow through on their commitments.',
+          example: 'They promise to help you move but cancel last minute without a good reason.',
+          impact: 'Consistent unreliability undermines trust, leaving you feeling unsupported and questioning their priorities.',
+          actionSteps: 'Communicate clearly about expectations and observe whether behavior changes over time.',
+          greenTitle: 'Keeps their promises and always follows through',
+          redTitle: 'Cancels plans or breaks promises way too often without a good reason'
+        },
+        {
+          theme: 'trust',
+          behaviorDesc: 'Transparency and openness in sharing information about daily life and experiences.',
+          example: 'They fail to mention they had lunch with an ex when you asked about their day.',
+          impact: 'Lack of transparency breeds insecurity and suspicion, making it hard to feel secure in the relationship.',
+          actionSteps: 'Set expectations for openness and communicate the importance of transparency in building trust.',
+          greenTitle: 'Shares their thoughts and feelings like an open book',
+          redTitle: 'Keeps secrets or leaves out important details, even when asked'
+        },
+        {
+          theme: 'communication',
+          behaviorDesc: 'Active listening practices and respectful conversation habits.',
+          example: 'They cut you off mid-sentence to make their own point.',
+          impact: 'Interruptions make you feel unheard and undervalued, damaging emotional safety.',
+          actionSteps: 'Gently ask to finish thoughts and practice active listening exercises together.',
+          greenTitle: 'Listens with their whole heart and no interruptions',
+          redTitle: 'Interrupts you mid-sentence or dominates conversations'
+        }
+      ];
+
+      let imported = 0;
+      for (const data of properlyPairedData) {
+        // Import green flag
+        await storage.createFlagExample({
+          flagType: 'green',
+          title: data.greenTitle,
+          description: data.behaviorDesc,
+          exampleScenario: data.example,
+          emotionalImpact: data.impact,
+          actionSteps: data.actionSteps,
+          theme: data.theme,
+          severity: 'minor',
+          addressability: 'always_worth_addressing'
+        });
+        imported++;
+
+        // Import red flag
+        await storage.createFlagExample({
+          flagType: 'red',
+          title: data.redTitle,
+          description: data.behaviorDesc,
+          exampleScenario: data.example,
+          emotionalImpact: data.impact,
+          actionSteps: data.actionSteps,
+          theme: data.theme,
+          severity: 'moderate',
+          addressability: 'sometimes_worth_addressing'
+        });
+        imported++;
+      }
+
+      res.json({ imported, message: `Successfully imported ${imported} properly paired flags` });
+    } catch (error) {
+      console.error("Error reimporting data:", error);
+      res.status(500).json({ message: "Failed to reimport data" });
     }
   });
 
