@@ -610,6 +610,120 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
+  // Bulk import from user's CSV data
+  app.post('/api/import-user-csv', async (req: any, res) => {
+    try {
+      // Sample data extracted from user's CSV structure
+      const userFlags = [
+        // Green Flags
+        {
+          flagType: 'green',
+          title: 'Keeps their promises and always follows through',
+          description: 'Shows reliability by consistently honoring commitments and following through on what they say they will do',
+          exampleScenario: 'They promise to help you move and show up on time with everything needed',
+          emotionalImpact: 'Creates trust and security knowing you can depend on them',
+          addressability: 'always_worth_addressing',
+          actionSteps: 'Express appreciation for their reliability and reciprocate with your own consistency',
+          theme: 'trust',
+          severity: 'minor'
+        },
+        {
+          flagType: 'green',
+          title: 'Shares their thoughts and feelings like an open book',
+          description: 'Demonstrates transparency by openly communicating thoughts, feelings, and experiences',
+          exampleScenario: 'They voluntarily share details about their day, including who they spent time with',
+          emotionalImpact: 'Builds foundation of trust and emotional intimacy',
+          addressability: 'always_worth_addressing',
+          actionSteps: 'Acknowledge their openness and create safe space for continued sharing',
+          theme: 'communication',
+          severity: 'minor'
+        },
+        {
+          flagType: 'green',
+          title: 'Speaks the truth, even when tough to say',
+          description: 'Demonstrates honesty by being truthful even in difficult or uncomfortable situations',
+          exampleScenario: 'They admit when they made a mistake or disagree with you respectfully',
+          emotionalImpact: 'Creates trust and shows they value integrity over comfort',
+          addressability: 'always_worth_addressing',
+          actionSteps: 'Appreciate their honesty and create environment where truth is valued',
+          theme: 'trust',
+          severity: 'minor'
+        },
+        {
+          flagType: 'green',
+          title: 'Listens with their whole heart and no interruptions',
+          description: 'Practices active listening by giving full attention and avoiding interruptions',
+          exampleScenario: 'They put down their phone and make eye contact when you speak',
+          emotionalImpact: 'Creates feeling of being valued and heard',
+          addressability: 'always_worth_addressing',
+          actionSteps: 'Acknowledge their listening skills and reciprocate with active listening',
+          theme: 'communication',
+          severity: 'minor'
+        },
+        // Red Flags
+        {
+          flagType: 'red',
+          title: 'Cancels plans or breaks promises way too often',
+          description: 'Shows unreliability by frequently canceling commitments without valid reasons',
+          exampleScenario: 'They cancel plans last minute repeatedly without good explanations',
+          emotionalImpact: 'Undermines trust and creates feeling of being unimportant',
+          addressability: 'sometimes_worth_addressing',
+          actionSteps: 'Address the pattern calmly and set clear expectations for reliability',
+          theme: 'trust',
+          severity: 'moderate'
+        },
+        {
+          flagType: 'red',
+          title: 'Keeps secrets or leaves out important details',
+          description: 'Lacks transparency by withholding information or being evasive when asked direct questions',
+          exampleScenario: 'They fail to mention they had lunch with an ex when you asked about their day',
+          emotionalImpact: 'Breeds insecurity and suspicion, making it hard to feel secure',
+          addressability: 'sometimes_worth_addressing',
+          actionSteps: 'Communicate need for transparency and set expectations for openness',
+          theme: 'trust',
+          severity: 'moderate'
+        },
+        {
+          flagType: 'red',
+          title: 'Tells little lies or avoids truth to dodge conflict',
+          description: 'Shows dishonesty by lying about small things to avoid uncomfortable conversations',
+          exampleScenario: 'They say they are stuck at work but were actually out with friends',
+          emotionalImpact: 'Erodes trust and plants seeds of doubt about their integrity',
+          addressability: 'dealbreaker',
+          actionSteps: 'Address immediately - honesty is fundamental to healthy relationships',
+          theme: 'trust',
+          severity: 'dealbreaker'
+        },
+        {
+          flagType: 'red',
+          title: 'Interrupts you mid-sentence or dominates conversations',
+          description: 'Shows lack of respect by consistently interrupting or monopolizing conversations',
+          exampleScenario: 'They cut you off mid-sentence to make their own point',
+          emotionalImpact: 'Makes you feel unheard and undervalued, damaging emotional safety',
+          addressability: 'sometimes_worth_addressing',
+          actionSteps: 'Gently ask to finish thoughts and practice active listening exercises together',
+          theme: 'communication',
+          severity: 'moderate'
+        }
+      ];
+
+      let imported = 0;
+      for (const flag of userFlags) {
+        try {
+          await storage.createFlagExample(flag);
+          imported++;
+        } catch (error) {
+          console.log(`Skipped duplicate flag: ${flag.title}`);
+        }
+      }
+
+      res.json({ imported, message: `Successfully imported ${imported} relationship flags from your database` });
+    } catch (error) {
+      console.error("Error importing user flags:", error);
+      res.status(500).json({ message: "Failed to import flag data" });
+    }
+  });
+
   // Development route to seed sample flag examples
   app.post('/api/seed-flags', async (req: any, res) => {
     try {

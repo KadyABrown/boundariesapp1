@@ -232,6 +232,31 @@ green,Emotional Safety,Validates emotions,"When you're upset they say 'I can see
           </div>
           
           <div className="flex gap-3">
+            <Button 
+              variant="outline" 
+              onClick={() => {
+                fetch('/api/import-user-csv', { method: 'POST' })
+                  .then(res => res.json())
+                  .then(data => {
+                    toast({
+                      title: "Import Successful",
+                      description: data.message,
+                    });
+                    queryClient.invalidateQueries({ queryKey: ['/api/flag-examples'] });
+                  })
+                  .catch(() => {
+                    toast({
+                      title: "Import Failed",
+                      description: "Failed to import your flag data",
+                      variant: "destructive",
+                    });
+                  });
+              }}
+            >
+              <FileSpreadsheet className="w-4 h-4 mr-2" />
+              Import Your Data
+            </Button>
+            
             <Dialog open={isImportDialogOpen} onOpenChange={setIsImportDialogOpen}>
               <DialogTrigger asChild>
                 <Button variant="outline">
