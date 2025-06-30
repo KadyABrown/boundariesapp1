@@ -7,6 +7,9 @@ import {
   insertBoundaryEntrySchema,
   insertReflectionEntrySchema,
   insertUserSettingsSchema,
+  insertRelationshipProfileSchema,
+  insertEmotionalCheckInSchema,
+  insertBehavioralFlagSchema,
 } from "@shared/schema";
 import { z } from "zod";
 
@@ -188,6 +191,183 @@ export async function registerRoutes(app: Express): Promise<Server> {
         console.error("Error updating settings:", error);
         res.status(500).json({ message: "Failed to update settings" });
       }
+    }
+  });
+
+  // Relationship profile routes
+  app.get('/api/relationships', isAuthenticated, async (req: any, res) => {
+    try {
+      const userId = req.user.claims.sub;
+      const profiles = await storage.getRelationshipProfilesByUser(userId);
+      res.json(profiles);
+    } catch (error) {
+      console.error("Error fetching relationships:", error);
+      res.status(500).json({ message: "Failed to fetch relationships" });
+    }
+  });
+
+  app.post('/api/relationships', isAuthenticated, async (req: any, res) => {
+    try {
+      const userId = req.user.claims.sub;
+      const profileData = insertRelationshipProfileSchema.parse({
+        ...req.body,
+        userId,
+      });
+      const profile = await storage.createRelationshipProfile(profileData);
+      res.json(profile);
+    } catch (error) {
+      if (error instanceof z.ZodError) {
+        res.status(400).json({ message: "Invalid profile data", errors: error.errors });
+      } else {
+        console.error("Error creating relationship profile:", error);
+        res.status(500).json({ message: "Failed to create relationship profile" });
+      }
+    }
+  });
+
+  app.get('/api/relationships/:id', isAuthenticated, async (req: any, res) => {
+    try {
+      const id = parseInt(req.params.id);
+      const profile = await storage.getRelationshipProfile(id);
+      if (!profile) {
+        return res.status(404).json({ message: "Relationship profile not found" });
+      }
+      res.json(profile);
+    } catch (error) {
+      console.error("Error fetching relationship profile:", error);
+      res.status(500).json({ message: "Failed to fetch relationship profile" });
+    }
+  });
+
+  app.put('/api/relationships/:id', isAuthenticated, async (req: any, res) => {
+    try {
+      const id = parseInt(req.params.id);
+      const updates = insertRelationshipProfileSchema.partial().parse(req.body);
+      const profile = await storage.updateRelationshipProfile(id, updates);
+      res.json(profile);
+    } catch (error) {
+      if (error instanceof z.ZodError) {
+        res.status(400).json({ message: "Invalid profile data", errors: error.errors });
+      } else {
+        console.error("Error updating relationship profile:", error);
+        res.status(500).json({ message: "Failed to update relationship profile" });
+      }
+    }
+  });
+
+  app.delete('/api/relationships/:id', isAuthenticated, async (req: any, res) => {
+    try {
+      const id = parseInt(req.params.id);
+      await storage.deleteRelationshipProfile(id);
+      res.json({ success: true });
+    } catch (error) {
+      console.error("Error deleting relationship profile:", error);
+      res.status(500).json({ message: "Failed to delete relationship profile" });
+    }
+  });
+
+  // Emotional check-in routes
+  app.get('/api/relationships/:id/check-ins', isAuthenticated, async (req: any, res) => {
+    try {
+      const profileId = parseInt(req.params.id);
+      const checkIns = await storage.getEmotionalCheckInsByProfile(profileId);
+      res.json(checkIns);
+    } catch (error) {
+      console.error("Error fetching check-ins:", error);
+      res.status(500).json({ message: "Failed to fetch check-ins" });
+    }
+  });
+
+  app.post('/api/relationships/:id/check-ins', isAuthenticated, async (req: any, res) => {
+    try {
+      const userId = req.user.claims.sub;
+      const profileId = parseInt(req.params.id);
+      const checkInData = insertEmotionalCheckInSchema.parse({
+        ...req.body,
+        userId,
+        profileId,
+      });
+      const checkIn = await storage.createEmotionalCheckIn(checkInData);
+      res.json(checkIn);
+    } catch (error) {
+      if (error instanceof z.ZodError) {
+        res.status(400).json({ message: "Invalid check-in data", errors: error.errors });
+      } else {
+        console.error("Error creating check-in:", error);
+        res.status(500).json({ message: "Failed to create check-in" });
+      }
+    }
+  });
+
+  // Behavioral flag routes
+  app.get('/api/relationships/:id/flags', isAuthenticated, async (req: any, res) => {
+    try {
+      const profileId = parseInt(req.params.id);
+      const flags = await storage.getBehavioralFlagsByProfile(profileId);
+      res.json(flags);
+    } catch (error) {
+      console.error("Error fetching behavioral flags:", error);
+      res.status(500).json({ message: "Failed to fetch behavioral flags" });
+    }
+  });
+
+  app.post('/api/relationships/:id/flags', isAuthenticated, async (req: any, res) => {
+    try {
+      const userId = req.user.claims.sub;
+      const profileId = parseInt(req.params.id);
+      const flagData = insertBehavioralFlagSchema.parse({
+        ...req.body,
+        userId,
+        profileId,
+      });
+      const flag = await storage.createBehavioralFlag(flagData);
+      res.json(flag);
+    } catch (error) {
+      if (error instanceof z.ZodError) {
+        res.status(400).json({ message: "Invalid flag data", errors: error.errors });
+      } else {
+        console.error("Error creating behavioral flag:", error);
+        res.status(500).json({ message: "Failed to create behavioral flag" });
+      }
+    }
+  });
+
+  app.put('/api/relationships/:id/flags/:flagId', isAuthenticated, async (req: any, res) => {
+    try {
+      const flagId = parseInt(req.params.flagId);
+      const updates = insertBehavioralFlagSchema.partial().parse(req.body);
+      const flag = await storage.updateBehavioralFlag(flagId, updates);
+      res.json(flag);
+    } catch (error) {
+      if (error instanceof z.ZodError) {
+        res.status(400).json({ message: "Invalid flag data", errors: error.errors });
+      } else {
+        console.error("Error updating behavioral flag:", error);
+        res.status(500).json({ message: "Failed to update behavioral flag" });
+      }
+    }
+  });
+
+  app.delete('/api/relationships/:id/flags/:flagId', isAuthenticated, async (req: any, res) => {
+    try {
+      const flagId = parseInt(req.params.flagId);
+      await storage.deleteBehavioralFlag(flagId);
+      res.json({ success: true });
+    } catch (error) {
+      console.error("Error deleting behavioral flag:", error);
+      res.status(500).json({ message: "Failed to delete behavioral flag" });
+    }
+  });
+
+  // Relationship stats
+  app.get('/api/relationships/:id/stats', isAuthenticated, async (req: any, res) => {
+    try {
+      const profileId = parseInt(req.params.id);
+      const stats = await storage.getRelationshipStats(profileId);
+      res.json(stats);
+    } catch (error) {
+      console.error("Error fetching relationship stats:", error);
+      res.status(500).json({ message: "Failed to fetch relationship stats" });
     }
   });
 

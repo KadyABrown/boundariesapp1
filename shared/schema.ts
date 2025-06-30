@@ -84,6 +84,48 @@ export const userSettings = pgTable("user_settings", {
   updatedAt: timestamp("updated_at").defaultNow(),
 });
 
+// Relationship profiles for dating behavior checklist
+export const relationshipProfiles = pgTable("relationship_profiles", {
+  id: serial("id").primaryKey(),
+  userId: varchar("user_id").notNull(),
+  name: varchar("name").notNull(),
+  nickname: varchar("nickname"),
+  relationshipType: varchar("relationship_type").notNull(), // romantic, platonic, situationship, other
+  dateMet: timestamp("date_met"),
+  howMet: varchar("how_met"), // app, social-media, irl, work, friends, other
+  currentStatus: varchar("current_status").default("active"), // active, inactive, ended
+  isPrivate: boolean("is_private").notNull().default(false),
+  createdAt: timestamp("created_at").defaultNow(),
+  updatedAt: timestamp("updated_at").defaultNow(),
+});
+
+// Emotional safety check-ins for relationships
+export const emotionalCheckIns = pgTable("emotional_check_ins", {
+  id: serial("id").primaryKey(),
+  userId: varchar("user_id").notNull(),
+  profileId: integer("profile_id").notNull(),
+  feelSafeAndExcited: varchar("feel_safe_and_excited"), // yes, no, unsure
+  feelSupported: varchar("feel_supported"), // yes, no, unsure
+  emotionalToneChanged: varchar("emotional_tone_changed"), // yes, no, unsure
+  overallSafetyRating: integer("overall_safety_rating"), // 1-10 scale
+  notes: text("notes"),
+  createdAt: timestamp("created_at").defaultNow(),
+});
+
+// Behavioral flags for relationship tracking
+export const behavioralFlags = pgTable("behavioral_flags", {
+  id: serial("id").primaryKey(),
+  userId: varchar("user_id").notNull(),
+  profileId: integer("profile_id").notNull(),
+  flagCategory: varchar("flag_category").notNull(), // communication, respect, consistency, etc.
+  flagName: varchar("flag_name").notNull(), // specific behavior
+  flagType: varchar("flag_type").notNull(), // green, red
+  isPresent: boolean("is_present").notNull(),
+  notes: text("notes"),
+  createdAt: timestamp("created_at").defaultNow(),
+  updatedAt: timestamp("updated_at").defaultNow(),
+});
+
 // Relations
 export const usersRelations = relations(users, ({ many, one }) => ({
   boundaries: many(boundaries),
@@ -125,6 +167,37 @@ export const userSettingsRelations = relations(userSettings, ({ one }) => ({
   }),
 }));
 
+export const relationshipProfilesRelations = relations(relationshipProfiles, ({ one, many }) => ({
+  user: one(users, {
+    fields: [relationshipProfiles.userId],
+    references: [users.id],
+  }),
+  emotionalCheckIns: many(emotionalCheckIns),
+  behavioralFlags: many(behavioralFlags),
+}));
+
+export const emotionalCheckInsRelations = relations(emotionalCheckIns, ({ one }) => ({
+  user: one(users, {
+    fields: [emotionalCheckIns.userId],
+    references: [users.id],
+  }),
+  profile: one(relationshipProfiles, {
+    fields: [emotionalCheckIns.profileId],
+    references: [relationshipProfiles.id],
+  }),
+}));
+
+export const behavioralFlagsRelations = relations(behavioralFlags, ({ one }) => ({
+  user: one(users, {
+    fields: [behavioralFlags.userId],
+    references: [users.id],
+  }),
+  profile: one(relationshipProfiles, {
+    fields: [behavioralFlags.profileId],
+    references: [relationshipProfiles.id],
+  }),
+}));
+
 // Schemas for validation
 export type UpsertUser = typeof users.$inferInsert;
 export type User = typeof users.$inferSelect;
@@ -158,3 +231,26 @@ export const insertUserSettingsSchema = createInsertSchema(userSettings).omit({
 });
 export type InsertUserSettings = z.infer<typeof insertUserSettingsSchema>;
 export type UserSettings = typeof userSettings.$inferSelect;
+
+export const insertRelationshipProfileSchema = createInsertSchema(relationshipProfiles).omit({
+  id: true,
+  createdAt: true,
+  updatedAt: true,
+});
+export type InsertRelationshipProfile = z.infer<typeof insertRelationshipProfileSchema>;
+export type RelationshipProfile = typeof relationshipProfiles.$inferSelect;
+
+export const insertEmotionalCheckInSchema = createInsertSchema(emotionalCheckIns).omit({
+  id: true,
+  createdAt: true,
+});
+export type InsertEmotionalCheckIn = z.infer<typeof insertEmotionalCheckInSchema>;
+export type EmotionalCheckIn = typeof emotionalCheckIns.$inferSelect;
+
+export const insertBehavioralFlagSchema = createInsertSchema(behavioralFlags).omit({
+  id: true,
+  createdAt: true,
+  updatedAt: true,
+});
+export type InsertBehavioralFlag = z.infer<typeof insertBehavioralFlagSchema>;
+export type BehavioralFlag = typeof behavioralFlags.$inferSelect;

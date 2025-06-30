@@ -1,0 +1,99 @@
+The Dating Behavior Checklist is structured like a behavior-based relationship log that includes:
+
+Partner Identity Info: Name, nickname, type of relationship, how/when you met
+
+Feelings Tracking: Questions like "Did I feel safe and excited in the beginning?" and "Do I feel supported?"
+
+Emotional Change Over Time: “Has it always been that way or has it changed?”
+
+Relationship Type Tagging: Labels like “Dating Only”
+
+Binary Scoring: Emotional and behavioral flags scored across a grid (e.g., W+, W-, X+, X-, Y-, etc.), potentially reflecting green/red flags or trait alignment
+
+🔧 Developer Prompt: Dating Behavior Checklist Feature
+📌 Feature Title: Dating Behavior Checklist
+
+Purpose:
+Allow users to log and evaluate their romantic connections using a structured, repeatable entry system based on emotional safety, behavioral patterns, and values alignment.
+
+🧠 Core Objectives:
+
+Create a profile entry system for each relationship
+
+Prompt self-reflective scoring across time to detect behavioral/emotional shifts
+
+Enable pattern recognition using visualized checklists and flags
+
+🔧 Components & Functionality:
+
+New Relationship Log
+
+Input fields:
+
+Name / Nickname
+
+Type of Relationship (dropdown: Romantic, Platonic, Situationship, Other)
+
+Date Met (date picker)
+
+How You Met (free text or select from tags: app, social media, IRL, etc.)
+
+Emotional Safety Prompts
+
+Questionnaires that track feelings over time:
+
+“Did I feel safe and excited in the beginning?” → Yes/No/Unsure
+
+“Do I still feel supported?”
+
+“Has the emotional tone changed?”
+
+Allow for follow-up journal entries to expand on answers.
+
+Behavioral Flag Scoring
+
+2-column matrix of red/green flag traits, modeled on your W+/W-/X+/X-/… grid.
+
+Users toggle behavior indicators per person (e.g., “Displays emotional consistency: ✅ / ❌”)
+
+Each flag has a tooltip/definition to guide the user.
+
+Scoring & Trend Detection
+
+Each relationship entry generates a summary score based on emotional safety and flags.
+
+Add visual cues (heatmap, radar chart, or flag count bar) to help the user assess “green zone” vs. “caution zone” relationships.
+
+Ongoing Updates
+
+Allow users to revisit and update each partner log (e.g., “Check-in after 1 month”)
+
+Display version history with timestamped reflections.
+
+Sorting & Filtering
+
+View all relationships in a list, sorted by:
+
+Emotional safety rating
+
+Most recent interaction
+
+of red/green flags
+Custom tags (e.g., “current,” “ex,” “toxic,” “hopeful”)
+
+Privacy Features
+
+Per-relationship privacy toggle
+
+Optional passcode/biometric lock for entire checklist section
+
+✨ Optional Enhancements:
+
+AI-powered red flag detection based on journaled reflections
+
+Suggest journaling prompts based on flagged behavior trends
+
+Compare behavioral patterns across partners
+
+Export to PDF summary for use in therapy or personal review
+

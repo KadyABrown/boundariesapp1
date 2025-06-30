@@ -7,6 +7,8 @@ import { useAuth } from "@/hooks/useAuth";
 import Landing from "@/pages/landing";
 import Dashboard from "@/pages/dashboard";
 import Boundaries from "@/pages/boundaries";
+import Relationships from "@/pages/relationships";
+import RelationshipDetail from "@/pages/relationship-detail";
 import Insights from "@/pages/insights";
 import NotFound from "@/pages/not-found";
 
@@ -21,6 +23,10 @@ function Router() {
         <>
           <Route path="/" component={Dashboard} />
           <Route path="/boundaries" component={Boundaries} />
+          <Route path="/relationships" component={Relationships} />
+          <Route path="/relationships/:id">
+            {(params) => <RelationshipDetail profileId={params.id} />}
+          </Route>
           <Route path="/insights" component={Insights} />
         </>
       )}

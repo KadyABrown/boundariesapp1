@@ -1,6 +1,6 @@
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
-import { Shield, Heart, BarChart3, BookOpen, Users, Download } from "lucide-react";
+import { Shield, Heart, BarChart3, BookOpen, Users, Download, Flag } from "lucide-react";
 
 export default function Landing() {
   return (
@@ -100,9 +100,9 @@ export default function Landing() {
               <div className="w-12 h-12 bg-rose-100 rounded-lg flex items-center justify-center mb-4">
                 <Heart className="w-6 h-6 text-rose-600" />
               </div>
-              <CardTitle>Gentle Reminders</CardTitle>
+              <CardTitle>Dating Behavior Checklist</CardTitle>
               <CardDescription>
-                Configurable notifications to help you stay consistent with your boundary practice
+                Track and evaluate romantic connections with emotional safety prompts and behavioral flags
               </CardDescription>
             </CardHeader>
           </Card>

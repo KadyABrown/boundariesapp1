@@ -49,6 +49,13 @@ The system is built as a modern React SPA with an Express.js backend, using Post
 - **Emotional Mapping**: 5-point emotional scale with emoji indicators
 - **Contextual Notes**: Free-form text for detailed experience capture
 
+### Dating Behavior Checklist
+- **Relationship Profiles**: Create detailed profiles for romantic connections with partner info and relationship metadata
+- **Emotional Safety Check-ins**: Structured questionnaires tracking safety feelings and emotional tone changes over time
+- **Behavioral Flag System**: Green/red flag tracking across categories (Communication, Respect, Emotional Consistency, Trust & Reliability)
+- **Relationship Analytics**: Health scores, flag counts, safety ratings, and trend analysis
+- **Privacy Controls**: Per-relationship privacy settings and secure data management
+
 ### Analytics & Insights
 - **Dashboard Statistics**: Real-time boundary respect rates and trends
 - **Progress Tracking**: Weekly and daily performance metrics
@@ -118,6 +125,7 @@ The system is built as a modern React SPA with an Express.js backend, using Post
 ## Changelog
 
 - June 30, 2025. Initial setup
+- June 30, 2025. Added Dating Behavior Checklist feature with relationship profiles, emotional check-ins, and behavioral flag tracking
 
 ## User Preferences
 
