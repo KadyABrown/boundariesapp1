@@ -512,6 +512,50 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
+  // CSV Import endpoint
+  app.post('/api/flag-examples/import-csv', isAuthenticated, async (req: any, res) => {
+    try {
+      const { csvData } = req.body;
+      if (!csvData) {
+        return res.status(400).json({ message: "CSV data is required" });
+      }
+
+      // Parse CSV data
+      const lines = csvData.split('\n').filter((line: string) => line.trim());
+      const headers = lines[0].split(',').map((h: string) => h.trim().replace(/"/g, ''));
+      
+      let imported = 0;
+      for (let i = 1; i < lines.length; i++) {
+        const values = lines[i].split(',').map((v: string) => v.trim().replace(/"/g, ''));
+        
+        if (values.length < headers.length) continue;
+        
+        const flagData = {
+          flagType: values[headers.indexOf('Flag Type')] || values[headers.indexOf('Type')] || '',
+          title: values[headers.indexOf('Title')] || values[headers.indexOf('Behavior')] || '',
+          description: values[headers.indexOf('Description')] || '',
+          exampleScenario: values[headers.indexOf('Example Scenario')] || values[headers.indexOf('Example')] || '',
+          emotionalImpact: values[headers.indexOf('Emotional Impact')] || '',
+          addressability: values[headers.indexOf('Addressability')] || 'sometimes_worth_addressing',
+          actionSteps: values[headers.indexOf('Action Steps')] || '',
+          theme: values[headers.indexOf('Theme')] || 'general',
+          severity: values[headers.indexOf('Severity')] || 'moderate'
+        };
+
+        // Validate required fields
+        if (flagData.title && flagData.description) {
+          await storage.createFlagExample(flagData);
+          imported++;
+        }
+      }
+
+      res.json({ imported });
+    } catch (error) {
+      console.error("Error importing CSV:", error);
+      res.status(500).json({ message: "Failed to import CSV data" });
+    }
+  });
+
   // Development route to seed sample flag examples
   app.post('/api/seed-flags', async (req: any, res) => {
     try {

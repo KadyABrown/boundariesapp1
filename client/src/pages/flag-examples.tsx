@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
 import { useQuery, useMutation } from "@tanstack/react-query";
 import { useAuth } from "@/hooks/useAuth";
 import { useToast } from "@/hooks/use-toast";
@@ -34,6 +34,7 @@ export default function FlagExamples() {
   const [selectedTheme, setSelectedTheme] = useState("all");
   const [isCreateDialogOpen, setIsCreateDialogOpen] = useState(false);
   const [isImportDialogOpen, setIsImportDialogOpen] = useState(false);
+  const fileInputRef = useRef<HTMLInputElement>(null);
 
   // Fetch flag examples with filters
   const { data: flagExamples = [], isLoading: flagsLoading } = useQuery({
@@ -109,6 +110,65 @@ export default function FlagExamples() {
       });
     },
   });
+
+  // CSV Import mutation
+  const importCSV = useMutation({
+    mutationFn: async (csvData: string) => {
+      return await apiRequest('/api/flag-examples/import-csv', 'POST', { csvData });
+    },
+    onSuccess: (data: any) => {
+      queryClient.invalidateQueries({ queryKey: ['/api/flag-examples'] });
+      toast({
+        title: "CSV Import Successful",
+        description: `Imported ${data.imported} flag examples`,
+      });
+      setIsImportDialogOpen(false);
+    },
+    onError: (error) => {
+      if (isUnauthorizedError(error)) {
+        toast({
+          title: "Unauthorized",
+          description: "You are logged out. Logging in again...",
+          variant: "destructive",
+        });
+        setTimeout(() => {
+          window.location.href = "/api/login";
+        }, 500);
+        return;
+      }
+      toast({
+        title: "Import Failed",
+        description: error.message,
+        variant: "destructive",
+      });
+    },
+  });
+
+  const handleFileUpload = (event: React.ChangeEvent<HTMLInputElement>) => {
+    const file = event.target.files?.[0];
+    if (!file) return;
+
+    const reader = new FileReader();
+    reader.onload = (e) => {
+      const csvData = e.target?.result as string;
+      importCSV.mutate(csvData);
+    };
+    reader.readAsText(file);
+  };
+
+  const downloadTemplate = () => {
+    const template = `Flag Type,Title,Description,Example Scenario,Emotional Impact,Addressability,Action Steps,Theme,Severity
+red,Example Red Flag,Description of the concerning behavior,Specific example scenario,How this impacts emotions,sometimes_worth_addressing,What action to take,communication,moderate
+green,Example Green Flag,Description of the positive behavior,Specific example scenario,How this creates positive feelings,always_worth_addressing,How to appreciate this behavior,respect,minor`;
+    
+    const blob = new Blob([template], { type: 'text/csv' });
+    const url = window.URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = 'flag-examples-template.csv';
+    a.click();
+    window.URL.revokeObjectURL(url);
+  };
 
   // Get unique themes for filter dropdown
   const themes = Array.from(new Set(flagExamples.map((flag: any) => flag.theme))).sort();
@@ -186,10 +246,27 @@ export default function FlagExamples() {
                     Upload a CSV file with flag examples. The file should include columns for:
                     Flag Type, Title, Description, Example Scenario, Emotional Impact, Addressability, Action Steps, Theme, and Severity.
                   </p>
-                  <Input type="file" accept=".csv,.xlsx,.xls" />
-                  <Button className="w-full">
+                  <Button 
+                    variant="outline" 
+                    onClick={downloadTemplate}
+                    className="w-full"
+                  >
+                    Download CSV Template
+                  </Button>
+                  <Input 
+                    type="file" 
+                    accept=".csv,.xlsx,.xls" 
+                    ref={fileInputRef}
+                    onChange={handleFileUpload}
+                    disabled={importCSV.isPending}
+                  />
+                  <Button 
+                    className="w-full" 
+                    onClick={() => fileInputRef.current?.click()}
+                    disabled={importCSV.isPending}
+                  >
                     <FileSpreadsheet className="w-4 h-4 mr-2" />
-                    Upload File
+                    {importCSV.isPending ? "Uploading..." : "Upload File"}
                   </Button>
                 </div>
               </DialogContent>
