@@ -776,33 +776,65 @@ export async function registerRoutes(app: Express): Promise<Server> {
         const csvContent = fs.readFileSync(csvPath, 'utf-8');
         const lines = csvContent.split('\n');
         
-        // Simple row detection - look for lines that start with actual content
+        // Parse CSV using proper logic for quoted multi-line cells
         let currentRowData = null;
+        let inMultiLineCell = false;
+        let currentField = '';
+        let fieldIndex = 0;
+        let tempRowData = {};
         
         for (let i = 2; i < lines.length; i++) { // Skip header rows
-          const line = lines[i].trim();
-          if (!line) continue;
+          const line = lines[i];
+          if (!line.trim()) continue;
           
-          // Try to split and see if this looks like a new data row
-          const parts = line.split(',');
-          
-          // If the first part looks like a green flag (contains typical phrases)
-          if (parts[0] && parts[0].length > 10 && !parts[0].startsWith('Example:') && !parts[0].startsWith('Set ')) {
-            // Save previous row if exists
+          // Simple detection: if line starts with a clear green flag pattern and has enough commas
+          const commaCount = (line.match(/,/g) || []).length;
+          if (commaCount >= 6 && line.includes('.') && !line.startsWith('Example:') && !line.startsWith('Set ')) {
+            // This looks like a new row - save previous if exists
             if (currentRowData) {
               csvRows.push(currentRowData);
             }
             
-            // Start new row
+            // Parse this new row more carefully
+            const quotedPattern = /"([^"]*)"/g;
+            const parts = [];
+            let match;
+            let lastIndex = 0;
+            
+            // Extract quoted parts first
+            while ((match = quotedPattern.exec(line)) !== null) {
+              // Add any non-quoted part before this quote
+              const beforeQuote = line.substring(lastIndex, match.index);
+              if (beforeQuote) {
+                parts.push(...beforeQuote.split(',').filter(p => p.trim()));
+              }
+              // Add the quoted content
+              parts.push(match[1]);
+              lastIndex = match.index + match[0].length + 1; // +1 for comma after quote
+            }
+            
+            // Add any remaining non-quoted part
+            const remaining = line.substring(lastIndex);
+            if (remaining) {
+              parts.push(...remaining.split(',').filter(p => p.trim()));
+            }
+            
+            // If simple parsing, fall back to basic split
+            if (parts.length < 7) {
+              const simpleParts = line.split(',');
+              parts.length = 0;
+              parts.push(...simpleParts);
+            }
+            
             currentRowData = {
-              greenFlag: parts[0]?.replace(/"/g, '').trim() || '',
-              redFlag: parts[1]?.replace(/"/g, '').trim() || '',
+              greenFlag: (parts[0]?.replace(/"/g, '').trim() || '').substring(0, 200),
+              redFlag: (parts[1]?.replace(/"/g, '').trim() || '').substring(0, 200),
               behaviorDescription: parts[2]?.replace(/"/g, '').trim() || '',
               example: parts[3]?.replace(/"/g, '').trim() || '',
               impact: parts[4]?.replace(/"/g, '').trim() || '',
               addressability: parts[5]?.replace(/"/g, '').trim() || '',
               actionSteps: parts[6]?.replace(/"/g, '').trim() || '',
-              theme: (parts[7]?.replace(/"/g, '').trim() || 'general').toLowerCase().replace(/\s+/g, '_')
+              theme: (parts[7]?.replace(/"/g, '').trim() || 'general').toLowerCase().replace(/[^a-z0-9]/g, '_').substring(0, 50)
             };
           }
         }
