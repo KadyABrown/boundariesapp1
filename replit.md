@@ -61,7 +61,9 @@ The system is built as a modern React SPA with an Express.js backend, using Post
 - **Comprehensive Flag Details**: Each flag includes description, real-life scenarios, emotional impact, and action steps
 - **Advanced Search & Filtering**: Search by text, filter by flag type (red/green), theme, severity, and addressability
 - **Personal Collection**: Save flags to personal library with custom notes and cross-reference with relationships
-- **CSV Import Capability**: Import custom flag libraries from spreadsheet data
+- **CSV/Excel Import System**: Import custom flag libraries with schema mapping (type, theme, behavior, example, impact, worthAddressing, actionSteps)
+- **Template Download**: Users can download CSV template with proper formatting and sample data
+- **Flexible Column Mapping**: Backend automatically maps various column name formats to database schema
 - **Integration Points**: Connect flag examples to relationship tracking and behavioral checklists
 
 ### Analytics & Insights

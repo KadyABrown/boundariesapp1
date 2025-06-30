@@ -157,21 +157,23 @@ export default function FlagExamples() {
   };
 
   const downloadTemplate = () => {
-    const template = `Flag Type,Title,Description,Example Scenario,Emotional Impact,Addressability,Action Steps,Theme,Severity
-red,Example Red Flag,Description of the concerning behavior,Specific example scenario,How this impacts emotions,sometimes_worth_addressing,What action to take,communication,moderate
-green,Example Green Flag,Description of the positive behavior,Specific example scenario,How this creates positive feelings,always_worth_addressing,How to appreciate this behavior,respect,minor`;
+    const template = `type,theme,behavior,example,impact,worthAddressing,actionSteps
+red,Trust,Lies about small things,"Says they were 'stuck in traffic' when they were actually hanging out with friends","Erodes trust and makes you question other statements",sometimes,Have a direct conversation about honesty and set clear expectations
+green,Communication,Active listening,"When you're talking they put down their phone and make eye contact","Creates feeling of being valued and heard",always,Acknowledge and appreciate this behavior openly
+red,Respect,Dismisses your feelings,"When you express concern they say 'you're overreacting' or 'it's not that serious'","Invalidates emotions and creates self-doubt",dealbreaker,Set firm boundary that your feelings are valid and deserve respect
+green,Emotional Safety,Validates emotions,"When you're upset they say 'I can see you're really hurt by this'","Creates safety to be vulnerable and authentic",always,Express gratitude for their emotional support`;
     
     const blob = new Blob([template], { type: 'text/csv' });
     const url = window.URL.createObjectURL(blob);
     const a = document.createElement('a');
     a.href = url;
-    a.download = 'flag-examples-template.csv';
+    a.download = 'relationship-flags-template.csv';
     a.click();
     window.URL.revokeObjectURL(url);
   };
 
   // Get unique themes for filter dropdown
-  const themes = Array.from(new Set(flagExamples.map((flag: any) => flag.theme))).sort();
+  const themes = Array.from(new Set(flagExamples.map((flag: any) => flag.theme))).sort() as string[];
 
   const isFlagSaved = (flagId: number) => {
     return Array.isArray(savedFlags) && savedFlags.some((saved: any) => saved.flagExampleId === flagId);
@@ -243,8 +245,8 @@ green,Example Green Flag,Description of the positive behavior,Specific example s
                 </DialogHeader>
                 <div className="space-y-4">
                   <p className="text-sm text-neutral-600">
-                    Upload a CSV file with flag examples. The file should include columns for:
-                    Flag Type, Title, Description, Example Scenario, Emotional Impact, Addressability, Action Steps, Theme, and Severity.
+                    Upload a CSV or Excel file with relationship flag data. Expected columns: 
+                    <strong>type</strong> (red/green), <strong>theme</strong>, <strong>behavior</strong>, <strong>example</strong>, <strong>impact</strong>, <strong>worthAddressing</strong> (yes/no/always/dealbreaker), <strong>actionSteps</strong>
                   </p>
                   <Button 
                     variant="outline" 
@@ -330,7 +332,7 @@ green,Example Green Flag,Description of the positive behavior,Specific example s
                 </SelectTrigger>
                 <SelectContent>
                   <SelectItem value="all">All Themes</SelectItem>
-                  {themes.map((theme: string) => (
+                  {themes.map((theme) => (
                     <SelectItem key={theme} value={theme}>
                       {theme.charAt(0).toUpperCase() + theme.slice(1)}
                     </SelectItem>

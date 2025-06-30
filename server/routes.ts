@@ -520,36 +520,90 @@ export async function registerRoutes(app: Express): Promise<Server> {
         return res.status(400).json({ message: "CSV data is required" });
       }
 
-      // Parse CSV data
+      // Enhanced CSV parser that handles quoted fields and various formats
+      const parseCSVLine = (line: string) => {
+        const result = [];
+        let current = '';
+        let inQuotes = false;
+        
+        for (let i = 0; i < line.length; i++) {
+          const char = line[i];
+          
+          if (char === '"') {
+            inQuotes = !inQuotes;
+          } else if (char === ',' && !inQuotes) {
+            result.push(current.trim());
+            current = '';
+          } else {
+            current += char;
+          }
+        }
+        result.push(current.trim());
+        return result;
+      };
+
       const lines = csvData.split('\n').filter((line: string) => line.trim());
-      const headers = lines[0].split(',').map((h: string) => h.trim().replace(/"/g, ''));
+      const headers = parseCSVLine(lines[0]).map((h: string) => h.toLowerCase().replace(/[^a-z0-9]/g, ''));
+      
+      console.log('CSV Headers detected:', headers);
       
       let imported = 0;
+      let skipped = 0;
+      
       for (let i = 1; i < lines.length; i++) {
-        const values = lines[i].split(',').map((v: string) => v.trim().replace(/"/g, ''));
+        const values = parseCSVLine(lines[i]);
         
-        if (values.length < headers.length) continue;
+        if (values.length < 3) {
+          skipped++;
+          continue;
+        }
         
+        // Map your specific schema to our database schema
+        const getValueByHeader = (possibleHeaders: string[]) => {
+          for (const header of possibleHeaders) {
+            const index = headers.indexOf(header.toLowerCase().replace(/[^a-z0-9]/g, ''));
+            if (index !== -1 && values[index]) {
+              return values[index];
+            }
+          }
+          return '';
+        };
+
+        // Map worthAddressing values to our addressability enum
+        const mapAddressability = (value: string) => {
+          const val = value.toLowerCase();
+          if (val.includes('always') || val === 'yes') return 'always_worth_addressing';
+          if (val.includes('dealbreaker') || val.includes('never')) return 'dealbreaker';
+          return 'sometimes_worth_addressing';
+        };
+
         const flagData = {
-          flagType: values[headers.indexOf('Flag Type')] || values[headers.indexOf('Type')] || '',
-          title: values[headers.indexOf('Title')] || values[headers.indexOf('Behavior')] || '',
-          description: values[headers.indexOf('Description')] || '',
-          exampleScenario: values[headers.indexOf('Example Scenario')] || values[headers.indexOf('Example')] || '',
-          emotionalImpact: values[headers.indexOf('Emotional Impact')] || '',
-          addressability: values[headers.indexOf('Addressability')] || 'sometimes_worth_addressing',
-          actionSteps: values[headers.indexOf('Action Steps')] || '',
-          theme: values[headers.indexOf('Theme')] || 'general',
-          severity: values[headers.indexOf('Severity')] || 'moderate'
+          flagType: getValueByHeader(['type', 'flagtype', 'flag_type']).toLowerCase() === 'red' ? 'red' : 'green',
+          title: getValueByHeader(['behavior', 'title', 'name', 'summary']),
+          description: getValueByHeader(['behavior', 'description', 'desc']) || getValueByHeader(['example', 'scenario']),
+          exampleScenario: getValueByHeader(['example', 'scenario', 'examplescenario', 'example_scenario']),
+          emotionalImpact: getValueByHeader(['impact', 'emotionalimpact', 'emotional_impact', 'consequence']),
+          addressability: mapAddressability(getValueByHeader(['worthaddressing', 'worth_addressing', 'addressability'])),
+          actionSteps: getValueByHeader(['actionsteps', 'action_steps', 'steps', 'response', 'recommendation']),
+          theme: getValueByHeader(['theme', 'category', 'topic']) || 'general',
+          severity: 'moderate' // Default since not in your schema
         };
 
         // Validate required fields
-        if (flagData.title && flagData.description) {
-          await storage.createFlagExample(flagData);
-          imported++;
+        if (flagData.title && (flagData.description || flagData.exampleScenario)) {
+          try {
+            await storage.createFlagExample(flagData);
+            imported++;
+          } catch (error) {
+            console.log(`Skipped duplicate or invalid entry: ${flagData.title}`);
+            skipped++;
+          }
+        } else {
+          skipped++;
         }
       }
 
-      res.json({ imported });
+      res.json({ imported, skipped, message: `Successfully imported ${imported} flags${skipped > 0 ? `, skipped ${skipped} invalid entries` : ''}` });
     } catch (error) {
       console.error("Error importing CSV:", error);
       res.status(500).json({ message: "Failed to import CSV data" });
