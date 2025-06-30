@@ -99,6 +99,11 @@ export interface IStorage {
   searchFlagExamples(query: string): Promise<FlagExample[]>;
   updateFlagExample(id: number, updates: Partial<InsertFlagExample>): Promise<FlagExample>;
   deleteFlagExample(id: number): Promise<void>;
+  getPairedFlagsByTheme(): Promise<Array<{
+    theme: string;
+    greenFlag?: FlagExample;
+    redFlag?: FlagExample;
+  }>>;
   
   // User saved flags operations
   saveFlag(userId: string, flagExampleId: number, notes?: string): Promise<UserSavedFlag>;
@@ -584,6 +589,40 @@ export class DatabaseStorage implements IStorage {
       .where(eq(userSavedFlags.id, id))
       .returning();
     return updated;
+  }
+
+  async getPairedFlagsByTheme(): Promise<Array<{
+    theme: string;
+    greenFlag?: FlagExample;
+    redFlag?: FlagExample;
+  }>> {
+    const allFlags = await db.select().from(flagExamples).orderBy(flagExamples.theme, flagExamples.flagType);
+    
+    // Group flags by theme
+    const flagsByTheme = new Map<string, { green?: FlagExample; red?: FlagExample }>();
+    
+    for (const flag of allFlags) {
+      const theme = flag.theme || 'general';
+      if (!flagsByTheme.has(theme)) {
+        flagsByTheme.set(theme, {});
+      }
+      
+      const themeFlags = flagsByTheme.get(theme)!;
+      if (flag.flagType === 'green') {
+        themeFlags.green = flag;
+      } else if (flag.flagType === 'red') {
+        themeFlags.red = flag;
+      }
+    }
+    
+    // Convert to array format
+    const pairedFlags = Array.from(flagsByTheme.entries()).map(([theme, flags]) => ({
+      theme,
+      greenFlag: flags.green,
+      redFlag: flags.red
+    }));
+    
+    return pairedFlags;
   }
 }
 

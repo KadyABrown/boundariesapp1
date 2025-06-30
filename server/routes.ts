@@ -399,6 +399,17 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
+  // Get paired flags by theme for mobile card layout
+  app.get('/api/paired-flags', async (req, res) => {
+    try {
+      const pairedFlags = await storage.getPairedFlagsByTheme();
+      res.json(pairedFlags);
+    } catch (error) {
+      console.error("Error fetching paired flags:", error);
+      res.status(500).json({ message: "Failed to fetch paired flags" });
+    }
+  });
+
   // Flag Example Bank routes
   app.get('/api/flag-examples', async (req: any, res) => {
     try {
@@ -610,7 +621,143 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
-  // Bulk import from user's CSV data
+  // Enhanced CSV parser for paired flag format
+  app.post('/api/import-paired-csv', async (req: any, res) => {
+    try {
+      const { csvData } = req.body;
+      if (!csvData) {
+        return res.status(400).json({ message: "CSV data is required" });
+      }
+
+      // Advanced CSV parser that handles multi-line cells and quoted content
+      const parseCSVContent = (csvContent: string) => {
+        const lines = csvContent.split('\n');
+        const flags = [];
+        
+        // Skip header rows (first 2 lines)
+        let i = 2;
+        while (i < lines.length) {
+          let currentLine = lines[i];
+          let fields = [];
+          let inQuotes = false;
+          let currentField = '';
+          
+          // Handle multi-line cells by continuing until we have complete row
+          while (i < lines.length) {
+            for (let j = 0; j < currentLine.length; j++) {
+              const char = currentLine[j];
+              
+              if (char === '"') {
+                inQuotes = !inQuotes;
+              } else if (char === ',' && !inQuotes) {
+                fields.push(currentField.trim());
+                currentField = '';
+              } else {
+                currentField += char;
+              }
+            }
+            
+            if (!inQuotes) {
+              fields.push(currentField.trim());
+              break;
+            } else {
+              currentField += '\n';
+              i++;
+              if (i < lines.length) {
+                currentLine = lines[i];
+              }
+            }
+          }
+          
+          // Process the parsed row if we have enough fields
+          if (fields.length >= 8) {
+            const [greenFlag, redFlag, behaviorDesc, example, impact, worthAddressing, actionSteps, theme] = fields;
+            
+            // Create paired entry
+            if (greenFlag && redFlag && theme) {
+              flags.push({
+                theme: theme.trim(),
+                greenFlag: {
+                  title: greenFlag.replace(/💚/g, '').trim(),
+                  description: behaviorDesc || greenFlag,
+                  exampleScenario: example,
+                  emotionalImpact: impact,
+                  actionSteps: actionSteps
+                },
+                redFlag: {
+                  title: redFlag.replace(/🚩/g, '').trim(),
+                  description: behaviorDesc || redFlag,
+                  exampleScenario: example,
+                  emotionalImpact: impact,
+                  actionSteps: actionSteps,
+                  addressability: worthAddressing?.toLowerCase().includes('never') ? 'dealbreaker' :
+                                 worthAddressing?.toLowerCase().includes('always') ? 'always_worth_addressing' :
+                                 'sometimes_worth_addressing'
+                }
+              });
+            }
+          }
+          
+          i++;
+        }
+        
+        return flags;
+      };
+
+      const pairedFlags = parseCSVContent(csvData);
+      let imported = 0;
+      
+      // Import each flag separately to database
+      for (const pair of pairedFlags) {
+        try {
+          // Import green flag
+          if (pair.greenFlag) {
+            await storage.createFlagExample({
+              flagType: 'green',
+              title: pair.greenFlag.title,
+              description: pair.greenFlag.description,
+              exampleScenario: pair.greenFlag.exampleScenario,
+              emotionalImpact: pair.greenFlag.emotionalImpact,
+              actionSteps: pair.greenFlag.actionSteps,
+              theme: pair.theme,
+              severity: 'minor',
+              addressability: 'always_worth_addressing'
+            });
+            imported++;
+          }
+          
+          // Import red flag
+          if (pair.redFlag) {
+            await storage.createFlagExample({
+              flagType: 'red',
+              title: pair.redFlag.title,
+              description: pair.redFlag.description,
+              exampleScenario: pair.redFlag.exampleScenario,
+              emotionalImpact: pair.redFlag.emotionalImpact,
+              actionSteps: pair.redFlag.actionSteps,
+              theme: pair.theme,
+              severity: 'moderate',
+              addressability: pair.redFlag.addressability
+            });
+            imported++;
+          }
+        } catch (error) {
+          console.log(`Skipped duplicate flag pair for theme: ${pair.theme}`);
+        }
+      }
+
+      res.json({ 
+        imported, 
+        pairs: pairedFlags.length,
+        message: `Successfully imported ${imported} flags from ${pairedFlags.length} paired behaviors` 
+      });
+    } catch (error) {
+      console.error("Error importing paired CSV:", error);
+      res.status(500).json({ message: "Failed to import paired CSV data" });
+    }
+  });
+
+  // Bulk import from user's CSV data (legacy - keeping for compatibility)
   app.post('/api/import-user-csv', async (req: any, res) => {
     try {
       // Sample data extracted from user's CSV structure

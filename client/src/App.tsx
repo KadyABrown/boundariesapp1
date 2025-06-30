@@ -11,6 +11,7 @@ import Relationships from "@/pages/relationships";
 import RelationshipDetail from "@/pages/relationship-detail";
 import Insights from "@/pages/insights";
 import FlagExamples from "@/pages/flag-examples";
+import PairedFlags from "@/pages/paired-flags";
 import NotFound from "@/pages/not-found";
 
 function Router() {
@@ -30,6 +31,7 @@ function Router() {
           </Route>
           <Route path="/insights" component={Insights} />
           <Route path="/flag-examples" component={FlagExamples} />
+          <Route path="/paired-flags" component={PairedFlags} />
         </>
       )}
       <Route component={NotFound} />
