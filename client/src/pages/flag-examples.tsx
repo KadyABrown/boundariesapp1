@@ -261,8 +261,8 @@ Watch for changes in their behavior. If they continue breaking promises without 
         </p>
       </div>
 
-      {/* Paired Flag Cards */}
-      <div className="space-y-8">
+      {/* Paired Flag Table */}
+      <div className="space-y-4">
         {filteredFlags.length === 0 ? (
           <div className="text-center py-12">
             <div className="text-neutral-400 mb-4">
@@ -285,12 +285,96 @@ Watch for changes in their behavior. If they continue breaking promises without 
             )}
           </div>
         ) : (
-          filteredFlags.map((flag, index) => (
-            <PairedFlagCard 
-              key={`${flag.theme}-${index}`}
-              data={flag}
-            />
-          ))
+          <>
+            {/* Desktop Table */}
+            <div className="hidden lg:block overflow-x-auto">
+              <table className="w-full border-collapse bg-white shadow-sm rounded-lg overflow-hidden">
+                <thead className="bg-neutral-50">
+                  <tr>
+                    <th className="px-4 py-3 text-left text-sm font-semibold text-neutral-700 border-b">Theme</th>
+                    <th className="px-4 py-3 text-left text-sm font-semibold text-green-700 border-b">Green Flag 💚</th>
+                    <th className="px-4 py-3 text-left text-sm font-semibold text-red-700 border-b">Red Flag 🚩</th>
+                    <th className="px-4 py-3 text-left text-sm font-semibold text-neutral-700 border-b">Description</th>
+                    <th className="px-4 py-3 text-left text-sm font-semibold text-neutral-700 border-b">Example</th>
+                    <th className="px-4 py-3 text-left text-sm font-semibold text-neutral-700 border-b">Impact</th>
+                    <th className="px-4 py-3 text-left text-sm font-semibold text-neutral-700 border-b">Action Steps</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {filteredFlags.map((flag, index) => (
+                    <tr key={`${flag.theme}-${index}`} className="border-b border-neutral-100 hover:bg-neutral-50">
+                      <td className="px-4 py-4 text-sm font-medium text-neutral-800 capitalize">
+                        {flag.theme.replace(/_/g, ' ')}
+                      </td>
+                      <td className="px-4 py-4 text-sm text-green-800 max-w-xs">
+                        {flag.greenFlag?.title || '-'}
+                      </td>
+                      <td className="px-4 py-4 text-sm text-red-800 max-w-xs">
+                        {flag.redFlag?.title || '-'}
+                      </td>
+                      <td className="px-4 py-4 text-sm text-neutral-700 max-w-md">
+                        {flag.greenFlag?.description || flag.redFlag?.description || '-'}
+                      </td>
+                      <td className="px-4 py-4 text-sm text-neutral-600 max-w-md italic">
+                        {flag.greenFlag?.exampleScenario || flag.redFlag?.exampleScenario || '-'}
+                      </td>
+                      <td className="px-4 py-4 text-sm text-neutral-700 max-w-md">
+                        {flag.greenFlag?.emotionalImpact || flag.redFlag?.emotionalImpact || '-'}
+                      </td>
+                      <td className="px-4 py-4 text-sm text-neutral-600 max-w-md whitespace-pre-line">
+                        {flag.greenFlag?.actionSteps || flag.redFlag?.actionSteps || '-'}
+                      </td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
+
+            {/* Mobile Card Layout */}
+            <div className="lg:hidden space-y-4">
+              {filteredFlags.map((flag, index) => (
+                <div key={`${flag.theme}-${index}`} className="bg-white shadow-sm rounded-lg p-4 border border-neutral-200">
+                  <div className="mb-3">
+                    <span className="inline-block px-2 py-1 bg-neutral-100 text-neutral-700 text-xs font-medium rounded capitalize">
+                      {flag.theme.replace(/_/g, ' ')}
+                    </span>
+                  </div>
+                  
+                  <div className="space-y-3">
+                    <div className="grid grid-cols-1 gap-3">
+                      <div className="bg-green-50 p-3 rounded border-l-4 border-green-500">
+                        <h4 className="text-sm font-semibold text-green-800 mb-1">Green Flag 💚</h4>
+                        <p className="text-sm text-green-700">{flag.greenFlag?.title || '-'}</p>
+                      </div>
+                      <div className="bg-red-50 p-3 rounded border-l-4 border-red-500">
+                        <h4 className="text-sm font-semibold text-red-800 mb-1">Red Flag 🚩</h4>
+                        <p className="text-sm text-red-700">{flag.redFlag?.title || '-'}</p>
+                      </div>
+                    </div>
+                    
+                    <div className="space-y-2 text-sm">
+                      <div>
+                        <h5 className="font-medium text-neutral-700">Description:</h5>
+                        <p className="text-neutral-600">{flag.greenFlag?.description || flag.redFlag?.description || '-'}</p>
+                      </div>
+                      <div>
+                        <h5 className="font-medium text-neutral-700">Example:</h5>
+                        <p className="text-neutral-600 italic">{flag.greenFlag?.exampleScenario || flag.redFlag?.exampleScenario || '-'}</p>
+                      </div>
+                      <div>
+                        <h5 className="font-medium text-neutral-700">Impact:</h5>
+                        <p className="text-neutral-600">{flag.greenFlag?.emotionalImpact || flag.redFlag?.emotionalImpact || '-'}</p>
+                      </div>
+                      <div>
+                        <h5 className="font-medium text-neutral-700">Action Steps:</h5>
+                        <p className="text-neutral-600 whitespace-pre-line">{flag.greenFlag?.actionSteps || flag.redFlag?.actionSteps || '-'}</p>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              ))}
+            </div>
+          </>
         )}
       </div>
 
