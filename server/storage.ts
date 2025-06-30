@@ -596,31 +596,51 @@ export class DatabaseStorage implements IStorage {
     greenFlag?: FlagExample;
     redFlag?: FlagExample;
   }>> {
-    const allFlags = await db.select().from(flagExamples).orderBy(flagExamples.theme, flagExamples.flagType);
+    const allFlags = await db.select().from(flagExamples).orderBy(flagExamples.theme, flagExamples.createdAt);
     
-    // Group flags by theme
-    const flagsByTheme = new Map<string, { green?: FlagExample; red?: FlagExample }>();
+    // Group flags by theme and try to pair them based on similar descriptions or creation time
+    const flagsByTheme = new Map<string, FlagExample[]>();
     
     for (const flag of allFlags) {
       const theme = flag.theme || 'general';
       if (!flagsByTheme.has(theme)) {
-        flagsByTheme.set(theme, {});
+        flagsByTheme.set(theme, []);
       }
-      
-      const themeFlags = flagsByTheme.get(theme)!;
-      if (flag.flagType === 'green') {
-        themeFlags.green = flag;
-      } else if (flag.flagType === 'red') {
-        themeFlags.red = flag;
-      }
+      flagsByTheme.get(theme)!.push(flag);
     }
     
-    // Convert to array format
-    const pairedFlags = Array.from(flagsByTheme.entries()).map(([theme, flags]) => ({
-      theme,
-      greenFlag: flags.green,
-      redFlag: flags.red
-    }));
+    const pairedFlags: Array<{ theme: string; greenFlag?: FlagExample; redFlag?: FlagExample }> = [];
+    
+    // For each theme, try to pair green and red flags
+    for (const [theme, flags] of flagsByTheme.entries()) {
+      const greenFlags = flags.filter(f => f.flagType === 'green');
+      const redFlags = flags.filter(f => f.flagType === 'red');
+      
+      // If we have both green and red flags for this theme, pair them
+      if (greenFlags.length > 0 && redFlags.length > 0) {
+        // For now, pair the first green with first red for each theme
+        // In future, we could improve this with better matching logic
+        pairedFlags.push({
+          theme,
+          greenFlag: greenFlags[0],
+          redFlag: redFlags[0]
+        });
+      } else if (greenFlags.length > 0) {
+        // Only green flag available
+        pairedFlags.push({
+          theme,
+          greenFlag: greenFlags[0],
+          redFlag: undefined
+        });
+      } else if (redFlags.length > 0) {
+        // Only red flag available
+        pairedFlags.push({
+          theme,
+          greenFlag: undefined,
+          redFlag: redFlags[0]
+        });
+      }
+    }
     
     return pairedFlags;
   }
