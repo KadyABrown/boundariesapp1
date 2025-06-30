@@ -1,7 +1,5 @@
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { Badge } from "@/components/ui/badge";
-import { Separator } from "@/components/ui/separator";
-import { CheckCircle, AlertTriangle, Heart, Users } from "lucide-react";
+import { CheckCircle, AlertTriangle, Heart, Users, MessageSquare } from "lucide-react";
 
 interface PairedFlagData {
   theme: string;
@@ -18,7 +16,6 @@ interface PairedFlagData {
     exampleScenario: string;
     emotionalImpact: string;
     actionSteps: string;
-    addressability: string;
   };
 }
 
@@ -29,8 +26,10 @@ interface PairedFlagCardProps {
 const getThemeIcon = (theme: string) => {
   switch (theme.toLowerCase()) {
     case 'communication':
-      return <Users className="w-5 h-5" />;
+      return <MessageSquare className="w-5 h-5" />;
     case 'trust':
+      return <Heart className="w-5 h-5" />;
+    case 'emotional_safety':
       return <Heart className="w-5 h-5" />;
     default:
       return <Users className="w-5 h-5" />;
@@ -40,117 +39,126 @@ const getThemeIcon = (theme: string) => {
 const getThemeColor = (theme: string) => {
   switch (theme.toLowerCase()) {
     case 'communication':
-      return 'bg-blue-50 border-blue-200 text-blue-800';
+      return 'bg-blue-100 border-blue-200 text-blue-800';
     case 'trust':
-      return 'bg-purple-50 border-purple-200 text-purple-800';
+      return 'bg-purple-100 border-purple-200 text-purple-800';
+    case 'emotional_safety':
+      return 'bg-pink-100 border-pink-200 text-pink-800';
     default:
-      return 'bg-gray-50 border-gray-200 text-gray-800';
+      return 'bg-gray-100 border-gray-200 text-gray-800';
   }
+};
+
+const formatTheme = (theme: string) => {
+  return theme.replace(/_/g, ' ').replace(/\b\w/g, l => l.toUpperCase());
 };
 
 export default function PairedFlagCard({ data }: PairedFlagCardProps) {
   return (
-    <Card className="w-full mb-6 shadow-sm hover:shadow-md transition-shadow">
+    <Card className="w-full shadow-sm hover:shadow-md transition-shadow border-0">
       <CardHeader className="pb-4">
         <div className="flex items-center gap-3">
-          <div className={`p-2 rounded-lg ${getThemeColor(data.theme)}`}>
+          <div className={`p-3 rounded-xl ${getThemeColor(data.theme)}`}>
             {getThemeIcon(data.theme)}
           </div>
           <div>
             <CardTitle className="text-xl font-semibold text-neutral-800">
-              {data.theme}
+              {formatTheme(data.theme)}
             </CardTitle>
             <p className="text-sm text-neutral-500 mt-1">
-              Healthy vs. Unhealthy Patterns
+              Compare healthy and unhealthy patterns
             </p>
           </div>
         </div>
       </CardHeader>
 
-      <CardContent className="space-y-6">
-        {/* Green Flag Section */}
-        {data.greenFlag && (
-          <div className="space-y-3">
-            <div className="flex items-center gap-2">
-              <CheckCircle className="w-5 h-5 text-green-600" />
-              <h3 className="font-semibold text-green-800">Healthy Pattern</h3>
-              <Badge variant="outline" className="bg-green-50 text-green-700 border-green-200">
-                Green Flag
-              </Badge>
-            </div>
-            
-            <div className="bg-green-50 rounded-lg p-4 space-y-3">
-              <div>
-                <h4 className="font-medium text-green-900 mb-1">Behavior</h4>
-                <p className="text-green-800 text-sm">{data.greenFlag.title}</p>
+      <CardContent className="space-y-0">
+        <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+          {/* Green Flag Section */}
+          {data.greenFlag && (
+            <div className="bg-green-50 rounded-xl p-5 border border-green-100">
+              <div className="flex items-center gap-3 mb-4">
+                <CheckCircle className="w-6 h-6 text-green-600 flex-shrink-0" />
+                <h3 className="font-semibold text-green-800 text-lg">Healthy Pattern</h3>
               </div>
               
-              {data.greenFlag.exampleScenario && (
+              <div className="space-y-4">
                 <div>
-                  <h4 className="font-medium text-green-900 mb-1">Example</h4>
-                  <p className="text-green-700 text-sm">{data.greenFlag.exampleScenario}</p>
+                  <h4 className="font-medium text-green-900 mb-2">Behavior</h4>
+                  <p className="text-green-800 text-sm leading-relaxed">{data.greenFlag.title}</p>
                 </div>
-              )}
-              
-              {data.greenFlag.emotionalImpact && (
-                <div>
-                  <h4 className="font-medium text-green-900 mb-1">Why It Matters</h4>
-                  <p className="text-green-700 text-sm">{data.greenFlag.emotionalImpact}</p>
-                </div>
-              )}
-              
-              {data.greenFlag.actionSteps && (
-                <div>
-                  <h4 className="font-medium text-green-900 mb-1">How to Encourage</h4>
-                  <p className="text-green-700 text-sm">{data.greenFlag.actionSteps}</p>
-                </div>
-              )}
+                
+                {data.greenFlag.exampleScenario && (
+                  <div>
+                    <h4 className="font-medium text-green-900 mb-2">Example</h4>
+                    <p className="text-green-700 text-sm leading-relaxed italic">"{data.greenFlag.exampleScenario}"</p>
+                  </div>
+                )}
+                
+                {data.greenFlag.emotionalImpact && (
+                  <div>
+                    <h4 className="font-medium text-green-900 mb-2">Why It Matters</h4>
+                    <p className="text-green-700 text-sm leading-relaxed">{data.greenFlag.emotionalImpact}</p>
+                  </div>
+                )}
+                
+                {data.greenFlag.actionSteps && (
+                  <div>
+                    <h4 className="font-medium text-green-900 mb-2">How to Encourage</h4>
+                    <p className="text-green-700 text-sm leading-relaxed">{data.greenFlag.actionSteps}</p>
+                  </div>
+                )}
+              </div>
             </div>
-          </div>
-        )}
+          )}
 
-        <Separator />
-
-        {/* Red Flag Section */}
-        {data.redFlag && (
-          <div className="space-y-3">
-            <div className="flex items-center gap-2">
-              <AlertTriangle className="w-5 h-5 text-red-600" />
-              <h3 className="font-semibold text-red-800">Unhealthy Pattern</h3>
-              <Badge variant="outline" className="bg-red-50 text-red-700 border-red-200">
-                Red Flag
-              </Badge>
-            </div>
-            
-            <div className="bg-red-50 rounded-lg p-4 space-y-3">
-              <div>
-                <h4 className="font-medium text-red-900 mb-1">Behavior</h4>
-                <p className="text-red-800 text-sm">{data.redFlag.title}</p>
+          {/* Red Flag Section */}
+          {data.redFlag && (
+            <div className="bg-red-50 rounded-xl p-5 border border-red-100">
+              <div className="flex items-center gap-3 mb-4">
+                <AlertTriangle className="w-6 h-6 text-red-600 flex-shrink-0" />
+                <h3 className="font-semibold text-red-800 text-lg">Unhealthy Pattern</h3>
               </div>
               
-              {data.redFlag.exampleScenario && (
+              <div className="space-y-4">
                 <div>
-                  <h4 className="font-medium text-red-900 mb-1">Example</h4>
-                  <p className="text-red-700 text-sm">{data.redFlag.exampleScenario}</p>
+                  <h4 className="font-medium text-red-900 mb-2">Behavior</h4>
+                  <p className="text-red-800 text-sm leading-relaxed">{data.redFlag.title}</p>
                 </div>
-              )}
-              
-              {data.redFlag.emotionalImpact && (
-                <div>
-                  <h4 className="font-medium text-red-900 mb-1">Why It Matters</h4>
-                  <p className="text-red-700 text-sm">{data.redFlag.emotionalImpact}</p>
-                </div>
-              )}
-              
-              {data.redFlag.actionSteps && (
-                <div>
-                  <h4 className="font-medium text-red-900 mb-1">How to Address</h4>
-                  <p className="text-red-700 text-sm">{data.redFlag.actionSteps}</p>
-                </div>
-              )}
+                
+                {data.redFlag.exampleScenario && (
+                  <div>
+                    <h4 className="font-medium text-red-900 mb-2">Example</h4>
+                    <p className="text-red-700 text-sm leading-relaxed italic">"{data.redFlag.exampleScenario}"</p>
+                  </div>
+                )}
+                
+                {data.redFlag.emotionalImpact && (
+                  <div>
+                    <h4 className="font-medium text-red-900 mb-2">Why It Matters</h4>
+                    <p className="text-red-700 text-sm leading-relaxed">{data.redFlag.emotionalImpact}</p>
+                  </div>
+                )}
+                
+                {data.redFlag.actionSteps && (
+                  <div>
+                    <h4 className="font-medium text-red-900 mb-2">How to Address</h4>
+                    <p className="text-red-700 text-sm leading-relaxed">{data.redFlag.actionSteps}</p>
+                  </div>
+                )}
+              </div>
             </div>
+          )}
+        </div>
+
+        {/* Connection indicator for mobile */}
+        <div className="lg:hidden text-center my-4">
+          <div className="inline-flex items-center text-neutral-400">
+            <div className="h-px bg-neutral-200 w-8"></div>
+            <span className="px-3 text-sm">vs</span>
+            <div className="h-px bg-neutral-200 w-8"></div>
           </div>
-        )}
+        </div>
       </CardContent>
     </Card>
   );

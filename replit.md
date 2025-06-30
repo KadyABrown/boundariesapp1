@@ -56,15 +56,15 @@ The system is built as a modern React SPA with an Express.js backend, using Post
 - **Relationship Analytics**: Health scores, flag counts, safety ratings, and trend analysis
 - **Privacy Controls**: Per-relationship privacy settings and secure data management
 
-### Red & Green Flag Example Bank
-- **Educational Reference Library**: Pre-written collection of behavioral examples with detailed explanations
-- **Comprehensive Flag Details**: Each flag includes description, real-life scenarios, emotional impact, and action steps
-- **Advanced Search & Filtering**: Search by text, filter by flag type (red/green), theme, severity, and addressability
-- **Personal Collection**: Save flags to personal library with custom notes and cross-reference with relationships
-- **CSV/Excel Import System**: Import custom flag libraries with schema mapping (type, theme, behavior, example, impact, worthAddressing, actionSteps)
-- **Template Download**: Users can download CSV template with proper formatting and sample data
-- **Flexible Column Mapping**: Backend automatically maps various column name formats to database schema
-- **Integration Points**: Connect flag examples to relationship tracking and behavioral checklists
+### Relationship Pattern Guide (Paired Flag System)
+- **Mobile-Friendly Paired Cards**: Display healthy and unhealthy relationship behaviors side-by-side by theme
+- **Theme-Based Organization**: Group behaviors by Communication, Trust, Emotional Safety, and other relationship themes
+- **Educational Comparison**: Each card shows the green flag (healthy) and red flag (unhealthy) version of the same behavior
+- **Comprehensive Details**: Behavior descriptions, real examples, emotional impact explanations, and actionable guidance
+- **CSV Import for Paired Data**: Advanced parser handles multi-line cells and complex CSV formats with paired behaviors per row
+- **Responsive Design**: Cards stack vertically on mobile, display side-by-side on desktop
+- **Search and Filter**: Find patterns by theme or search across behavior descriptions
+- **No Judgment Labels**: Removed severity and addressability ratings - users decide what matters for their situation
 
 ### Analytics & Insights
 - **Dashboard Statistics**: Real-time boundary respect rates and trends

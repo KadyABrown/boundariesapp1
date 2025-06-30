@@ -720,8 +720,8 @@ export async function registerRoutes(app: Express): Promise<Server> {
               emotionalImpact: pair.greenFlag.emotionalImpact,
               actionSteps: pair.greenFlag.actionSteps,
               theme: pair.theme,
-              severity: 'minor',
-              addressability: 'always_worth_addressing'
+              severity: 'minor', // Keep for database compatibility
+              addressability: 'always_worth_addressing' // Keep for database compatibility
             });
             imported++;
           }
@@ -736,8 +736,8 @@ export async function registerRoutes(app: Express): Promise<Server> {
               emotionalImpact: pair.redFlag.emotionalImpact,
               actionSteps: pair.redFlag.actionSteps,
               theme: pair.theme,
-              severity: 'moderate',
-              addressability: pair.redFlag.addressability
+              severity: 'moderate', // Keep for database compatibility
+              addressability: 'sometimes_worth_addressing' // Keep for database compatibility
             });
             imported++;
           }
