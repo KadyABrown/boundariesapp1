@@ -4,6 +4,7 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Progress } from "@/components/ui/progress";
+import { AudioEffects } from "@/lib/audioEffects";
 import { 
   Trophy, 
   Flame, 
@@ -229,7 +230,15 @@ const AchievementCard = ({ achievement, onClaim }: {
                 <Button 
                   size="sm" 
                   variant="outline"
-                  onClick={() => onClaim(achievement)}
+                  onClick={() => {
+                    // Play achievement claim sound
+                    if (achievement.category === 'streak') {
+                      AudioEffects.playStreakMilestone();
+                    } else {
+                      AudioEffects.playAchievementUnlock();
+                    }
+                    onClaim(achievement);
+                  }}
                   className="text-xs h-7"
                 >
                   Claim
@@ -400,12 +409,39 @@ export default function BoundaryBoost({ gameStats, onClaimAchievement }: Boundar
       unlocked: false
     }))
   });
+  const [previousStats, setPreviousStats] = useState<GameStats | null>(null);
 
   useEffect(() => {
     if (gameStats) {
+      // Check for newly unlocked achievements and play sounds
+      if (previousStats) {
+        const newlyUnlocked = gameStats.achievements.filter(newAch => 
+          newAch.unlocked && !previousStats.achievements.find(oldAch => 
+            oldAch.id === newAch.id && oldAch.unlocked
+          )
+        );
+
+        // Check for level up
+        if (gameStats.level > previousStats.level) {
+          AudioEffects.playLevelUp();
+        }
+
+        // Play sounds for newly unlocked achievements
+        newlyUnlocked.forEach(achievement => {
+          setTimeout(() => {
+            if (achievement.category === 'streak') {
+              AudioEffects.playStreakMilestone();
+            } else {
+              AudioEffects.playAchievementUnlock();
+            }
+          }, 300); // Small delay to not overlap with other sounds
+        });
+      }
+
+      setPreviousStats(stats);
       setStats(gameStats);
     }
-  }, [gameStats]);
+  }, [gameStats, previousStats, stats]);
 
   const unlockedAchievements = stats.achievements.filter(a => a.unlocked);
   const lockedAchievements = stats.achievements.filter(a => !a.unlocked);

@@ -15,8 +15,9 @@ import { Switch } from "@/components/ui/switch";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Badge } from "@/components/ui/badge";
-import { User, Settings, Shield, Bell, Users, Heart } from "lucide-react";
+import { User, Settings, Shield, Bell, Users, Heart, Volume2, Play } from "lucide-react";
 import BoundaryBoost from "@/components/boundary-boost";
+import { AudioEffects } from "@/lib/audioEffects";
 
 interface UserProfile {
   id: string;
@@ -581,6 +582,59 @@ export default function Profile() {
 
           {/* Achievements Tab */}
           <TabsContent value="achievements">
+            {/* Audio Test Section */}
+            <Card className="mb-6">
+              <CardHeader>
+                <CardTitle className="flex items-center gap-2">
+                  <Volume2 className="w-5 h-5" />
+                  Achievement Sound Effects
+                </CardTitle>
+              </CardHeader>
+              <CardContent>
+                <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    onClick={() => AudioEffects.playBubblePop()}
+                    className="flex items-center gap-2"
+                  >
+                    <Play className="w-3 h-3" />
+                    Bubble Pop
+                  </Button>
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    onClick={() => AudioEffects.playAchievementUnlock()}
+                    className="flex items-center gap-2"
+                  >
+                    <Play className="w-3 h-3" />
+                    Achievement
+                  </Button>
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    onClick={() => AudioEffects.playStreakMilestone()}
+                    className="flex items-center gap-2"
+                  >
+                    <Play className="w-3 h-3" />
+                    Streak
+                  </Button>
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    onClick={() => AudioEffects.playLevelUp()}
+                    className="flex items-center gap-2"
+                  >
+                    <Play className="w-3 h-3" />
+                    Level Up
+                  </Button>
+                </div>
+                <p className="text-xs text-muted-foreground mt-3">
+                  Test the subtle notification sounds used for achievements, streaks, and level ups.
+                </p>
+              </CardContent>
+            </Card>
+
             <BoundaryBoost gameStats={generateTestGameStats()} />
           </TabsContent>
         </Tabs>

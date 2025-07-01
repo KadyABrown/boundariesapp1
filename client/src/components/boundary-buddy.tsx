@@ -2,6 +2,7 @@ import { useState } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
+import { AudioEffects } from "@/lib/audioEffects";
 import { X, HelpCircle, Lightbulb, TrendingUp, Cloud, MessageCircle } from "lucide-react";
 
 interface BoundaryBuddyProps {
@@ -96,41 +97,7 @@ export default function BoundaryBuddy({ context, trigger, position = 'inline' }:
   const IconComponent = explanation.icon;
 
   const playNotificationSound = () => {
-    try {
-      // Create a gentle bubble-pop sound using Web Audio API
-      const audioContext = new (window.AudioContext || (window as any).webkitAudioContext)();
-      
-      // Create oscillator for the pop sound
-      const oscillator = audioContext.createOscillator();
-      const gainNode = audioContext.createGain();
-      const filterNode = audioContext.createBiquadFilter();
-      
-      // Configure filter for bubble-like sound
-      filterNode.type = 'lowpass';
-      filterNode.frequency.setValueAtTime(800, audioContext.currentTime);
-      filterNode.Q.setValueAtTime(1, audioContext.currentTime);
-      
-      // Start with higher frequency and quickly drop (bubble pop effect)
-      oscillator.frequency.setValueAtTime(400, audioContext.currentTime);
-      oscillator.frequency.exponentialRampToValueAtTime(200, audioContext.currentTime + 0.1);
-      
-      // Quick attack and fast decay for pop effect
-      gainNode.gain.setValueAtTime(0, audioContext.currentTime);
-      gainNode.gain.linearRampToValueAtTime(0.15, audioContext.currentTime + 0.01); // Quick attack
-      gainNode.gain.exponentialRampToValueAtTime(0.001, audioContext.currentTime + 0.15); // Fast decay
-      
-      // Connect nodes: oscillator -> filter -> gain -> destination
-      oscillator.connect(filterNode);
-      filterNode.connect(gainNode);
-      gainNode.connect(audioContext.destination);
-      
-      // Short duration for click-like effect
-      oscillator.start(audioContext.currentTime);
-      oscillator.stop(audioContext.currentTime + 0.15);
-    } catch (error) {
-      // Silently fail if audio context isn't available
-      console.log('Audio not available');
-    }
+    AudioEffects.playBubblePop();
   };
 
   const handleOpenDialog = () => {
