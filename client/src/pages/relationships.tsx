@@ -713,21 +713,9 @@ export default function Relationships() {
                           setSelectedRelationship(profile);
                           setActiveView('profile-detail');
                         }}
-                        title="View Details & Interactions"
+                        title="View Profile & Interactions"
                       >
                         <User className="w-4 h-4" />
-                      </Button>
-                      <Button
-                        variant="ghost"
-                        size="sm"
-                        onClick={() => {
-                          setSelectedRelationship(profile);
-                          setActiveView('detailed');
-                          setTrackingMode('interaction');
-                        }}
-                        title="Log New Interaction"
-                      >
-                        <Brain className="w-4 h-4" />
                       </Button>
                       <Button
                         variant="ghost"

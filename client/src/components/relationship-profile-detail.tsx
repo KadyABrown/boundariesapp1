@@ -7,6 +7,9 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { X, Calendar, Heart, Flag, TrendingUp, MessageSquare, Brain } from "lucide-react";
 import { format } from "date-fns";
 import ComprehensiveInteractionsView from "./comprehensive-interactions-view";
+import ComprehensiveInteractionTracker from "./comprehensive-interaction-tracker";
+import { apiRequest, queryClient } from "@/lib/queryClient";
+import { useToast } from "@/hooks/use-toast";
 
 interface RelationshipProfileDetailProps {
   relationship: any;
@@ -14,6 +17,8 @@ interface RelationshipProfileDetailProps {
 }
 
 export default function RelationshipProfileDetail({ relationship, onClose }: RelationshipProfileDetailProps) {
+  const { toast } = useToast();
+  
   const { data: flags, isLoading: flagsLoading } = useQuery({
     queryKey: ['/api/relationships', relationship.id, 'flags'],
     refetchOnWindowFocus: false,
@@ -83,9 +88,10 @@ export default function RelationshipProfileDetail({ relationship, onClose }: Rel
           <div className="flex-1 overflow-hidden">
             <Tabs defaultValue="overview" className="h-full flex flex-col">
               <div className="px-6 pt-4">
-                <TabsList className="grid w-full grid-cols-4">
+                <TabsList className="grid w-full grid-cols-5">
                   <TabsTrigger value="overview">Overview</TabsTrigger>
                   <TabsTrigger value="interactions">Interactions</TabsTrigger>
+                  <TabsTrigger value="log-new">Log New</TabsTrigger>
                   <TabsTrigger value="flags">Flags & Check-ins</TabsTrigger>
                   <TabsTrigger value="analysis">Analysis</TabsTrigger>
                 </TabsList>
@@ -216,6 +222,38 @@ export default function RelationshipProfileDetail({ relationship, onClose }: Rel
                     relationshipId={relationship.id}
                     relationshipName={relationship.name}
                   />
+                </TabsContent>
+
+                <TabsContent value="log-new" className="p-0">
+                  <div className="p-6">
+                    <ComprehensiveInteractionTracker
+                      relationshipId={relationship.id}
+                      relationshipName={relationship.name}
+                      isOpen={true}
+                      onClose={() => {}}
+                      onSubmit={async (data: any) => {
+                        try {
+                          // Send the data directly to the API - let the backend handle the mapping
+                          await apiRequest("POST", "/api/interactions", data);
+                          
+                          // Refresh interaction data
+                          queryClient.invalidateQueries({ queryKey: ['/api/interactions', relationship.id] });
+                          
+                          toast({
+                            title: "Interaction Logged",
+                            description: "Your interaction has been saved successfully. View it in the Interactions tab.",
+                          });
+                        } catch (error) {
+                          console.error("Error saving interaction:", error);
+                          toast({
+                            title: "Error",
+                            description: "Failed to save interaction. Please try again.",
+                            variant: "destructive",
+                          });
+                        }
+                      }}
+                    />
+                  </div>
                 </TabsContent>
 
                 <TabsContent value="flags" className="p-6 space-y-6">
