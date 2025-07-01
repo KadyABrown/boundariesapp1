@@ -198,12 +198,12 @@ export default function BoundaryBuddy({ context, trigger, position = 'inline' }:
               animate={{ opacity: 1, scale: 1, y: 0 }}
               exit={{ opacity: 0, scale: 0.95, y: 20 }}
               transition={{ duration: 0.2 }}
-              className="fixed inset-4 sm:top-1/2 sm:left-1/2 sm:transform sm:-translate-x-1/2 sm:-translate-y-1/2 sm:w-full sm:max-w-lg sm:h-auto h-full w-full z-50 flex items-center justify-center"
+              className="fixed inset-4 z-50 flex items-center justify-center"
             >
-              <Card className="border-2 border-blue-200 shadow-xl w-full max-w-lg max-h-[80vh] flex flex-col">
+              <Card className="border-2 border-blue-200 shadow-xl w-full max-w-md max-h-[70vh] flex flex-col">
                 <CardContent className="p-0 flex flex-col h-full">
                   {/* Header */}
-                  <div className="bg-gradient-to-r from-blue-500 to-purple-600 text-white p-4 rounded-t-lg">
+                  <div className="bg-gradient-to-r from-blue-500 to-purple-600 text-white p-3 rounded-t-lg">
                     <div className="flex items-center justify-between">
                       <div className="flex items-center gap-3">
                         {/* Animated Buddy in Header */}
@@ -245,7 +245,7 @@ export default function BoundaryBuddy({ context, trigger, position = 'inline' }:
                   </div>
 
                   {/* Content */}
-                  <div className="p-6 flex-1 overflow-y-auto">
+                  <div className="p-4 flex-1 overflow-y-auto">
                     <div className="space-y-4">
                       {explanation.sections.map((section, index) => (
                         <motion.div
@@ -272,7 +272,7 @@ export default function BoundaryBuddy({ context, trigger, position = 'inline' }:
                   </div>
 
                   {/* Footer */}
-                  <div className="border-t border-gray-200 p-4 bg-gray-50 rounded-b-lg flex-shrink-0">
+                  <div className="border-t border-gray-200 p-3 bg-gray-50 rounded-b-lg flex-shrink-0">
                     <div className="flex items-center justify-between">
                       <p className="text-xs text-gray-600">
                         💡 Tip: Look for help icons throughout the app for context-specific guidance
