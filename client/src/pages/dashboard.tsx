@@ -147,7 +147,7 @@ export default function Dashboard() {
             <Card>
               <CardHeader>
                 <div className="flex items-center justify-between">
-                  <CardTitle>Today's Overview</CardTitle>
+                  <CardTitle>This Week's Overview</CardTitle>
                   <span className="text-sm text-neutral-500">{currentDate}</span>
                 </div>
               </CardHeader>
@@ -158,7 +158,10 @@ export default function Dashboard() {
                       <div>
                         <p className="text-green-600 text-sm font-medium">Boundaries Respected</p>
                         <p className="text-2xl font-bold text-green-700">
-                          {statsLoading ? "..." : stats?.todayRespected || 0}
+                          {statsLoading ? "..." : stats?.weeklyRespected || 0}
+                        </p>
+                        <p className="text-xs text-green-600">
+                          of {stats?.weeklyTotal || 0} total entries
                         </p>
                       </div>
                       <CheckCircle className="text-green-500 w-5 h-5" />
@@ -170,7 +173,10 @@ export default function Dashboard() {
                       <div>
                         <p className="text-amber-600 text-sm font-medium">Challenges</p>
                         <p className="text-2xl font-bold text-amber-700">
-                          {statsLoading ? "..." : stats?.todayChallenged || 0}
+                          {statsLoading ? "..." : (stats?.weeklyTotal || 0) - (stats?.weeklyRespected || 0)}
+                        </p>
+                        <p className="text-xs text-amber-600">
+                          boundary challenges
                         </p>
                       </div>
                       <AlertTriangle className="text-amber-500 w-5 h-5" />
@@ -180,9 +186,12 @@ export default function Dashboard() {
                   <div className="bg-blue-50 rounded-lg p-4 border border-blue-200">
                     <div className="flex items-center justify-between">
                       <div>
-                        <p className="text-blue-600 text-sm font-medium">Mood Score</p>
+                        <p className="text-blue-600 text-sm font-medium">Average Mood</p>
                         <p className="text-2xl font-bold text-blue-700">
                           {statsLoading ? "..." : (stats?.averageMood?.toFixed(1) || "7.5")}
+                        </p>
+                        <p className="text-xs text-blue-600">
+                          out of 10 scale
                         </p>
                       </div>
                       <Smile className="text-blue-500 w-5 h-5" />
