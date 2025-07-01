@@ -53,16 +53,25 @@ export async function registerRoutes(app: Express): Promise<Server> {
   app.patch('/api/profile', isAuthenticated, async (req: any, res) => {
     try {
       const userId = req.user.claims.sub;
+      console.log("Updating profile for user:", userId);
+      console.log("Request body:", req.body);
+      
       const updates = {
         ...req.body,
         id: userId,
         updatedAt: new Date(),
       };
+      
+      console.log("Final updates object:", updates);
       const user = await storage.upsertUser(updates);
       res.json(user);
     } catch (error) {
       console.error("Error updating profile:", error);
-      res.status(500).json({ message: "Failed to update profile" });
+      if (error instanceof Error) {
+        console.error("Error message:", error.message);
+        console.error("Error stack:", error.stack);
+      }
+      res.status(500).json({ message: "Failed to update profile", error: error instanceof Error ? error.message : "Unknown error" });
     }
   });
 

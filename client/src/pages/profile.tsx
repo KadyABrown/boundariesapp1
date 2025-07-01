@@ -102,6 +102,7 @@ export default function Profile() {
       queryClient.invalidateQueries({ queryKey: ["/api/profile"] });
     },
     onError: (error) => {
+      console.error("Profile update error:", error);
       if (isUnauthorizedError(error)) {
         toast({
           title: "Unauthorized",
@@ -115,7 +116,7 @@ export default function Profile() {
       }
       toast({
         title: "Error",
-        description: "Failed to update profile. Please try again.",
+        description: error instanceof Error ? error.message : "Failed to update profile. Please try again.",
         variant: "destructive",
       });
     },
