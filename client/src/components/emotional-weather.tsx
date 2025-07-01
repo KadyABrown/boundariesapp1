@@ -68,22 +68,42 @@ const weatherDescriptions = {
 };
 
 interface EmotionalWeatherProps {
-  relationships?: RelationshipWeather[];
+  relationships?: any[];
+  userProfile?: any;
   showForecast?: boolean;
 }
 
-export default function EmotionalWeather({ relationships, showForecast = true }: EmotionalWeatherProps) {
+export default function EmotionalWeather({ relationships, userProfile, showForecast = true }: EmotionalWeatherProps) {
   const [selectedRelationship, setSelectedRelationship] = useState<number>(0);
   const [currentWeather, setCurrentWeather] = useState<RelationshipWeather[]>([]);
 
   useEffect(() => {
     if (relationships && relationships.length > 0) {
-      setCurrentWeather(relationships);
+      // Convert actual relationship data to weather format
+      const weatherData = relationships.map((rel: any) => {
+        // Use emotional safety and flag data to determine weather
+        const greenFlags = rel.greenFlags || 0;
+        const redFlags = rel.redFlags || 0;
+        const totalFlags = greenFlags + redFlags;
+        
+        // Calculate emotional temperature based on positive flags
+        const temperature = totalFlags > 0 ? Math.round((greenFlags / totalFlags) * 100) : 50;
+        
+        // Calculate tension based on red flags
+        const tension = totalFlags > 0 ? Math.round((redFlags / totalFlags) * 100) : 30;
+        
+        return {
+          relationshipName: rel.name || 'Unknown',
+          weather: generateWeatherFromMetrics(temperature, tension),
+          lastUpdated: new Date()
+        };
+      });
+      setCurrentWeather(weatherData);
     } else {
-      // Generate realistic test data based on actual relationship patterns
-      setCurrentWeather(generateRealisticWeatherData());
+      // Generate realistic test data with user's name if available
+      setCurrentWeather(generateRealisticWeatherData(userProfile));
     }
-  }, [relationships]);
+  }, [relationships, userProfile]);
 
   const getTemperatureColor = (temp: number) => {
     if (temp >= 80) return 'text-red-500';
@@ -303,11 +323,14 @@ export default function EmotionalWeather({ relationships, showForecast = true }:
   );
 }
 
-function generateRealisticWeatherData(): RelationshipWeather[] {
+function generateRealisticWeatherData(userProfile?: any): RelationshipWeather[] {
+  // Create personalized example relationships using user's name
+  const userName = userProfile?.firstName || userProfile?.username || "User";
+  
   const relationships = [
-    { name: "Sarah", baseTemp: 75, baseTension: 25 },
-    { name: "Alex", baseTemp: 45, baseTension: 65 },
-    { name: "Jordan", baseTemp: 85, baseTension: 15 }
+    { name: `${userName}'s Work Environment`, baseTemp: 65, baseTension: 40 },
+    { name: `${userName}'s Social Circle`, baseTemp: 80, baseTension: 20 },
+    { name: `${userName}'s Family Dynamics`, baseTemp: 70, baseTension: 30 }
   ];
 
   return relationships.map(rel => {

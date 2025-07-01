@@ -44,6 +44,11 @@ export default function Insights() {
     retry: false,
   });
 
+  const { data: userProfile } = useQuery({
+    queryKey: ["/api/profile"],
+    retry: false,
+  });
+
   // Convert boundary entries and relationship data to timeline events
   const timelineEvents = useMemo((): TimelineEvent[] => {
     const events: TimelineEvent[] = [];
@@ -407,7 +412,7 @@ export default function Insights() {
           </TabsContent>
 
           <TabsContent value="weather" className="space-y-6">
-            <EmotionalWeather />
+            <EmotionalWeather userProfile={userProfile} relationships={relationships} />
           </TabsContent>
 
           <TabsContent value="analytics" className="space-y-6">
