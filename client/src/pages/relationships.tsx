@@ -19,6 +19,7 @@ import { Badge } from "@/components/ui/badge";
 import { Plus, Edit2, Trash2, Heart, User, Calendar, MapPin, Flag, Brain, Target, Clock, TrendingUp, BarChart3 } from "lucide-react";
 import { Link } from "wouter";
 import ComprehensiveInteractionTracker from "@/components/comprehensive-interaction-tracker";
+import ComprehensiveInteractionsView from "@/components/comprehensive-interactions-view";
 import TriggerAnalysisTracker from "@/components/trigger-analysis-tracker";
 import CommunicationSilenceTracker from "@/components/communication-silence-tracker";
 import RelationshipHealthAnalytics from "@/components/relationship-health-analytics";
@@ -32,7 +33,7 @@ export default function Relationships() {
   const [editingProfile, setEditingProfile] = useState<any>(null);
   const [activeView, setActiveView] = useState<'overview' | 'detailed'>('overview');
   const [selectedRelationship, setSelectedRelationship] = useState<any>(null);
-  const [trackingMode, setTrackingMode] = useState<'interaction' | 'triggers' | 'patterns' | 'analytics' | 'comparison'>('interaction');
+  const [trackingMode, setTrackingMode] = useState<'interaction' | 'view-interactions' | 'triggers' | 'patterns' | 'analytics' | 'comparison'>('interaction');
   const [showInteractionTracker, setShowInteractionTracker] = useState(false);
   const [relationshipTriggers, setRelationshipTriggers] = useState<any[]>([]);
 
@@ -827,6 +828,7 @@ export default function Relationships() {
                   <div className="flex space-x-1 mt-6 bg-white rounded-lg p-1 border">
                     {[
                       { id: 'interaction', label: 'Log Interaction', icon: Brain },
+                      { id: 'view-interactions', label: 'View Interactions', icon: Calendar },
                       { id: 'triggers', label: 'Trigger Analysis', icon: Target },
                       { id: 'patterns', label: 'Time Patterns', icon: Clock },
                       { id: 'analytics', label: 'Health Analytics', icon: TrendingUp },
@@ -924,6 +926,13 @@ export default function Relationships() {
                           });
                         }
                       }}
+                    />
+                  )}
+
+                  {trackingMode === 'view-interactions' && (
+                    <ComprehensiveInteractionsView
+                      relationshipId={selectedRelationship.id}
+                      relationshipName={selectedRelationship.name}
                     />
                   )}
 

@@ -1354,6 +1354,19 @@ export async function registerRoutes(app: Express): Promise<Server> {
   });
 
   // Comprehensive interactions routes
+  app.get('/api/interactions/:relationshipId', async (req: any, res) => {
+    try {
+      const userId = req.user?.claims?.sub || "44415082";
+      const relationshipId = parseInt(req.params.relationshipId);
+      
+      const interactions = await storage.getComprehensiveInteractionsByRelationship(relationshipId, userId);
+      res.json(interactions);
+    } catch (error) {
+      console.error("Error fetching interactions:", error);
+      res.status(500).json({ message: "Failed to fetch interactions" });
+    }
+  });
+
   app.post('/api/interactions', async (req: any, res) => {
     try {
       // For testing - use a default user ID if no user is authenticated
