@@ -110,9 +110,6 @@ export default function Dashboard() {
   });
 
   const activeBoundaries = boundaries?.filter((b: any) => b.isActive) || [];
-  
-  console.log("Dashboard stats data:", stats);
-  console.log("Dashboard boundaries data:", boundaries);
 
   return (
     <div className="min-h-screen bg-neutral-50">
