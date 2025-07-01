@@ -320,15 +320,17 @@ function generateRealisticWeatherData(): RelationshipWeather[] {
   });
 }
 
+function generateWeatherCondition(temperature: number, tension: number): WeatherData['condition'] {
+  if (temperature >= 80 && tension <= 20) return 'sunny';
+  else if (temperature >= 60 && tension <= 40) return 'partly-cloudy';
+  else if (temperature >= 40 && tension <= 60) return 'cloudy';
+  else if (temperature >= 20 && tension <= 80) return 'rainy';
+  else if (tension >= 80) return 'stormy';
+  else return 'snowy';
+}
+
 function generateWeatherFromMetrics(temperature: number, tension: number): WeatherData {
-  let condition: WeatherData['condition'];
-  
-  if (temperature >= 80 && tension <= 20) condition = 'sunny';
-  else if (temperature >= 60 && tension <= 40) condition = 'partly-cloudy';
-  else if (temperature >= 40 && tension <= 60) condition = 'cloudy';
-  else if (temperature >= 20 && tension <= 80) condition = 'rainy';
-  else if (tension >= 80) condition = 'stormy';
-  else condition = 'snowy';
+  const condition = generateWeatherCondition(temperature, tension);
 
   const forecast: WeatherForecast[] = ['Mon', 'Tue', 'Wed', 'Thu', 'Fri'].map(day => {
     const variation = Math.random() * 20 - 10;
@@ -341,7 +343,7 @@ function generateWeatherFromMetrics(temperature: number, tension: number): Weath
 
     return {
       day,
-      condition: generateWeatherFromMetrics(forecastTemp, forecastTension).condition,
+      condition: generateWeatherCondition(forecastTemp, forecastTension),
       temperature: Math.round(forecastTemp),
       trend
     };
