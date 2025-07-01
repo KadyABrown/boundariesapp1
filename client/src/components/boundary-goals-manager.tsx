@@ -403,6 +403,31 @@ export default function BoundaryGoalsManager() {
                           <div className="text-xs text-muted-foreground">Success Rate</div>
                         </div>
                       </div>
+                      
+                      {progress.totalEntries === 0 && (
+                        <div className="bg-blue-50 dark:bg-blue-900/20 p-3 rounded-lg border border-blue-200 dark:border-blue-800 mt-4">
+                          <div className="flex items-start gap-2">
+                            <div className="flex-shrink-0">
+                              <div className="w-5 h-5 bg-blue-100 dark:bg-blue-800 rounded-full flex items-center justify-center">
+                                <span className="text-blue-600 dark:text-blue-400 text-xs font-bold">?</span>
+                              </div>
+                            </div>
+                            <div className="flex-1">
+                              <h4 className="text-sm font-medium text-blue-900 dark:text-blue-100 mb-1">
+                                How to log progress
+                              </h4>
+                              <p className="text-xs text-blue-800 dark:text-blue-200 mb-2">
+                                Progress is tracked when you create boundary entries for <strong>"{goal.category}"</strong> boundaries. 
+                              </p>
+                              <p className="text-xs text-blue-700 dark:text-blue-300">
+                                1. Go to "My Boundaries" tab<br/>
+                                2. Create boundaries in the "{goal.category}" category<br/>
+                                3. Log your daily experiences with those boundaries
+                              </p>
+                            </div>
+                          </div>
+                        </div>
+                      )}
                     </div>
                   )}
 
