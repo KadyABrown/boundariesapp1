@@ -267,6 +267,22 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
+  app.patch('/api/relationships/:id', isAuthenticated, async (req: any, res) => {
+    try {
+      const id = parseInt(req.params.id);
+      const updates = insertRelationshipProfileSchema.partial().parse(req.body);
+      const profile = await storage.updateRelationshipProfile(id, updates);
+      res.json(profile);
+    } catch (error) {
+      if (error instanceof z.ZodError) {
+        res.status(400).json({ message: "Invalid profile data", errors: error.errors });
+      } else {
+        console.error("Error updating relationship profile:", error);
+        res.status(500).json({ message: "Failed to update relationship profile" });
+      }
+    }
+  });
+
   app.delete('/api/relationships/:id', isAuthenticated, async (req: any, res) => {
     try {
       const id = parseInt(req.params.id);
