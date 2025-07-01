@@ -1566,6 +1566,70 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
+  // Goal Check-In API endpoints
+  app.get('/api/goal-checkins/:goalId', isAuthenticated, async (req: any, res) => {
+    try {
+      const userId = req.user.claims.sub;
+      const goalId = parseInt(req.params.goalId);
+      const { startDate, endDate } = req.query;
+      
+      const checkIns = await storage.getGoalCheckIns(
+        userId,
+        goalId,
+        startDate ? new Date(startDate as string) : undefined,
+        endDate ? new Date(endDate as string) : undefined
+      );
+      res.json(checkIns);
+    } catch (error) {
+      console.error("Error fetching goal check-ins:", error);
+      res.status(500).json({ message: "Failed to fetch goal check-ins" });
+    }
+  });
+
+  app.post('/api/goal-checkins', isAuthenticated, async (req: any, res) => {
+    try {
+      const userId = req.user.claims.sub;
+      const checkInData = {
+        ...req.body,
+        userId,
+        date: new Date(req.body.date)
+      };
+      
+      const checkIn = await storage.createGoalCheckIn(checkInData);
+      res.json(checkIn);
+    } catch (error) {
+      console.error("Error creating goal check-in:", error);
+      res.status(500).json({ message: "Failed to create goal check-in" });
+    }
+  });
+
+  app.put('/api/goal-checkins/:id', isAuthenticated, async (req: any, res) => {
+    try {
+      const id = parseInt(req.params.id);
+      const updates = {
+        ...req.body,
+        date: req.body.date ? new Date(req.body.date) : undefined
+      };
+      
+      const checkIn = await storage.updateGoalCheckIn(id, updates);
+      res.json(checkIn);
+    } catch (error) {
+      console.error("Error updating goal check-in:", error);
+      res.status(500).json({ message: "Failed to update goal check-in" });
+    }
+  });
+
+  app.delete('/api/goal-checkins/:id', isAuthenticated, async (req: any, res) => {
+    try {
+      const id = parseInt(req.params.id);
+      await storage.deleteGoalCheckIn(id);
+      res.json({ success: true });
+    } catch (error) {
+      console.error("Error deleting goal check-in:", error);
+      res.status(500).json({ message: "Failed to delete goal check-in" });
+    }
+  });
+
   const httpServer = createServer(app);
   return httpServer;
 }

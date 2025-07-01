@@ -308,6 +308,17 @@ export const boundaryGoals = pgTable("boundary_goals", {
   updatedAt: timestamp("updated_at").defaultNow(),
 });
 
+// Simple goal check-ins - much simpler than connecting to boundary entries
+export const goalCheckIns = pgTable("goal_check_ins", {
+  id: serial("id").primaryKey(),
+  userId: varchar("user_id").notNull().references(() => users.id, { onDelete: "cascade" }),
+  goalId: integer("goal_id").notNull().references(() => boundaryGoals.id, { onDelete: "cascade" }),
+  date: timestamp("date").notNull(), // The date this check-in is for
+  status: varchar("status").notNull(), // "hit", "missed", "partial"
+  notes: text("notes"), // Optional notes about the day
+  createdAt: timestamp("created_at").defaultNow(),
+});
+
 // Relations
 export const usersRelations = relations(users, ({ many, one }) => ({
   boundaries: many(boundaries),
@@ -448,10 +459,22 @@ export const personalBaselinesRelations = relations(personalBaselines, ({ one })
   }),
 }));
 
-export const boundaryGoalsRelations = relations(boundaryGoals, ({ one }) => ({
+export const boundaryGoalsRelations = relations(boundaryGoals, ({ one, many }) => ({
   user: one(users, {
     fields: [boundaryGoals.userId],
     references: [users.id],
+  }),
+  checkIns: many(goalCheckIns),
+}));
+
+export const goalCheckInsRelations = relations(goalCheckIns, ({ one }) => ({
+  user: one(users, {
+    fields: [goalCheckIns.userId],
+    references: [users.id],
+  }),
+  goal: one(boundaryGoals, {
+    fields: [goalCheckIns.goalId],
+    references: [boundaryGoals.id],
   }),
 }));
 
@@ -566,3 +589,10 @@ export const insertBoundaryGoalSchema = createInsertSchema(boundaryGoals).omit({
 });
 export type InsertBoundaryGoal = z.infer<typeof insertBoundaryGoalSchema>;
 export type BoundaryGoal = typeof boundaryGoals.$inferSelect;
+
+export const insertGoalCheckInSchema = createInsertSchema(goalCheckIns).omit({
+  id: true,
+  createdAt: true,
+});
+export type InsertGoalCheckIn = z.infer<typeof insertGoalCheckInSchema>;
+export type GoalCheckIn = typeof goalCheckIns.$inferSelect;

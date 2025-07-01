@@ -14,6 +14,7 @@ import {
   comprehensiveInteractions,
   personalBaselines,
   boundaryGoals,
+  goalCheckIns,
   type User,
   type UpsertUser,
   type Boundary,
@@ -44,6 +45,8 @@ import {
   type InsertPersonalBaseline,
   type BoundaryGoal,
   type InsertBoundaryGoal,
+  type GoalCheckIn,
+  type InsertGoalCheckIn,
 } from "@shared/schema";
 import { db } from "./db";
 import { eq, desc, and, gte, lte, sql, count, or, like } from "drizzle-orm";
@@ -1026,6 +1029,52 @@ export class DatabaseStorage implements IStorage {
     await db
       .delete(boundaryGoals)
       .where(eq(boundaryGoals.id, id));
+  }
+
+  // Goal Check-In Methods
+  async createGoalCheckIn(checkIn: InsertGoalCheckIn): Promise<GoalCheckIn> {
+    const [newCheckIn] = await db
+      .insert(goalCheckIns)
+      .values(checkIn)
+      .returning();
+    return newCheckIn;
+  }
+
+  async getGoalCheckIns(userId: string, goalId: number, startDate?: Date, endDate?: Date): Promise<GoalCheckIn[]> {
+    let query = db
+      .select()
+      .from(goalCheckIns)
+      .where(and(
+        eq(goalCheckIns.userId, userId),
+        eq(goalCheckIns.goalId, goalId)
+      ));
+
+    if (startDate && endDate) {
+      query = query.where(and(
+        eq(goalCheckIns.userId, userId),
+        eq(goalCheckIns.goalId, goalId),
+        gte(goalCheckIns.date, startDate),
+        lte(goalCheckIns.date, endDate)
+      ));
+    }
+
+    const results = await query.orderBy(desc(goalCheckIns.date));
+    return results;
+  }
+
+  async updateGoalCheckIn(id: number, updates: Partial<InsertGoalCheckIn>): Promise<GoalCheckIn> {
+    const [updatedCheckIn] = await db
+      .update(goalCheckIns)
+      .set(updates)
+      .where(eq(goalCheckIns.id, id))
+      .returning();
+    return updatedCheckIn;
+  }
+
+  async deleteGoalCheckIn(id: number): Promise<void> {
+    await db
+      .delete(goalCheckIns)
+      .where(eq(goalCheckIns.id, id));
   }
 
   async getBoundaryGoalProgress(userId: string, goalId: number, startDate: Date, endDate: Date): Promise<{

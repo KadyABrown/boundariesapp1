@@ -17,7 +17,7 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from 
 import { Plus, Edit2, Trash2, Shield, Target, List } from "lucide-react";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import BaselineIntegration from "@/components/baseline-integration";
-import BoundaryGoalsManager from "@/components/boundary-goals-manager";
+import SimpleBoundaryGoals from "@/components/simple-boundary-goals";
 
 export default function Boundaries() {
   const { toast } = useToast();
@@ -414,7 +414,7 @@ export default function Boundaries() {
           </TabsContent>
 
           <TabsContent value="goals" className="mt-6">
-            <BoundaryGoalsManager />
+            <SimpleBoundaryGoals />
           </TabsContent>
         </Tabs>
       </div>
