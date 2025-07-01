@@ -97,33 +97,36 @@ export default function BoundaryBuddy({ context, trigger, position = 'inline' }:
 
   const playNotificationSound = () => {
     try {
-      // Create a gentle notification sound using Web Audio API
+      // Create a gentle bubble-pop sound using Web Audio API
       const audioContext = new (window.AudioContext || (window as any).webkitAudioContext)();
       
-      // Create a gentle bell-like sound
-      const oscillator1 = audioContext.createOscillator();
-      const oscillator2 = audioContext.createOscillator();
+      // Create oscillator for the pop sound
+      const oscillator = audioContext.createOscillator();
       const gainNode = audioContext.createGain();
+      const filterNode = audioContext.createBiquadFilter();
       
-      // Set frequencies for a pleasant chord (C and E)
-      oscillator1.frequency.setValueAtTime(523.25, audioContext.currentTime); // C5
-      oscillator2.frequency.setValueAtTime(659.25, audioContext.currentTime); // E5
+      // Configure filter for bubble-like sound
+      filterNode.type = 'lowpass';
+      filterNode.frequency.setValueAtTime(800, audioContext.currentTime);
+      filterNode.Q.setValueAtTime(1, audioContext.currentTime);
       
-      // Create envelope for gentle fade in/out
+      // Start with higher frequency and quickly drop (bubble pop effect)
+      oscillator.frequency.setValueAtTime(400, audioContext.currentTime);
+      oscillator.frequency.exponentialRampToValueAtTime(200, audioContext.currentTime + 0.1);
+      
+      // Quick attack and fast decay for pop effect
       gainNode.gain.setValueAtTime(0, audioContext.currentTime);
-      gainNode.gain.linearRampToValueAtTime(0.1, audioContext.currentTime + 0.1);
-      gainNode.gain.exponentialRampToValueAtTime(0.01, audioContext.currentTime + 0.8);
+      gainNode.gain.linearRampToValueAtTime(0.15, audioContext.currentTime + 0.01); // Quick attack
+      gainNode.gain.exponentialRampToValueAtTime(0.001, audioContext.currentTime + 0.15); // Fast decay
       
-      // Connect nodes
-      oscillator1.connect(gainNode);
-      oscillator2.connect(gainNode);
+      // Connect nodes: oscillator -> filter -> gain -> destination
+      oscillator.connect(filterNode);
+      filterNode.connect(gainNode);
       gainNode.connect(audioContext.destination);
       
-      // Start and stop
-      oscillator1.start(audioContext.currentTime);
-      oscillator2.start(audioContext.currentTime);
-      oscillator1.stop(audioContext.currentTime + 0.8);
-      oscillator2.stop(audioContext.currentTime + 0.8);
+      // Short duration for click-like effect
+      oscillator.start(audioContext.currentTime);
+      oscillator.stop(audioContext.currentTime + 0.15);
     } catch (error) {
       // Silently fail if audio context isn't available
       console.log('Audio not available');
