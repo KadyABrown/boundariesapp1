@@ -16,6 +16,7 @@ import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Badge } from "@/components/ui/badge";
 import { User, Settings, Shield, Bell, Users, Heart } from "lucide-react";
+import BoundaryBoost from "@/components/boundary-boost";
 
 interface UserProfile {
   id: string;
@@ -266,10 +267,11 @@ export default function Profile() {
 
         {/* Profile Management Tabs */}
         <Tabs defaultValue="basic" className="space-y-6">
-          <TabsList className="grid w-full grid-cols-3">
+          <TabsList className="grid w-full grid-cols-4">
             <TabsTrigger value="basic">Basic Info</TabsTrigger>
             <TabsTrigger value="preferences">Preferences</TabsTrigger>
             <TabsTrigger value="privacy">Privacy & Sharing</TabsTrigger>
+            <TabsTrigger value="achievements">Achievements</TabsTrigger>
           </TabsList>
 
           {/* Basic Information Tab */}
@@ -576,8 +578,102 @@ export default function Profile() {
               </CardContent>
             </Card>
           </TabsContent>
+
+          {/* Achievements Tab */}
+          <TabsContent value="achievements">
+            <BoundaryBoost gameStats={generateTestGameStats()} />
+          </TabsContent>
         </Tabs>
       </div>
     </div>
   );
+}
+
+// Test data function to demonstrate gamification features
+function generateTestGameStats() {
+  const today = new Date();
+  const lastWeek = new Date(today.getTime() - 7 * 24 * 60 * 60 * 1000);
+  const lastMonth = new Date(today.getTime() - 30 * 24 * 60 * 60 * 1000);
+
+  return {
+    totalPoints: 1250,
+    currentStreak: 8,
+    longestStreak: 15,
+    totalEntries: 42,
+    boundariesRespected: 32,
+    level: 4,
+    pointsToNextLevel: 500,
+    weeklyGoal: 7,
+    weeklyProgress: 5,
+    achievements: [
+      {
+        id: 'first_entry',
+        title: 'First Steps',
+        description: 'Log your first boundary entry',
+        icon: 'Star' as const,
+        category: 'milestone' as const,
+        points: 25,
+        threshold: 1,
+        progress: 1,
+        unlocked: true,
+        unlockedAt: lastMonth
+      },
+      {
+        id: 'week_streak',
+        title: 'Week Warrior',
+        description: 'Maintain a 7-day tracking streak',
+        icon: 'Flame' as const,
+        category: 'streak' as const,
+        points: 100,
+        threshold: 7,
+        progress: 7,
+        unlocked: true,
+        unlockedAt: lastWeek
+      },
+      {
+        id: 'consistency_king',
+        title: 'Consistency King',
+        description: 'Track boundaries for 14 consecutive days',
+        icon: 'Target' as const,
+        category: 'consistency' as const,
+        points: 150,
+        threshold: 14,
+        progress: 8,
+        unlocked: false
+      },
+      {
+        id: 'respect_champion',
+        title: 'Respect Champion',
+        description: 'Log 50 respected boundaries',
+        icon: 'Shield' as const,
+        category: 'milestone' as const,
+        points: 200,
+        threshold: 50,
+        progress: 32,
+        unlocked: false
+      },
+      {
+        id: 'month_streak',
+        title: 'Monthly Master',
+        description: 'Maintain a 30-day tracking streak',
+        icon: 'Calendar' as const,
+        category: 'streak' as const,
+        points: 300,
+        threshold: 30,
+        progress: 8,
+        unlocked: false
+      },
+      {
+        id: 'hundred_club',
+        title: 'Hundred Club',
+        description: 'Log 100 boundary entries total',
+        icon: 'Trophy' as const,
+        category: 'milestone' as const,
+        points: 250,
+        threshold: 100,
+        progress: 42,
+        unlocked: false
+      }
+    ]
+  };
 }
