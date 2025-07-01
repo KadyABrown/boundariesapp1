@@ -120,7 +120,7 @@ export default function RelationshipHealthTracker({ profileId, profileName }: Re
       
       if (!selectedFlagData) throw new Error("Flag not found");
 
-      console.log("Making flag API call with profileId:", profileId);
+
       return apiRequest(
         "POST",
         `/api/relationships/${profileId}/flags`,
@@ -148,7 +148,7 @@ export default function RelationshipHealthTracker({ profileId, profileName }: Re
   // Add check-in mutation
   const addCheckInMutation = useMutation({
     mutationFn: async (data: any) => {
-      console.log("Making check-in API call with profileId:", profileId);
+
       return apiRequest(
         "POST",
         `/api/relationships/${profileId}/check-ins`,
