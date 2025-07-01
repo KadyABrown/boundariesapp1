@@ -16,14 +16,24 @@ import { Checkbox } from "@/components/ui/checkbox";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from "@/components/ui/collapsible";
 import { Badge } from "@/components/ui/badge";
-import { Plus, Edit2, Trash2, Heart, User, Calendar, MapPin, Flag } from "lucide-react";
+import { Plus, Edit2, Trash2, Heart, User, Calendar, MapPin, Flag, Brain, Target, Clock, TrendingUp, BarChart3 } from "lucide-react";
 import { Link } from "wouter";
+import ComprehensiveInteractionTracker from "@/components/comprehensive-interaction-tracker";
+import TriggerAnalysisTracker from "@/components/trigger-analysis-tracker";
+import CommunicationSilenceTracker from "@/components/communication-silence-tracker";
+import RelationshipHealthAnalytics from "@/components/relationship-health-analytics";
+import CrossRelationshipComparison from "@/components/cross-relationship-comparison";
+import TimePatternAnalysis from "@/components/time-pattern-analysis";
 
 export default function Relationships() {
   const { toast } = useToast();
   const { isAuthenticated, isLoading } = useAuth();
   const [isDialogOpen, setIsDialogOpen] = useState(false);
   const [editingProfile, setEditingProfile] = useState<any>(null);
+  const [activeView, setActiveView] = useState<'overview' | 'detailed'>('overview');
+  const [selectedRelationship, setSelectedRelationship] = useState<any>(null);
+  const [trackingMode, setTrackingMode] = useState<'interaction' | 'triggers' | 'patterns' | 'analytics' | 'comparison'>('interaction');
+  const [showInteractionTracker, setShowInteractionTracker] = useState(false);
 
   // Redirect to home if not authenticated
   useEffect(() => {
@@ -696,6 +706,18 @@ export default function Relationships() {
                       <Button
                         variant="ghost"
                         size="sm"
+                        onClick={() => {
+                          setSelectedRelationship(profile);
+                          setActiveView('detailed');
+                          setTrackingMode('interaction');
+                        }}
+                        title="Advanced Tracking"
+                      >
+                        <Brain className="w-4 h-4" />
+                      </Button>
+                      <Button
+                        variant="ghost"
+                        size="sm"
                         onClick={() => openEditDialog(profile)}
                       >
                         <Edit2 className="w-4 h-4" />
@@ -771,6 +793,106 @@ export default function Relationships() {
               </Button>
             </CardContent>
           </Card>
+        )}
+
+        {/* Advanced Tracking View */}
+        {activeView === 'detailed' && selectedRelationship && (
+          <div className="fixed inset-0 bg-black bg-opacity-50 z-50 flex items-center justify-center p-4">
+            <div className="bg-white rounded-lg shadow-xl w-full max-w-6xl h-[90vh] overflow-hidden">
+              <div className="flex flex-col h-full">
+                {/* Header */}
+                <div className="p-6 border-b border-gray-200 bg-gray-50">
+                  <div className="flex items-center justify-between">
+                    <div>
+                      <h2 className="text-2xl font-bold text-gray-800">
+                        Advanced Tracking: {selectedRelationship.name}
+                      </h2>
+                      <p className="text-gray-600 mt-1">
+                        Comprehensive relationship analysis and pattern tracking
+                      </p>
+                    </div>
+                    <Button
+                      variant="outline"
+                      onClick={() => {
+                        setActiveView('overview');
+                        setSelectedRelationship(null);
+                      }}
+                    >
+                      ← Back to Overview
+                    </Button>
+                  </div>
+
+                  {/* Tracking Mode Tabs */}
+                  <div className="flex space-x-1 mt-6 bg-white rounded-lg p-1 border">
+                    {[
+                      { id: 'interaction', label: 'Log Interaction', icon: Brain },
+                      { id: 'triggers', label: 'Trigger Analysis', icon: Target },
+                      { id: 'patterns', label: 'Time Patterns', icon: Clock },
+                      { id: 'analytics', label: 'Health Analytics', icon: TrendingUp },
+                      { id: 'comparison', label: 'Comparison', icon: BarChart3 }
+                    ].map(({ id, label, icon: Icon }) => (
+                      <button
+                        key={id}
+                        onClick={() => setTrackingMode(id as any)}
+                        className={`flex items-center gap-2 px-4 py-2 rounded-md transition-all ${
+                          trackingMode === id
+                            ? 'bg-blue-100 text-blue-700 font-medium'
+                            : 'text-gray-600 hover:text-gray-800 hover:bg-gray-100'
+                        }`}
+                      >
+                        <Icon className="w-4 h-4" />
+                        {label}
+                      </button>
+                    ))}
+                  </div>
+                </div>
+
+                {/* Content */}
+                <div className="flex-1 overflow-y-auto p-6">
+                  {trackingMode === 'interaction' && (
+                    <ComprehensiveInteractionTracker
+                      relationshipId={selectedRelationship.id}
+                      relationshipName={selectedRelationship.name}
+                      onSaveInteraction={(data) => {
+                        toast({
+                          title: "Interaction Logged",
+                          description: "Your detailed interaction data has been saved for analysis",
+                        });
+                      }}
+                    />
+                  )}
+
+                  {trackingMode === 'triggers' && (
+                    <TriggerAnalysisTracker
+                      relationshipId={selectedRelationship.id}
+                      relationshipName={selectedRelationship.name}
+                    />
+                  )}
+
+                  {trackingMode === 'patterns' && (
+                    <TimePatternAnalysis
+                      interactions={[]} // This would be loaded from the database
+                      relationshipName={selectedRelationship.name}
+                    />
+                  )}
+
+                  {trackingMode === 'analytics' && (
+                    <RelationshipHealthAnalytics
+                      relationshipId={selectedRelationship.id}
+                      relationshipName={selectedRelationship.name}
+                    />
+                  )}
+
+                  {trackingMode === 'comparison' && (
+                    <CrossRelationshipComparison
+                      relationships={[]} // This would be all relationships with calculated metrics
+                      userBaseline={null} // User's personal baseline assessment
+                    />
+                  )}
+                </div>
+              </div>
+            </div>
+          </div>
         )}
       </div>
     </div>
