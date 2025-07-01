@@ -18,6 +18,7 @@ interface RelationshipProfileDetailProps {
 
 export default function RelationshipProfileDetail({ relationship, onClose }: RelationshipProfileDetailProps) {
   const { toast } = useToast();
+  const [showCIT, setShowCIT] = useState(false);
   
   const { data: flags, isLoading: flagsLoading } = useQuery({
     queryKey: ['/api/relationships', relationship.id, 'flags'],
@@ -99,6 +100,58 @@ export default function RelationshipProfileDetail({ relationship, onClose }: Rel
 
               <div className="flex-1 overflow-y-auto">
                 <TabsContent value="overview" className="p-6 space-y-6">
+                  {/* Health Metrics - Prominent Display */}
+                  <Card className="border-2 border-primary/20 bg-gradient-to-r from-primary/5 to-transparent">
+                    <CardHeader>
+                      <CardTitle className="flex items-center gap-2">
+                        <TrendingUp className="w-5 h-5 text-primary" />
+                        Relationship Health
+                      </CardTitle>
+                    </CardHeader>
+                    <CardContent>
+                      <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
+                        <div className="text-center p-4 bg-white rounded-lg shadow-sm">
+                          <div className={`text-3xl font-bold ${getHealthColor(getHealthScore())}`}>
+                            {getHealthScore()}%
+                          </div>
+                          <div className="text-sm text-gray-600 mt-1">Health Score</div>
+                        </div>
+                        <div className="text-center p-4 bg-white rounded-lg shadow-sm">
+                          <div className="text-3xl font-bold text-green-600">
+                            {stats?.greenFlags || 0}
+                          </div>
+                          <div className="text-sm text-gray-600 mt-1">Green Flags</div>
+                        </div>
+                        <div className="text-center p-4 bg-white rounded-lg shadow-sm">
+                          <div className="text-3xl font-bold text-red-600">
+                            {stats?.redFlags || 0}
+                          </div>
+                          <div className="text-sm text-gray-600 mt-1">Red Flags</div>
+                        </div>
+                        <div className="text-center p-4 bg-white rounded-lg shadow-sm">
+                          <div className="text-3xl font-bold text-blue-600">
+                            {stats?.checkInCount || 0}
+                          </div>
+                          <div className="text-sm text-gray-600 mt-1">Check-ins</div>
+                        </div>
+                      </div>
+                      {stats?.averageSafetyRating && (
+                        <div className="mt-4 p-3 bg-white rounded-lg shadow-sm">
+                          <div className="flex items-center justify-between">
+                            <span className="text-sm text-gray-600">Average Safety Rating</span>
+                            <span className="font-semibold">{stats.averageSafetyRating}/10</span>
+                          </div>
+                          <div className="w-full bg-gray-200 rounded-full h-2 mt-2">
+                            <div 
+                              className="bg-blue-600 h-2 rounded-full transition-all"
+                              style={{ width: `${(stats.averageSafetyRating / 10) * 100}%` }}
+                            />
+                          </div>
+                        </div>
+                      )}
+                    </CardContent>
+                  </Card>
+
                   {/* Basic Info */}
                   <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                     <Card>
@@ -224,35 +277,34 @@ export default function RelationshipProfileDetail({ relationship, onClose }: Rel
                   />
                 </TabsContent>
 
-                <TabsContent value="log-new" className="p-0">
-                  <div className="p-6">
-                    <ComprehensiveInteractionTracker
-                      relationshipId={relationship.id}
-                      relationshipName={relationship.name}
-                      isOpen={true}
-                      onClose={() => {}}
-                      onSubmit={async (data: any) => {
-                        try {
-                          // Send the data directly to the API - let the backend handle the mapping
-                          await apiRequest("POST", "/api/interactions", data);
-                          
-                          // Refresh interaction data
-                          queryClient.invalidateQueries({ queryKey: ['/api/interactions', relationship.id] });
-                          
-                          toast({
-                            title: "Interaction Logged",
-                            description: "Your interaction has been saved successfully. View it in the Interactions tab.",
-                          });
-                        } catch (error) {
-                          console.error("Error saving interaction:", error);
-                          toast({
-                            title: "Error",
-                            description: "Failed to save interaction. Please try again.",
-                            variant: "destructive",
-                          });
-                        }
+                <TabsContent value="log-new" className="p-6">
+                  <div className="space-y-6">
+                    <div className="text-center">
+                      <h3 className="text-lg font-semibold">Log New Interaction</h3>
+                      <p className="text-gray-600">Track your interaction with {relationship.name}</p>
+                    </div>
+                    
+                    <Button 
+                      onClick={() => {
+                        // Open the CIT modal
+                        setShowCIT(true);
                       }}
-                    />
+                      className="w-full h-16 text-lg"
+                    >
+                      <Brain className="w-6 h-6 mr-3" />
+                      Start Comprehensive Interaction Tracker
+                    </Button>
+                    
+                    <div className="text-sm text-gray-500 space-y-2">
+                      <p><strong>What you'll track:</strong></p>
+                      <ul className="list-disc list-inside space-y-1 ml-4">
+                        <li>Energy and mood before/after</li>
+                        <li>Physical and emotional impacts</li>
+                        <li>Recovery time and strategies</li>
+                        <li>Boundaries and self-advocacy</li>
+                        <li>Lessons learned and future planning</li>
+                      </ul>
+                    </div>
                   </div>
                 </TabsContent>
 
@@ -363,6 +415,34 @@ export default function RelationshipProfileDetail({ relationship, onClose }: Rel
           </div>
         </div>
       </div>
+
+      {/* CIT Modal */}
+      {showCIT && (
+        <ComprehensiveInteractionTracker
+          relationshipId={relationship.id}
+          relationshipName={relationship.name}
+          isOpen={showCIT}
+          onClose={() => setShowCIT(false)}
+          onSubmit={async (data: any) => {
+            try {
+              await apiRequest("POST", "/api/interactions", data);
+              queryClient.invalidateQueries({ queryKey: ['/api/interactions', relationship.id] });
+              setShowCIT(false);
+              toast({
+                title: "Interaction Logged",
+                description: "Your interaction has been saved successfully. View it in the Interactions tab.",
+              });
+            } catch (error) {
+              console.error("Error saving interaction:", error);
+              toast({
+                title: "Error",
+                description: "Failed to save interaction. Please try again.",
+                variant: "destructive",
+              });
+            }
+          }}
+        />
+      )}
     </div>
   );
 }

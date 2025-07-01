@@ -765,15 +765,7 @@ export default function Relationships() {
                         </div>
                       )}
                     </div>
-                    
-                    <Link href={`/relationships/${profile.id}`}>
-                      <Button 
-                        className="w-full mt-4" 
-                        variant="outline"
-                      >
-                        View Details
-                      </Button>
-                    </Link>
+
                   </div>
                 </CardContent>
               </Card>
