@@ -13,6 +13,7 @@ import {
   friendCircles,
   comprehensiveInteractions,
   personalBaselines,
+  boundaryGoals,
   type User,
   type UpsertUser,
   type Boundary,
@@ -41,6 +42,8 @@ import {
   type InsertComprehensiveInteraction,
   type PersonalBaseline,
   type InsertPersonalBaseline,
+  type BoundaryGoal,
+  type InsertBoundaryGoal,
 } from "@shared/schema";
 import { db } from "./db";
 import { eq, desc, and, gte, lte, sql, count, or, like } from "drizzle-orm";
@@ -149,7 +152,20 @@ export interface IStorage {
   // Personal baseline operations
   createPersonalBaseline(baseline: InsertPersonalBaseline): Promise<PersonalBaseline>;
   getPersonalBaseline(userId: string): Promise<PersonalBaseline | undefined>;
+  getAllPersonalBaselines(userId: string): Promise<PersonalBaseline[]>; // Get historical versions
   updatePersonalBaseline(userId: string, updates: Partial<InsertPersonalBaseline>): Promise<PersonalBaseline>;
+  
+  // Boundary goals operations
+  createBoundaryGoal(goal: InsertBoundaryGoal): Promise<BoundaryGoal>;
+  getBoundaryGoals(userId: string): Promise<BoundaryGoal[]>;
+  updateBoundaryGoal(id: number, updates: Partial<InsertBoundaryGoal>): Promise<BoundaryGoal>;
+  deleteBoundaryGoal(id: number): Promise<void>;
+  getBoundaryGoalProgress(userId: string, goalId: number, startDate: Date, endDate: Date): Promise<{
+    goal: BoundaryGoal;
+    totalEntries: number;
+    respectEntries: number;
+    progressPercentage: number;
+  }>;
 }
 
 export class DatabaseStorage implements IStorage {
@@ -957,13 +973,107 @@ export class DatabaseStorage implements IStorage {
     return result[0];
   }
 
-  async updatePersonalBaseline(userId: string, updates: Partial<InsertPersonalBaseline>): Promise<PersonalBaseline> {
-    const [updatedBaseline] = await db
-      .update(personalBaselines)
-      .set(updates)
+  async getAllPersonalBaselines(userId: string): Promise<PersonalBaseline[]> {
+    const results = await db
+      .select()
+      .from(personalBaselines)
       .where(eq(personalBaselines.userId, userId))
+      .orderBy(desc(personalBaselines.createdAt));
+    return results;
+  }
+
+  async updatePersonalBaseline(userId: string, updates: Partial<InsertPersonalBaseline>): Promise<PersonalBaseline> {
+    // Create new version instead of updating existing one
+    const currentBaseline = await this.getPersonalBaseline(userId);
+    const newVersion = currentBaseline ? currentBaseline.version + 1 : 1;
+    
+    const newBaseline = await this.createPersonalBaseline({
+      ...updates,
+      userId,
+      version: newVersion,
+    });
+    
+    return newBaseline;
+  }
+
+  async createBoundaryGoal(goal: InsertBoundaryGoal): Promise<BoundaryGoal> {
+    const [newGoal] = await db
+      .insert(boundaryGoals)
+      .values(goal)
       .returning();
-    return updatedBaseline;
+    return newGoal;
+  }
+
+  async getBoundaryGoals(userId: string): Promise<BoundaryGoal[]> {
+    const results = await db
+      .select()
+      .from(boundaryGoals)
+      .where(eq(boundaryGoals.userId, userId))
+      .orderBy(desc(boundaryGoals.createdAt));
+    return results;
+  }
+
+  async updateBoundaryGoal(id: number, updates: Partial<InsertBoundaryGoal>): Promise<BoundaryGoal> {
+    const [updatedGoal] = await db
+      .update(boundaryGoals)
+      .set(updates)
+      .where(eq(boundaryGoals.id, id))
+      .returning();
+    return updatedGoal;
+  }
+
+  async deleteBoundaryGoal(id: number): Promise<void> {
+    await db
+      .delete(boundaryGoals)
+      .where(eq(boundaryGoals.id, id));
+  }
+
+  async getBoundaryGoalProgress(userId: string, goalId: number, startDate: Date, endDate: Date): Promise<{
+    goal: BoundaryGoal;
+    totalEntries: number;
+    respectEntries: number;
+    progressPercentage: number;
+  }> {
+    // Get the goal
+    const [goal] = await db
+      .select()
+      .from(boundaryGoals)
+      .where(and(eq(boundaryGoals.id, goalId), eq(boundaryGoals.userId, userId)));
+
+    if (!goal) {
+      throw new Error('Goal not found');
+    }
+
+    // Count relevant boundary entries
+    const totalEntries = await db
+      .select({ count: count() })
+      .from(boundaryEntries)
+      .where(and(
+        eq(boundaryEntries.userId, userId),
+        gte(boundaryEntries.createdAt, startDate),
+        lte(boundaryEntries.createdAt, endDate)
+      ));
+
+    const respectEntries = await db
+      .select({ count: count() })
+      .from(boundaryEntries)
+      .where(and(
+        eq(boundaryEntries.userId, userId),
+        eq(boundaryEntries.status, 'respected'),
+        gte(boundaryEntries.createdAt, startDate),
+        lte(boundaryEntries.createdAt, endDate)
+      ));
+
+    const total = totalEntries[0]?.count || 0;
+    const respected = respectEntries[0]?.count || 0;
+    const progressPercentage = total > 0 ? Math.round((respected / total) * 100) : 0;
+
+    return {
+      goal,
+      totalEntries: total,
+      respectEntries: respected,
+      progressPercentage,
+    };
   }
 }
 

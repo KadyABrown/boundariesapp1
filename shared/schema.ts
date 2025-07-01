@@ -61,10 +61,12 @@ export const boundaryEntries = pgTable("boundary_entries", {
   id: serial("id").primaryKey(),
   userId: varchar("user_id").notNull(),
   boundaryId: integer("boundary_id"),
+  relationshipId: integer("relationship_id"), // Optional: Link to relationship profile
   category: varchar("category").notNull(),
   description: text("description").notNull(),
   emotionalImpact: varchar("emotional_impact").notNull(), // very-negative, negative, neutral, positive, very-positive
   status: varchar("status").notNull(), // respected, challenged, communicated, violated
+  isQuickEntry: boolean("is_quick_entry").default(false), // Track if from quick-add feature
   createdAt: timestamp("created_at").defaultNow(),
 });
 
@@ -247,7 +249,9 @@ export const comprehensiveInteractions = pgTable("comprehensive_interactions", {
 // Personal baseline assessment
 export const personalBaselines = pgTable("personal_baselines", {
   id: serial("id").primaryKey(),
-  userId: varchar("user_id").notNull().unique().references(() => users.id, { onDelete: "cascade" }),
+  userId: varchar("user_id").notNull().references(() => users.id, { onDelete: "cascade" }),
+  version: integer("version").notNull().default(1), // Track version for historical changes
+  notes: text("notes"), // Optional notes about this version
   
   // Communication Preferences
   communicationStyle: varchar("communication_style"), // direct, gentle, collaborative, assertive
@@ -288,6 +292,22 @@ export const personalBaselines = pgTable("personal_baselines", {
   updatedAt: timestamp("updated_at").defaultNow(),
 });
 
+// Boundary goals table for tracking progress
+export const boundaryGoals = pgTable("boundary_goals", {
+  id: serial("id").primaryKey(),
+  userId: varchar("user_id").notNull().references(() => users.id, { onDelete: "cascade" }),
+  category: varchar("category").notNull(), // work-life, relationships, personal-space, etc.
+  title: varchar("title").notNull(),
+  description: text("description"),
+  targetFrequency: varchar("target_frequency").notNull(), // daily, weekly, monthly
+  targetCount: integer("target_count"), // How many times per period
+  startDate: timestamp("start_date").notNull(),
+  endDate: timestamp("end_date"), // Optional end date for goal
+  isActive: boolean("is_active").notNull().default(true),
+  createdAt: timestamp("created_at").defaultNow(),
+  updatedAt: timestamp("updated_at").defaultNow(),
+});
+
 // Relations
 export const usersRelations = relations(users, ({ many, one }) => ({
   boundaries: many(boundaries),
@@ -303,6 +323,7 @@ export const usersRelations = relations(users, ({ many, one }) => ({
   friendCircles: many(friendCircles),
   comprehensiveInteractions: many(comprehensiveInteractions),
   personalBaseline: one(personalBaselines),
+  boundaryGoals: many(boundaryGoals),
 }));
 
 export const boundariesRelations = relations(boundaries, ({ one, many }) => ({
@@ -321,6 +342,10 @@ export const boundaryEntriesRelations = relations(boundaryEntries, ({ one }) => 
   boundary: one(boundaries, {
     fields: [boundaryEntries.boundaryId],
     references: [boundaries.id],
+  }),
+  relationshipProfile: one(relationshipProfiles, {
+    fields: [boundaryEntries.relationshipId],
+    references: [relationshipProfiles.id],
   }),
 }));
 
@@ -419,6 +444,13 @@ export const comprehensiveInteractionsRelations = relations(comprehensiveInterac
 export const personalBaselinesRelations = relations(personalBaselines, ({ one }) => ({
   user: one(users, {
     fields: [personalBaselines.userId],
+    references: [users.id],
+  }),
+}));
+
+export const boundaryGoalsRelations = relations(boundaryGoals, ({ one }) => ({
+  user: one(users, {
+    fields: [boundaryGoals.userId],
     references: [users.id],
   }),
 }));
@@ -526,3 +558,11 @@ export const insertPersonalBaselineSchema = createInsertSchema(personalBaselines
 });
 export type InsertPersonalBaseline = z.infer<typeof insertPersonalBaselineSchema>;
 export type PersonalBaseline = typeof personalBaselines.$inferSelect;
+
+export const insertBoundaryGoalSchema = createInsertSchema(boundaryGoals).omit({
+  id: true,
+  createdAt: true,
+  updatedAt: true,
+});
+export type InsertBoundaryGoal = z.infer<typeof insertBoundaryGoalSchema>;
+export type BoundaryGoal = typeof boundaryGoals.$inferSelect;

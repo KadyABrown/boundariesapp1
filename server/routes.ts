@@ -1478,6 +1478,84 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
+  // Get all baseline versions for historical tracking
+  app.get('/api/baseline/versions', isAuthenticated, async (req: any, res) => {
+    try {
+      const userId = req.user.claims.sub;
+      const baselines = await storage.getAllPersonalBaselines(userId);
+      res.json(baselines);
+    } catch (error) {
+      console.error("Error fetching baseline versions:", error);
+      res.status(500).json({ message: "Failed to fetch baseline versions" });
+    }
+  });
+
+  // Boundary Goals API
+  app.get('/api/boundary-goals', isAuthenticated, async (req: any, res) => {
+    try {
+      const userId = req.user.claims.sub;
+      const goals = await storage.getBoundaryGoals(userId);
+      res.json(goals);
+    } catch (error) {
+      console.error("Error fetching boundary goals:", error);
+      res.status(500).json({ message: "Failed to fetch boundary goals" });
+    }
+  });
+
+  app.post('/api/boundary-goals', isAuthenticated, async (req: any, res) => {
+    try {
+      const userId = req.user.claims.sub;
+      const goalData = { ...req.body, userId };
+      
+      const goal = await storage.createBoundaryGoal(goalData);
+      res.json(goal);
+    } catch (error) {
+      console.error("Error creating boundary goal:", error);
+      res.status(500).json({ message: "Failed to create boundary goal" });
+    }
+  });
+
+  app.put('/api/boundary-goals/:id', isAuthenticated, async (req: any, res) => {
+    try {
+      const goalId = parseInt(req.params.id);
+      const goal = await storage.updateBoundaryGoal(goalId, req.body);
+      res.json(goal);
+    } catch (error) {
+      console.error("Error updating boundary goal:", error);
+      res.status(500).json({ message: "Failed to update boundary goal" });
+    }
+  });
+
+  app.delete('/api/boundary-goals/:id', isAuthenticated, async (req: any, res) => {
+    try {
+      const goalId = parseInt(req.params.id);
+      await storage.deleteBoundaryGoal(goalId);
+      res.json({ success: true });
+    } catch (error) {
+      console.error("Error deleting boundary goal:", error);
+      res.status(500).json({ message: "Failed to delete boundary goal" });
+    }
+  });
+
+  app.get('/api/boundary-goals/:id/progress', isAuthenticated, async (req: any, res) => {
+    try {
+      const userId = req.user.claims.sub;
+      const goalId = parseInt(req.params.id);
+      const { startDate, endDate } = req.query;
+      
+      const progress = await storage.getBoundaryGoalProgress(
+        userId,
+        goalId,
+        new Date(startDate as string),
+        new Date(endDate as string)
+      );
+      res.json(progress);
+    } catch (error) {
+      console.error("Error fetching goal progress:", error);
+      res.status(500).json({ message: "Failed to fetch goal progress" });
+    }
+  });
+
   const httpServer = createServer(app);
   return httpServer;
 }

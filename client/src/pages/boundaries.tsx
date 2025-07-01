@@ -14,8 +14,10 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { Slider } from "@/components/ui/slider";
 import { Switch } from "@/components/ui/switch";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
-import { Plus, Edit2, Trash2, Shield } from "lucide-react";
+import { Plus, Edit2, Trash2, Shield, Target, List } from "lucide-react";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import BaselineIntegration from "@/components/baseline-integration";
+import BoundaryGoalsManager from "@/components/boundary-goals-manager";
 
 export default function Boundaries() {
   const { toast } = useToast();
@@ -302,13 +304,27 @@ export default function Boundaries() {
           </Dialog>
         </div>
 
-        {/* Baseline Integration */}
-        <BaselineIntegration 
-          boundaries={boundaries}
-          className="mb-8"
-        />
+        {/* Main Content with Tabs */}
+        <Tabs defaultValue="boundaries" className="w-full">
+          <TabsList className="grid w-full grid-cols-2">
+            <TabsTrigger value="boundaries" className="flex items-center gap-2">
+              <List className="h-4 w-4" />
+              My Boundaries
+            </TabsTrigger>
+            <TabsTrigger value="goals" className="flex items-center gap-2">
+              <Target className="h-4 w-4" />
+              Boundary Goals
+            </TabsTrigger>
+          </TabsList>
 
-        {boundariesLoading ? (
+          <TabsContent value="boundaries" className="mt-6">
+            {/* Baseline Integration */}
+            <BaselineIntegration 
+              boundaries={Array.isArray(boundaries) ? boundaries : []}
+              className="mb-8"
+            />
+
+            {boundariesLoading ? (
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
             {[...Array(6)].map((_, i) => (
               <Card key={i} className="animate-pulse">
@@ -395,6 +411,12 @@ export default function Boundaries() {
             </CardContent>
           </Card>
         )}
+          </TabsContent>
+
+          <TabsContent value="goals" className="mt-6">
+            <BoundaryGoalsManager />
+          </TabsContent>
+        </Tabs>
       </div>
     </div>
   );
