@@ -4,12 +4,70 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { X, Calendar, Heart, Flag, TrendingUp, MessageSquare, Brain } from "lucide-react";
+import { X, Calendar, Heart, Flag, TrendingUp, MessageSquare, Brain, Plus } from "lucide-react";
 import { format } from "date-fns";
 import ComprehensiveInteractionsView from "./comprehensive-interactions-view";
 import ComprehensiveInteractionTracker from "./comprehensive-interaction-tracker";
 import { apiRequest, queryClient } from "@/lib/queryClient";
 import { useToast } from "@/hooks/use-toast";
+
+// Simple analysis component to show CIT data insights
+function InteractionAnalysis({ relationshipId }: { relationshipId: number }) {
+  const { data: interactions, isLoading } = useQuery({
+    queryKey: ['/api/interactions', relationshipId],
+    refetchOnWindowFocus: false,
+  });
+
+  if (isLoading) {
+    return <div className="text-center py-4 text-gray-500">Loading analysis...</div>;
+  }
+
+  if (!interactions || interactions.length === 0) {
+    return (
+      <div className="text-center py-8 text-gray-500">
+        <p>No interaction data available yet.</p>
+        <p className="text-sm mt-2">Use the "Log New" tab to track interactions and see analysis here.</p>
+      </div>
+    );
+  }
+
+  // Calculate simple metrics from interaction data
+  const totalInteractions = interactions.length;
+  const avgEnergyBefore = interactions.reduce((sum: number, i: any) => sum + (i.energyBefore || 0), 0) / totalInteractions;
+  const avgEnergyAfter = interactions.reduce((sum: number, i: any) => sum + (i.energyAfter || 0), 0) / totalInteractions;
+  const energyChange = avgEnergyAfter - avgEnergyBefore;
+
+  return (
+    <div className="space-y-4">
+      <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+        <div className="text-center p-4 bg-blue-50 rounded-lg">
+          <div className="text-2xl font-bold text-blue-600">{totalInteractions}</div>
+          <div className="text-sm text-gray-600">Total Interactions</div>
+        </div>
+        <div className="text-center p-4 bg-green-50 rounded-lg">
+          <div className="text-2xl font-bold text-green-600">{avgEnergyBefore.toFixed(1)}</div>
+          <div className="text-sm text-gray-600">Avg Energy Before</div>
+        </div>
+        <div className="text-center p-4 bg-orange-50 rounded-lg">
+          <div className={`text-2xl font-bold ${energyChange >= 0 ? 'text-green-600' : 'text-red-600'}`}>
+            {energyChange >= 0 ? '+' : ''}{energyChange.toFixed(1)}
+          </div>
+          <div className="text-sm text-gray-600">Avg Energy Impact</div>
+        </div>
+      </div>
+      
+      <div className="text-sm text-gray-600 mt-4">
+        <p><strong>Recent Interactions:</strong></p>
+        {interactions.slice(0, 3).map((interaction: any) => (
+          <div key={interaction.id} className="border-l-2 border-blue-200 pl-3 mt-2">
+            <p className="font-medium">{interaction.interactionType}</p>
+            <p className="text-xs text-gray-500">{new Date(interaction.createdAt).toLocaleDateString()}</p>
+          </div>
+        ))}
+      </div>
+    </div>
+  );
+}
 
 interface RelationshipProfileDetailProps {
   relationship: any;
@@ -313,9 +371,25 @@ export default function RelationshipProfileDetail({ relationship, onClose }: Rel
                     {/* Behavioral Flags */}
                     <Card>
                       <CardHeader>
-                        <CardTitle className="flex items-center gap-2">
-                          <Flag className="w-5 h-5 text-orange-500" />
-                          Behavioral Flags
+                        <CardTitle className="flex items-center justify-between">
+                          <div className="flex items-center gap-2">
+                            <Flag className="w-5 h-5 text-orange-500" />
+                            Behavioral Flags
+                          </div>
+                          <Button 
+                            size="sm" 
+                            variant="outline"
+                            onClick={() => {
+                              // TODO: Open flag creation dialog
+                              toast({
+                                title: "Coming Soon",
+                                description: "Flag creation interface will be added soon.",
+                              });
+                            }}
+                          >
+                            <Plus className="w-4 h-4 mr-1" />
+                            Add Flag
+                          </Button>
                         </CardTitle>
                       </CardHeader>
                       <CardContent>
@@ -355,9 +429,25 @@ export default function RelationshipProfileDetail({ relationship, onClose }: Rel
                     {/* Check-ins */}
                     <Card>
                       <CardHeader>
-                        <CardTitle className="flex items-center gap-2">
-                          <MessageSquare className="w-5 h-5 text-blue-500" />
-                          Recent Check-ins
+                        <CardTitle className="flex items-center justify-between">
+                          <div className="flex items-center gap-2">
+                            <MessageSquare className="w-5 h-5 text-blue-500" />
+                            Recent Check-ins
+                          </div>
+                          <Button 
+                            size="sm" 
+                            variant="outline"
+                            onClick={() => {
+                              // TODO: Open check-in creation dialog
+                              toast({
+                                title: "Coming Soon",
+                                description: "Check-in creation interface will be added soon.",
+                              });
+                            }}
+                          >
+                            <Plus className="w-4 h-4 mr-1" />
+                            Check In
+                          </Button>
                         </CardTitle>
                       </CardHeader>
                       <CardContent>
@@ -395,20 +485,19 @@ export default function RelationshipProfileDetail({ relationship, onClose }: Rel
                 </TabsContent>
 
                 <TabsContent value="analysis" className="p-6">
-                  <Card>
-                    <CardHeader>
-                      <CardTitle className="flex items-center gap-2">
-                        <Brain className="w-5 h-5 text-purple-500" />
-                        Relationship Analysis
-                      </CardTitle>
-                    </CardHeader>
-                    <CardContent>
-                      <p className="text-gray-500 text-center py-8">
-                        Advanced analysis features coming soon. This will include pattern recognition, 
-                        trigger analysis, and personalized insights based on your interactions.
-                      </p>
-                    </CardContent>
-                  </Card>
+                  <div className="space-y-6">
+                    <Card>
+                      <CardHeader>
+                        <CardTitle className="flex items-center gap-2">
+                          <Brain className="w-5 h-5 text-purple-500" />
+                          Interaction Analysis
+                        </CardTitle>
+                      </CardHeader>
+                      <CardContent>
+                        <InteractionAnalysis relationshipId={relationship.id} />
+                      </CardContent>
+                    </Card>
+                  </div>
                 </TabsContent>
               </div>
             </Tabs>
