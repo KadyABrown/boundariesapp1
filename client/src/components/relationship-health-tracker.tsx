@@ -227,7 +227,7 @@ export default function RelationshipHealthTracker({ profileId, profileName }: Re
               </div>
               <div className="flex items-center gap-2">
                 <Heart className="w-4 h-4 text-pink-500" />
-                <span>{stats?.averageSafetyRating?.toFixed(1) || "N/A"} Safety</span>
+                <span>{(typeof stats?.averageSafetyRating === 'number' ? stats.averageSafetyRating.toFixed(1) : "N/A")} Safety</span>
               </div>
             </div>
 
