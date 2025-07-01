@@ -267,11 +267,11 @@ export default function Profile() {
 
         {/* Profile Management Tabs */}
         <Tabs defaultValue="basic" className="space-y-6">
-          <TabsList className="grid w-full grid-cols-4">
-            <TabsTrigger value="basic">Basic Info</TabsTrigger>
-            <TabsTrigger value="preferences">Preferences</TabsTrigger>
-            <TabsTrigger value="privacy">Privacy & Sharing</TabsTrigger>
-            <TabsTrigger value="achievements">Achievements</TabsTrigger>
+          <TabsList className="grid w-full grid-cols-2 md:grid-cols-4 gap-1">
+            <TabsTrigger value="basic" className="text-xs md:text-sm">Basic Info</TabsTrigger>
+            <TabsTrigger value="preferences" className="text-xs md:text-sm">Preferences</TabsTrigger>
+            <TabsTrigger value="privacy" className="text-xs md:text-sm">Privacy</TabsTrigger>
+            <TabsTrigger value="achievements" className="text-xs md:text-sm">Achievements</TabsTrigger>
           </TabsList>
 
           {/* Basic Information Tab */}
