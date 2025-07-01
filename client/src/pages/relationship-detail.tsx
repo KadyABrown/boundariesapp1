@@ -29,7 +29,7 @@ export default function RelationshipDetail() {
 
   // Fetch relationship profile
   const { data: profile, isLoading: profileLoading, error } = useQuery<RelationshipProfile>({
-    queryKey: ['/api/relationships', id],
+    queryKey: [`/api/relationships/${id}`],
     enabled: !!id && isAuthenticated,
   });
 
