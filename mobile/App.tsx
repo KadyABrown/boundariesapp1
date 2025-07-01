@@ -1,8 +1,6 @@
 import { StatusBar } from 'expo-status-bar';
 import { StyleSheet, Text, View, ScrollView, TouchableOpacity } from 'react-native';
-import { useState, useEffect } from 'react';
-
-const queryClient = new QueryClient();
+import { useState } from 'react';
 
 // Simple API configuration
 const API_BASE_URL = 'https://your-replit-url.replit.dev'; // Replace with your actual URL
@@ -110,45 +108,41 @@ export default function App() {
   };
 
   return (
-    <SafeAreaProvider>
-      <QueryClientProvider client={queryClient}>
-        <SafeAreaView style={styles.container}>
-          <StatusBar style="auto" />
-          
-          {renderScreen()}
+    <View style={styles.container}>
+      <StatusBar style="auto" />
+      
+      {renderScreen()}
 
-          {/* Simple Tab Navigation */}
-          <View style={styles.tabBar}>
-            <TouchableOpacity 
-              style={[styles.tab, activeTab === 'dashboard' && styles.activeTab]}
-              onPress={() => setActiveTab('dashboard')}
-            >
-              <Text style={[styles.tabText, activeTab === 'dashboard' && styles.activeTabText]}>
-                Dashboard
-              </Text>
-            </TouchableOpacity>
-            
-            <TouchableOpacity 
-              style={[styles.tab, activeTab === 'boundaries' && styles.activeTab]}
-              onPress={() => setActiveTab('boundaries')}
-            >
-              <Text style={[styles.tabText, activeTab === 'boundaries' && styles.activeTabText]}>
-                Boundaries
-              </Text>
-            </TouchableOpacity>
-            
-            <TouchableOpacity 
-              style={[styles.tab, activeTab === 'relationships' && styles.activeTab]}
-              onPress={() => setActiveTab('relationships')}
-            >
-              <Text style={[styles.tabText, activeTab === 'relationships' && styles.activeTabText]}>
-                Relationships
-              </Text>
-            </TouchableOpacity>
-          </View>
-        </SafeAreaView>
-      </QueryClientProvider>
-    </SafeAreaProvider>
+      {/* Simple Tab Navigation */}
+      <View style={styles.tabBar}>
+        <TouchableOpacity 
+          style={[styles.tab, activeTab === 'dashboard' && styles.activeTab]}
+          onPress={() => setActiveTab('dashboard')}
+        >
+          <Text style={[styles.tabText, activeTab === 'dashboard' && styles.activeTabText]}>
+            Dashboard
+          </Text>
+        </TouchableOpacity>
+        
+        <TouchableOpacity 
+          style={[styles.tab, activeTab === 'boundaries' && styles.activeTab]}
+          onPress={() => setActiveTab('boundaries')}
+        >
+          <Text style={[styles.tabText, activeTab === 'boundaries' && styles.activeTabText]}>
+            Boundaries
+          </Text>
+        </TouchableOpacity>
+        
+        <TouchableOpacity 
+          style={[styles.tab, activeTab === 'relationships' && styles.activeTab]}
+          onPress={() => setActiveTab('relationships')}
+        >
+          <Text style={[styles.tabText, activeTab === 'relationships' && styles.activeTabText]}>
+            Relationships
+          </Text>
+        </TouchableOpacity>
+      </View>
+    </View>
   );
 }
 
