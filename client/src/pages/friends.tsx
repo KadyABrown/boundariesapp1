@@ -311,7 +311,7 @@ export default function Friends() {
                       <SelectValue placeholder="Select a friend circle" />
                     </SelectTrigger>
                     <SelectContent>
-                      <SelectItem value="">No Circle</SelectItem>
+                      <SelectItem value="none">No Circle</SelectItem>
                       {Array.isArray(friendCircles) && friendCircles.map((circle: any) => (
                         <SelectItem key={circle.id} value={circle.name}>
                           {circle.name}
@@ -344,7 +344,7 @@ export default function Friends() {
                       if (selectedFriend) {
                         updateFriendCircleMutation.mutate({
                           friendshipId: selectedFriend.id,
-                          circleTag: selectedCircle
+                          circleTag: selectedCircle === 'none' ? '' : selectedCircle
                         });
                       }
                     }}
@@ -445,7 +445,7 @@ export default function Friends() {
                             size="sm"
                             onClick={() => {
                               setSelectedFriend(friendship);
-                              setSelectedCircle(friendship.circleTag || '');
+                              setSelectedCircle(friendship.circleTag || 'none');
                               setIsSettingsDialogOpen(true);
                             }}
                           >
