@@ -34,6 +34,7 @@ export default function Relationships() {
   const [selectedRelationship, setSelectedRelationship] = useState<any>(null);
   const [trackingMode, setTrackingMode] = useState<'interaction' | 'triggers' | 'patterns' | 'analytics' | 'comparison'>('interaction');
   const [showInteractionTracker, setShowInteractionTracker] = useState(false);
+  const [relationshipTriggers, setRelationshipTriggers] = useState<any[]>([]);
 
   // Redirect to home if not authenticated
   useEffect(() => {
@@ -853,7 +854,9 @@ export default function Relationships() {
                     <ComprehensiveInteractionTracker
                       relationshipId={selectedRelationship.id}
                       relationshipName={selectedRelationship.name}
-                      onSaveInteraction={(data) => {
+                      isOpen={true}
+                      onClose={() => setTrackingMode('interaction')}
+                      onSubmit={(data) => {
                         toast({
                           title: "Interaction Logged",
                           description: "Your detailed interaction data has been saved for analysis",
@@ -866,6 +869,14 @@ export default function Relationships() {
                     <TriggerAnalysisTracker
                       relationshipId={selectedRelationship.id}
                       relationshipName={selectedRelationship.name}
+                      existingTriggers={relationshipTriggers}
+                      onUpdateTriggers={(triggers) => {
+                        setRelationshipTriggers(triggers);
+                        toast({
+                          title: "Triggers Updated",
+                          description: "Your trigger patterns have been saved successfully.",
+                        });
+                      }}
                     />
                   )}
 
@@ -878,7 +889,7 @@ export default function Relationships() {
 
                   {trackingMode === 'analytics' && (
                     <RelationshipHealthAnalytics
-                      relationshipId={selectedRelationship.id}
+                      interactions={[]} // This would be loaded from the database
                       relationshipName={selectedRelationship.name}
                     />
                   )}
