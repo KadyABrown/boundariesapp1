@@ -20,6 +20,7 @@ import { Plus, Edit2, Trash2, Heart, User, Calendar, MapPin, Flag, Brain, Target
 import { Link } from "wouter";
 import ComprehensiveInteractionTracker from "@/components/comprehensive-interaction-tracker";
 import ComprehensiveInteractionsView from "@/components/comprehensive-interactions-view";
+import RelationshipProfileDetail from "@/components/relationship-profile-detail";
 import TriggerAnalysisTracker from "@/components/trigger-analysis-tracker";
 import CommunicationSilenceTracker from "@/components/communication-silence-tracker";
 import RelationshipHealthAnalytics from "@/components/relationship-health-analytics";
@@ -31,7 +32,7 @@ export default function Relationships() {
   const { isAuthenticated, isLoading } = useAuth();
   const [isDialogOpen, setIsDialogOpen] = useState(false);
   const [editingProfile, setEditingProfile] = useState<any>(null);
-  const [activeView, setActiveView] = useState<'overview' | 'detailed'>('overview');
+  const [activeView, setActiveView] = useState<'overview' | 'detailed' | 'profile-detail'>('overview');
   const [selectedRelationship, setSelectedRelationship] = useState<any>(null);
   const [trackingMode, setTrackingMode] = useState<'interaction' | 'view-interactions' | 'triggers' | 'patterns' | 'analytics' | 'comparison'>('interaction');
   const [showInteractionTracker, setShowInteractionTracker] = useState(false);
@@ -710,6 +711,17 @@ export default function Relationships() {
                         size="sm"
                         onClick={() => {
                           setSelectedRelationship(profile);
+                          setActiveView('profile-detail');
+                        }}
+                        title="View Details"
+                      >
+                        <User className="w-4 h-4" />
+                      </Button>
+                      <Button
+                        variant="ghost"
+                        size="sm"
+                        onClick={() => {
+                          setSelectedRelationship(profile);
                           setActiveView('detailed');
                           setTrackingMode('interaction');
                         }}
@@ -975,6 +987,17 @@ export default function Relationships() {
               </div>
             </div>
           </div>
+        )}
+
+        {/* Profile Detail View */}
+        {activeView === 'profile-detail' && selectedRelationship && (
+          <RelationshipProfileDetail 
+            relationship={selectedRelationship}
+            onClose={() => {
+              setActiveView('overview');
+              setSelectedRelationship(null);
+            }}
+          />
         )}
       </div>
     </div>
