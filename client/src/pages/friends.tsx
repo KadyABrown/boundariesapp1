@@ -11,7 +11,7 @@ import { Label } from "@/components/ui/label";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Badge } from "@/components/ui/badge";
-import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
+import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Separator } from "@/components/ui/separator";
 import { 
@@ -75,6 +75,9 @@ export default function Friends() {
   const [searchQuery, setSearchQuery] = useState("");
   const [searchBy, setSearchBy] = useState<"username" | "email" | "phone">("username");
   const [isSearchDialogOpen, setIsSearchDialogOpen] = useState(false);
+  const [isSettingsDialogOpen, setIsSettingsDialogOpen] = useState(false);
+  const [selectedFriend, setSelectedFriend] = useState<Friend | null>(null);
+  const [selectedCircle, setSelectedCircle] = useState("");
 
   // Fetch friends
   const { data: friends = [], isLoading: friendsLoading } = useQuery<Friend[]>({
@@ -97,6 +100,12 @@ export default function Friends() {
   // Fetch shared relationship data from friends
   const { data: sharedData = [], isLoading: sharedLoading } = useQuery({
     queryKey: ["/api/friends/shared-data"],
+    enabled: isAuthenticated,
+  });
+
+  // Fetch friend circles
+  const { data: friendCircles = [], isLoading: circlesLoading } = useQuery({
+    queryKey: ["/api/friend-circles"],
     enabled: isAuthenticated,
   });
 
@@ -140,6 +149,18 @@ export default function Friends() {
     onSuccess: () => {
       toast({ title: "Friend request declined" });
       queryClient.invalidateQueries({ queryKey: ["/api/friend-requests/received"] });
+    },
+  });
+
+  // Update friend circle assignment
+  const updateFriendCircleMutation = useMutation({
+    mutationFn: async ({ friendshipId, circleTag }: { friendshipId: number; circleTag: string }) => {
+      await apiRequest("PATCH", `/api/friends/${friendshipId}/circle`, { circleTag });
+    },
+    onSuccess: () => {
+      toast({ title: "Friend circle updated!" });
+      queryClient.invalidateQueries({ queryKey: ["/api/friends"] });
+      setIsSettingsDialogOpen(false);
     },
   });
 
@@ -271,6 +292,70 @@ export default function Friends() {
               </div>
             </DialogContent>
           </Dialog>
+
+          {/* Friend Settings Dialog */}
+          <Dialog open={isSettingsDialogOpen} onOpenChange={setIsSettingsDialogOpen}>
+            <DialogContent>
+              <DialogHeader>
+                <DialogTitle>Friend Settings</DialogTitle>
+                <DialogDescription>
+                  Manage {selectedFriend ? getDisplayName(selectedFriend.friend) : ''}'s friend circle and settings
+                </DialogDescription>
+              </DialogHeader>
+
+              <div className="space-y-4">
+                <div>
+                  <Label htmlFor="circle">Friend Circle</Label>
+                  <Select value={selectedCircle} onValueChange={setSelectedCircle}>
+                    <SelectTrigger>
+                      <SelectValue placeholder="Select a friend circle" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="">No Circle</SelectItem>
+                      {Array.isArray(friendCircles) && friendCircles.map((circle: any) => (
+                        <SelectItem key={circle.id} value={circle.name}>
+                          {circle.name}
+                        </SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                  <p className="text-sm text-neutral-500 mt-1">
+                    Friend circles control what relationship data this friend can see
+                  </p>
+                </div>
+
+                {/* Privacy System Explanation */}
+                <div className="bg-blue-50 dark:bg-blue-950 p-3 rounded-lg">
+                  <h4 className="font-medium text-sm mb-2">How Privacy Works:</h4>
+                  <ul className="text-xs text-neutral-600 dark:text-neutral-300 space-y-1">
+                    <li>• <strong>Close Friends:</strong> Can see all your relationship data</li>
+                    <li>• <strong>Dating Circle:</strong> Can see dating-related relationships only</li>
+                    <li>• <strong>Work Friends:</strong> Can see public relationships only</li>
+                    <li>• <strong>No Circle:</strong> Cannot see any relationship data</li>
+                  </ul>
+                </div>
+
+                <div className="flex justify-end gap-2">
+                  <Button variant="outline" onClick={() => setIsSettingsDialogOpen(false)}>
+                    Cancel
+                  </Button>
+                  <Button 
+                    onClick={() => {
+                      if (selectedFriend) {
+                        updateFriendCircleMutation.mutate({
+                          friendshipId: selectedFriend.id,
+                          circleTag: selectedCircle
+                        });
+                      }
+                    }}
+                    disabled={updateFriendCircleMutation.isPending}
+                  >
+                    {updateFriendCircleMutation.isPending ? "Updating..." : "Update"}
+                  </Button>
+                </div>
+              </div>
+            </DialogContent>
+          </Dialog>
         </div>
 
         <Tabs defaultValue="friends" className="space-y-6">
@@ -355,7 +440,15 @@ export default function Friends() {
                           <Button variant="outline" size="sm">
                             <MessageCircle className="w-4 h-4" />
                           </Button>
-                          <Button variant="outline" size="sm">
+                          <Button 
+                            variant="outline" 
+                            size="sm"
+                            onClick={() => {
+                              setSelectedFriend(friendship);
+                              setSelectedCircle(friendship.circleTag || '');
+                              setIsSettingsDialogOpen(true);
+                            }}
+                          >
                             <Settings className="w-4 h-4" />
                           </Button>
                         </div>

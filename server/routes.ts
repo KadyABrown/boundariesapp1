@@ -1305,6 +1305,18 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
+  app.patch('/api/friends/:friendshipId/circle', isAuthenticated, async (req: any, res) => {
+    try {
+      const friendshipId = parseInt(req.params.friendshipId);
+      const { circleTag } = req.body;
+      const friendship = await storage.addFriendToCircle(friendshipId, circleTag);
+      res.json(friendship);
+    } catch (error) {
+      console.error("Error updating friend circle:", error);
+      res.status(500).json({ message: "Failed to update friend circle" });
+    }
+  });
+
   // Shared relationship data from friends
   app.get('/api/friends/shared-data', isAuthenticated, async (req: any, res) => {
     try {

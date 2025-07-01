@@ -133,6 +133,28 @@ The system is built as a modern React SPA with an Express.js backend, using Post
 - **Input Validation**: Zod schema validation on API endpoints
 - **Database Security**: Parameterized queries through Drizzle ORM
 
+## Friend Circle Privacy System
+
+The app implements a tiered privacy system using friend circles to control relationship data sharing:
+
+### Friend Circle Types & Access Levels:
+1. **Close Friends**: Full access to all relationship data
+2. **Dating Circle**: Access to dating-related relationships only
+3. **Work Friends**: Access to public relationships only  
+4. **No Circle**: No access to relationship data
+
+### How It Works:
+- Each friend can be assigned to one friend circle via the settings gear icon
+- Relationship profiles have privacy settings that specify which circles can view them
+- When friends view the "Shared Data" tab, they only see relationships they have permission to access
+- Privacy controls are managed individually per relationship profile
+
+### Implementation:
+- Friend circles are stored in the `friendCircles` table
+- Friendships have a `circleTag` field linking them to circles
+- Relationship profiles have sharing settings that correspond to circle permissions
+- Backend filters shared data based on friend circle membership
+
 ## Changelog
 
 - June 30, 2025. Initial setup
@@ -140,6 +162,7 @@ The system is built as a modern React SPA with an Express.js backend, using Post
 - June 30, 2025. Completed functional relationship tracking system: behavioral flags (+1/-1 scoring), emotional check-ins, real-time health calculations, neutral status language, and full data persistence
 - July 1, 2025. Enhanced relationship profiles with comprehensive settings: privacy controls (friend/therapist sharing), emotional tracking preferences, custom tags, relationship status options (Interested → Over), and relationship-level settings dialog for post-creation editing
 - July 1, 2025. Added comprehensive Friend System with search capabilities (username/email/phone), friend requests, friend circles, relationship visibility controls, and enhanced user profile system with phone number support
+- July 1, 2025. Implemented friend circle management functionality with settings gear icons, friend circle assignment dialog, and documented the tiered privacy system for relationship data sharing
 
 ## User Preferences
 
