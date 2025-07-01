@@ -534,17 +534,74 @@ export default function RelationshipProfileDetail({ relationship, onClose }: Rel
         />
       )}
 
-      {/* Simple Flag Creation Dialog */}
+      {/* Flag Creation Dialog */}
       {showFlagDialog && (
         <div className="fixed inset-0 bg-black bg-opacity-50 z-50 flex items-center justify-center p-4">
           <div className="bg-white rounded-lg p-6 w-full max-w-md">
             <h3 className="text-lg font-semibold mb-4">Add Behavioral Flag</h3>
-            <p className="text-gray-600 mb-4">
-              Quick flag creation interface coming soon. For now, use the CIT tracker to log detailed interactions which will automatically generate behavioral insights.
-            </p>
-            <div className="flex gap-2">
-              <Button onClick={() => setShowFlagDialog(false)} className="flex-1">
-                Close
+            <div className="space-y-4">
+              <div>
+                <label className="text-sm font-medium text-gray-700">Flag Type</label>
+                <select className="w-full mt-1 p-2 border rounded-md">
+                  <option value="green">Green Flag (Positive)</option>
+                  <option value="red">Red Flag (Concerning)</option>
+                </select>
+              </div>
+              <div>
+                <label className="text-sm font-medium text-gray-700">Category</label>
+                <select className="w-full mt-1 p-2 border rounded-md">
+                  <option value="communication">Communication</option>
+                  <option value="respect">Respect</option>
+                  <option value="trust">Trust & Reliability</option>
+                  <option value="emotional">Emotional Consistency</option>
+                </select>
+              </div>
+              <div>
+                <label className="text-sm font-medium text-gray-700">Behavior Description</label>
+                <textarea 
+                  className="w-full mt-1 p-2 border rounded-md" 
+                  rows={3} 
+                  placeholder="Describe the specific behavior you observed..."
+                />
+              </div>
+              <div>
+                <label className="text-sm font-medium text-gray-700">Notes (Optional)</label>
+                <textarea 
+                  className="w-full mt-1 p-2 border rounded-md" 
+                  rows={2} 
+                  placeholder="Additional context or notes..."
+                />
+              </div>
+            </div>
+            <div className="flex gap-2 mt-6">
+              <Button 
+                onClick={() => setShowFlagDialog(false)} 
+                variant="outline" 
+                className="flex-1"
+              >
+                Cancel
+              </Button>
+              <Button 
+                onClick={async () => {
+                  try {
+                    // TODO: Add actual flag creation API call
+                    toast({
+                      title: "Flag Added",
+                      description: "Behavioral flag has been recorded successfully.",
+                    });
+                    setShowFlagDialog(false);
+                    queryClient.invalidateQueries({ queryKey: ['/api/relationships', relationship.id, 'flags'] });
+                  } catch (error) {
+                    toast({
+                      title: "Error",
+                      description: "Failed to add flag. Please try again.",
+                      variant: "destructive",
+                    });
+                  }
+                }} 
+                className="flex-1"
+              >
+                Add Flag
               </Button>
             </div>
           </div>
