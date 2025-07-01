@@ -9,7 +9,54 @@ import ActivityTimeline from "@/components/activity-timeline";
 import WeeklyProgress from "@/components/weekly-progress";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
-import { CheckCircle, AlertTriangle, Smile, Plus, BookOpen, TrendingUp } from "lucide-react";
+import { CheckCircle, AlertTriangle, Smile, Plus, BookOpen, TrendingUp, Heart, Users } from "lucide-react";
+
+// Relationship summary component for dashboard
+function RelationshipSummaryCard({ relationship }: { relationship: any }) {
+  const { data: stats } = useQuery({
+    queryKey: [`/api/relationships/${relationship.id}/stats`],
+    retry: false,
+  });
+
+  const healthScore = stats ? stats.greenFlags - stats.redFlags : 0;
+  
+  const getHealthStatus = () => {
+    if (healthScore >= 5) return { label: "Going Well", color: "text-green-600", bgColor: "bg-green-50" };
+    if (healthScore >= 0) return { label: "Balanced", color: "text-blue-600", bgColor: "bg-blue-50" };
+    if (healthScore >= -3) return { label: "Mixed Signals", color: "text-yellow-600", bgColor: "bg-yellow-50" };
+    return { label: "Needs Attention", color: "text-orange-600", bgColor: "bg-orange-50" };
+  };
+
+  const healthStatus = getHealthStatus();
+
+  return (
+    <div 
+      className="p-3 border rounded-lg hover:shadow-sm transition-shadow cursor-pointer"
+      onClick={() => window.location.href = `/relationships/${relationship.id}`}
+    >
+      <div className="flex items-center justify-between mb-2">
+        <div className="flex items-center gap-2">
+          <Heart className="w-4 h-4 text-primary" />
+          <span className="font-medium text-sm">{relationship.name}</span>
+        </div>
+        <span className={`text-xs px-2 py-1 rounded-full ${healthStatus.bgColor} ${healthStatus.color}`}>
+          {healthStatus.label}
+        </span>
+      </div>
+      
+      {stats && (
+        <div className="flex items-center gap-4 text-xs text-neutral-600">
+          <span className="text-green-600">+{stats.greenFlags}</span>
+          <span className="text-red-600">-{stats.redFlags}</span>
+          <span className="flex items-center gap-1">
+            <Users className="w-3 h-3" />
+            {stats.checkInCount}
+          </span>
+        </div>
+      )}
+    </div>
+  );
+}
 
 export default function Dashboard() {
   const { toast } = useToast();
@@ -37,6 +84,11 @@ export default function Dashboard() {
 
   const { data: boundaries } = useQuery({
     queryKey: ["/api/boundaries"],
+    retry: false,
+  });
+
+  const { data: relationships } = useQuery({
+    queryKey: ["/api/relationships"],
     retry: false,
   });
 
@@ -161,6 +213,30 @@ export default function Dashboard() {
           <div className="space-y-6">
             {/* Weekly Progress */}
             <WeeklyProgress />
+
+            {/* Relationship Trends */}
+            {relationships && relationships.length > 0 && (
+              <Card>
+                <CardHeader>
+                  <div className="flex items-center justify-between">
+                    <CardTitle className="flex items-center gap-2">
+                      <TrendingUp className="w-5 h-5 text-primary" />
+                      Relationship Trends
+                    </CardTitle>
+                    <Button variant="ghost" size="sm" onClick={() => window.location.href = '/relationships'}>
+                      View All
+                    </Button>
+                  </div>
+                </CardHeader>
+                <CardContent>
+                  <div className="space-y-3">
+                    {relationships.slice(0, 3).map((relationship: any) => (
+                      <RelationshipSummaryCard key={relationship.id} relationship={relationship} />
+                    ))}
+                  </div>
+                </CardContent>
+              </Card>
+            )}
 
             {/* My Boundaries */}
             <Card>
