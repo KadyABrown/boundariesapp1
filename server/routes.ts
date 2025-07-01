@@ -16,6 +16,7 @@ import {
   insertBehavioralFlagSchema,
   insertFlagExampleSchema,
   insertUserSavedFlagSchema,
+  insertFriendCircleSchema,
 } from "@shared/schema";
 import { z } from "zod";
 
@@ -1205,6 +1206,133 @@ export async function registerRoutes(app: Express): Promise<Server> {
     } catch (error) {
       console.error("Error seeding flags:", error);
       res.status(500).json({ message: "Failed to seed flags" });
+    }
+  });
+
+  // Friends system routes
+  app.get('/api/users/search', isAuthenticated, async (req: any, res) => {
+    try {
+      const { searchBy, query } = req.query;
+      if (!searchBy || !query) {
+        return res.json([]);
+      }
+      
+      const users = await storage.searchUsers(query, searchBy);
+      res.json(users);
+    } catch (error) {
+      console.error("Error searching users:", error);
+      res.status(500).json({ message: "Failed to search users" });
+    }
+  });
+
+  app.post('/api/friend-requests', isAuthenticated, async (req: any, res) => {
+    try {
+      const requesterId = req.user.claims.sub;
+      const { receiverId, circleTag } = req.body;
+      
+      const friendship = await storage.sendFriendRequest(requesterId, receiverId, circleTag);
+      res.json(friendship);
+    } catch (error) {
+      console.error("Error sending friend request:", error);
+      res.status(500).json({ message: "Failed to send friend request" });
+    }
+  });
+
+  app.get('/api/friend-requests/sent', isAuthenticated, async (req: any, res) => {
+    try {
+      const userId = req.user.claims.sub;
+      const requests = await storage.getFriendRequests(userId, 'sent');
+      res.json(requests);
+    } catch (error) {
+      console.error("Error fetching sent requests:", error);
+      res.status(500).json({ message: "Failed to fetch sent requests" });
+    }
+  });
+
+  app.get('/api/friend-requests/received', isAuthenticated, async (req: any, res) => {
+    try {
+      const userId = req.user.claims.sub;
+      const requests = await storage.getFriendRequests(userId, 'received');
+      res.json(requests);
+    } catch (error) {
+      console.error("Error fetching received requests:", error);
+      res.status(500).json({ message: "Failed to fetch received requests" });
+    }
+  });
+
+  app.patch('/api/friend-requests/:id/accept', isAuthenticated, async (req: any, res) => {
+    try {
+      const friendshipId = parseInt(req.params.id);
+      const friendship = await storage.acceptFriendRequest(friendshipId);
+      res.json(friendship);
+    } catch (error) {
+      console.error("Error accepting friend request:", error);
+      res.status(500).json({ message: "Failed to accept friend request" });
+    }
+  });
+
+  app.delete('/api/friend-requests/:id', isAuthenticated, async (req: any, res) => {
+    try {
+      const friendshipId = parseInt(req.params.id);
+      await storage.declineFriendRequest(friendshipId);
+      res.json({ message: "Friend request declined" });
+    } catch (error) {
+      console.error("Error declining friend request:", error);
+      res.status(500).json({ message: "Failed to decline friend request" });
+    }
+  });
+
+  app.get('/api/friends', isAuthenticated, async (req: any, res) => {
+    try {
+      const userId = req.user.claims.sub;
+      const friends = await storage.getFriends(userId);
+      res.json(friends);
+    } catch (error) {
+      console.error("Error fetching friends:", error);
+      res.status(500).json({ message: "Failed to fetch friends" });
+    }
+  });
+
+  app.delete('/api/friends/:friendId', isAuthenticated, async (req: any, res) => {
+    try {
+      const userId = req.user.claims.sub;
+      const { friendId } = req.params;
+      await storage.removeFriend(userId, friendId);
+      res.json({ message: "Friend removed" });
+    } catch (error) {
+      console.error("Error removing friend:", error);
+      res.status(500).json({ message: "Failed to remove friend" });
+    }
+  });
+
+  // Friend circles routes
+  app.get('/api/friend-circles', isAuthenticated, async (req: any, res) => {
+    try {
+      const userId = req.user.claims.sub;
+      const circles = await storage.getFriendCircles(userId);
+      res.json(circles);
+    } catch (error) {
+      console.error("Error fetching friend circles:", error);
+      res.status(500).json({ message: "Failed to fetch friend circles" });
+    }
+  });
+
+  app.post('/api/friend-circles', isAuthenticated, async (req: any, res) => {
+    try {
+      const userId = req.user.claims.sub;
+      const circleData = insertFriendCircleSchema.parse({
+        ...req.body,
+        userId,
+      });
+      const circle = await storage.createFriendCircle(circleData);
+      res.json(circle);
+    } catch (error) {
+      if (error instanceof z.ZodError) {
+        res.status(400).json({ message: "Invalid circle data", errors: error.errors });
+      } else {
+        console.error("Error creating friend circle:", error);
+        res.status(500).json({ message: "Failed to create friend circle" });
+      }
     }
   });
 

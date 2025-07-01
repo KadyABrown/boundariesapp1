@@ -37,7 +37,7 @@ import {
   type InsertFriendCircle,
 } from "@shared/schema";
 import { db } from "./db";
-import { eq, desc, and, gte, lte, sql, count } from "drizzle-orm";
+import { eq, desc, and, gte, lte, sql, count, or, like } from "drizzle-orm";
 
 export interface IStorage {
   // User operations (required for Replit Auth)
@@ -667,6 +667,233 @@ export class DatabaseStorage implements IStorage {
     }
     
     return pairedFlags;
+  }
+
+  // Friend system operations
+  async sendFriendRequest(requesterId: string, receiverId: string, circleTag?: string): Promise<Friendship> {
+    const [friendship] = await db
+      .insert(friendships)
+      .values({
+        requesterId,
+        receiverId,
+        status: 'pending',
+        circleTag
+      })
+      .returning();
+    return friendship;
+  }
+
+  async acceptFriendRequest(friendshipId: number): Promise<Friendship> {
+    const [friendship] = await db
+      .update(friendships)
+      .set({ status: 'accepted', updatedAt: new Date() })
+      .where(eq(friendships.id, friendshipId))
+      .returning();
+    return friendship;
+  }
+
+  async declineFriendRequest(friendshipId: number): Promise<void> {
+    await db
+      .delete(friendships)
+      .where(eq(friendships.id, friendshipId));
+  }
+
+  async blockUser(userId: string, blockedUserId: string): Promise<Friendship> {
+    const [friendship] = await db
+      .insert(friendships)
+      .values({
+        requesterId: userId,
+        receiverId: blockedUserId,
+        status: 'blocked'
+      })
+      .onConflictDoUpdate({
+        target: [friendships.requesterId, friendships.receiverId],
+        set: { status: 'blocked', updatedAt: new Date() }
+      })
+      .returning();
+    return friendship;
+  }
+
+  async unblockUser(userId: string, unblockUserId: string): Promise<void> {
+    await db
+      .delete(friendships)
+      .where(
+        and(
+          eq(friendships.requesterId, userId),
+          eq(friendships.receiverId, unblockUserId),
+          eq(friendships.status, 'blocked')
+        )
+      );
+  }
+
+  async removeFriend(userId: string, friendId: string): Promise<void> {
+    await db
+      .delete(friendships)
+      .where(
+        or(
+          and(
+            eq(friendships.requesterId, userId),
+            eq(friendships.receiverId, friendId)
+          ),
+          and(
+            eq(friendships.requesterId, friendId),
+            eq(friendships.receiverId, userId)
+          )
+        )
+      );
+  }
+
+  async getFriends(userId: string): Promise<Array<Friendship & { friend: User }>> {
+    const friendsAsRequester = await db
+      .select({
+        id: friendships.id,
+        requesterId: friendships.requesterId,
+        receiverId: friendships.receiverId,
+        status: friendships.status,
+        circleTag: friendships.circleTag,
+        createdAt: friendships.createdAt,
+        updatedAt: friendships.updatedAt,
+        friend: users
+      })
+      .from(friendships)
+      .innerJoin(users, eq(users.id, friendships.receiverId))
+      .where(
+        and(
+          eq(friendships.requesterId, userId),
+          eq(friendships.status, 'accepted')
+        )
+      );
+
+    const friendsAsReceiver = await db
+      .select({
+        id: friendships.id,
+        requesterId: friendships.requesterId,
+        receiverId: friendships.receiverId,
+        status: friendships.status,
+        circleTag: friendships.circleTag,
+        createdAt: friendships.createdAt,
+        updatedAt: friendships.updatedAt,
+        friend: users
+      })
+      .from(friendships)
+      .innerJoin(users, eq(users.id, friendships.requesterId))
+      .where(
+        and(
+          eq(friendships.receiverId, userId),
+          eq(friendships.status, 'accepted')
+        )
+      );
+
+    return [...friendsAsRequester, ...friendsAsReceiver];
+  }
+
+  async getFriendRequests(userId: string, type: 'sent' | 'received'): Promise<Array<Friendship & { user: User }>> {
+    if (type === 'sent') {
+      return await db
+        .select({
+          id: friendships.id,
+          requesterId: friendships.requesterId,
+          receiverId: friendships.receiverId,
+          status: friendships.status,
+          circleTag: friendships.circleTag,
+          createdAt: friendships.createdAt,
+          updatedAt: friendships.updatedAt,
+          user: users
+        })
+        .from(friendships)
+        .innerJoin(users, eq(users.id, friendships.receiverId))
+        .where(
+          and(
+            eq(friendships.requesterId, userId),
+            eq(friendships.status, 'pending')
+          )
+        );
+    } else {
+      return await db
+        .select({
+          id: friendships.id,
+          requesterId: friendships.requesterId,
+          receiverId: friendships.receiverId,
+          status: friendships.status,
+          circleTag: friendships.circleTag,
+          createdAt: friendships.createdAt,
+          updatedAt: friendships.updatedAt,
+          user: users
+        })
+        .from(friendships)
+        .innerJoin(users, eq(users.id, friendships.requesterId))
+        .where(
+          and(
+            eq(friendships.receiverId, userId),
+            eq(friendships.status, 'pending')
+          )
+        );
+    }
+  }
+
+  async searchUsers(query: string, searchBy: 'username' | 'email' | 'phone'): Promise<User[]> {
+    let whereClause;
+    
+    switch (searchBy) {
+      case 'username':
+        whereClause = like(users.username, `%${query}%`);
+        break;
+      case 'email':
+        whereClause = like(users.email, `%${query}%`);
+        break;
+      case 'phone':
+        whereClause = like(users.phoneNumber, `%${query}%`);
+        break;
+      default:
+        return [];
+    }
+
+    return await db
+      .select()
+      .from(users)
+      .where(whereClause)
+      .limit(10);
+  }
+
+  // Friend circles operations
+  async createFriendCircle(circle: InsertFriendCircle): Promise<FriendCircle> {
+    const [created] = await db
+      .insert(friendCircles)
+      .values(circle)
+      .returning();
+    return created;
+  }
+
+  async getFriendCircles(userId: string): Promise<FriendCircle[]> {
+    return await db
+      .select()
+      .from(friendCircles)
+      .where(eq(friendCircles.userId, userId))
+      .orderBy(desc(friendCircles.createdAt));
+  }
+
+  async updateFriendCircle(id: number, updates: Partial<InsertFriendCircle>): Promise<FriendCircle> {
+    const [updated] = await db
+      .update(friendCircles)
+      .set({ ...updates, updatedAt: new Date() })
+      .where(eq(friendCircles.id, id))
+      .returning();
+    return updated;
+  }
+
+  async deleteFriendCircle(id: number): Promise<void> {
+    await db
+      .delete(friendCircles)
+      .where(eq(friendCircles.id, id));
+  }
+
+  async addFriendToCircle(friendshipId: number, circleTag: string): Promise<Friendship> {
+    const [updated] = await db
+      .update(friendships)
+      .set({ circleTag, updatedAt: new Date() })
+      .where(eq(friendships.id, friendshipId))
+      .returning();
+    return updated;
   }
 }
 
