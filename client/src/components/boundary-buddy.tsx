@@ -200,8 +200,8 @@ export default function BoundaryBuddy({ context, trigger, position = 'inline' }:
               transition={{ duration: 0.2 }}
               className="fixed inset-4 z-50 flex items-center justify-center"
             >
-              <Card className="border-2 border-blue-200 shadow-xl w-full max-w-md max-h-[70vh] flex flex-col">
-                <CardContent className="p-0 flex flex-col h-full">
+              <Card className="border-2 border-blue-200 shadow-xl w-full max-w-md max-h-[70vh] flex flex-col overflow-hidden">
+                <CardContent className="p-0 flex flex-col h-full min-h-0">
                   {/* Header */}
                   <div className="bg-gradient-to-r from-blue-500 to-purple-600 text-white p-3 rounded-t-lg">
                     <div className="flex items-center justify-between">
@@ -245,8 +245,8 @@ export default function BoundaryBuddy({ context, trigger, position = 'inline' }:
                   </div>
 
                   {/* Content */}
-                  <div className="p-4 flex-1 overflow-y-auto">
-                    <div className="space-y-4">
+                  <div className="p-4 flex-1 overflow-y-auto min-h-0 scrollbar-thin scrollbar-track-gray-100 scrollbar-thumb-gray-300">
+                    <div className="space-y-3">
                       {explanation.sections.map((section, index) => (
                         <motion.div
                           key={index}
