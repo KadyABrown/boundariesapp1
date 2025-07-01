@@ -206,50 +206,42 @@ export const comprehensiveInteractions = pgTable("comprehensive_interactions", {
   id: serial("id").primaryKey(),
   userId: varchar("user_id").notNull().references(() => users.id, { onDelete: "cascade" }),
   relationshipId: integer("relationship_id").notNull().references(() => relationshipProfiles.id, { onDelete: "cascade" }),
-  timestamp: timestamp("timestamp").defaultNow(),
+  createdAt: timestamp("created_at").defaultNow(),
   
   // Pre-interaction state
-  energyBefore: integer("energy_before").notNull(), // 1-10
-  moodBefore: varchar("mood_before", { length: 20 }).notNull(), // very-negative, negative, neutral, positive, very-positive
-  anxietyBefore: integer("anxiety_before").notNull(), // 1-10
-  selfWorthBefore: integer("self_worth_before").notNull(), // 1-10
-  physicalStateBefore: jsonb("physical_state_before").default([]),
-  emotionalWarningSignsPresent: jsonb("emotional_warning_signs_present").default([]),
+  preEnergyLevel: integer("pre_energy_level"),
+  preAnxietyLevel: integer("pre_anxiety_level"), 
+  preSelfWorth: integer("pre_self_worth"),
+  preMood: text("pre_mood"),
+  preWarningSigns: text("pre_warning_signs").array(),
   
-  // Interaction details
-  interactionType: varchar("interaction_type", { length: 100 }).notNull(),
-  duration: integer("duration").notNull(), // minutes
-  location: varchar("location", { length: 200 }),
-  witnesses: boolean("witnesses").default(false),
-  topicsDiscussed: jsonb("topics_discussed").default([]),
-  boundariesTested: boolean("boundaries_tested").default(false),
+  // Interaction context
+  interactionType: text("interaction_type"),
+  durationMinutes: integer("duration_minutes"),
+  locationSetting: text("location_setting"),
+  witnessesPresent: boolean("witnesses_present"),
+  boundaryTesting: boolean("boundary_testing"),
   
-  // Immediate post-interaction
-  energyAfter: integer("energy_after").notNull(), // 1-10
-  moodAfter: varchar("mood_after", { length: 20 }).notNull(),
-  anxietyAfter: integer("anxiety_after").notNull(), // 1-10
-  selfWorthAfter: integer("self_worth_after").notNull(), // 1-10
-  physicalSymptomsAfter: jsonb("physical_symptoms_after").default([]),
-  emotionalStateAfter: jsonb("emotional_state_after").default([]),
+  // Post-interaction impact
+  postEnergyLevel: integer("post_energy_level"),
+  postAnxietyLevel: integer("post_anxiety_level"),
+  postSelfWorth: integer("post_self_worth"),
+  physicalSymptoms: text("physical_symptoms").array(),
+  emotionalStates: text("emotional_states").array(),
   
-  // Recovery tracking
-  recoveryTime: integer("recovery_time").notNull(), // minutes to feel normal
-  recoveryStrategies: jsonb("recovery_strategies").default([]),
-  whatHelped: jsonb("what_helped").default([]),
-  whatMadeItWorse: jsonb("what_made_it_worse").default([]),
+  // Recovery analysis
+  recoveryTimeMinutes: integer("recovery_time_minutes"),
+  recoveryStrategies: text("recovery_strategies").array(),
+  whatHelped: text("what_helped"),
+  whatMadeWorse: text("what_made_worse"),
+  supportUsed: text("support_used").array(),
   
-  // Resilience building
-  boundariesMaintained: jsonb("boundaries_maintained").default([]),
-  copingSkillsUsed: jsonb("coping_skills_used").default([]),
-  supportSystemEngaged: boolean("support_system_engaged").default(false),
-  selfAdvocacyActions: jsonb("self_advocacy_actions").default([]),
-  
-  // Reflection
+  // Learning and growth
+  warningSignsRecognized: text("warning_signs_recognized").array(),
+  boundariesMaintained: text("boundaries_maintained").array(),
+  selfAdvocacyActions: text("self_advocacy_actions").array(),
   lessonsLearned: text("lessons_learned"),
-  warningSignsNoticed: jsonb("warning_signs_noticed").default([]),
-  futurePreparation: jsonb("future_preparation").default([]),
-  
-  createdAt: timestamp("created_at").defaultNow(),
+  futureStrategies: text("future_strategies"),
 });
 
 // Relations
