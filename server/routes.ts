@@ -1505,7 +1505,12 @@ export async function registerRoutes(app: Express): Promise<Server> {
   app.post('/api/boundary-goals', isAuthenticated, async (req: any, res) => {
     try {
       const userId = req.user.claims.sub;
-      const goalData = { ...req.body, userId };
+      const goalData = { 
+        ...req.body, 
+        userId,
+        startDate: new Date(req.body.startDate),
+        endDate: req.body.endDate ? new Date(req.body.endDate) : null,
+      };
       
       const goal = await storage.createBoundaryGoal(goalData);
       res.json(goal);
@@ -1518,7 +1523,12 @@ export async function registerRoutes(app: Express): Promise<Server> {
   app.put('/api/boundary-goals/:id', isAuthenticated, async (req: any, res) => {
     try {
       const goalId = parseInt(req.params.id);
-      const goal = await storage.updateBoundaryGoal(goalId, req.body);
+      const updates = { 
+        ...req.body,
+        startDate: req.body.startDate ? new Date(req.body.startDate) : undefined,
+        endDate: req.body.endDate ? new Date(req.body.endDate) : null,
+      };
+      const goal = await storage.updateBoundaryGoal(goalId, updates);
       res.json(goal);
     } catch (error) {
       console.error("Error updating boundary goal:", error);
