@@ -98,17 +98,17 @@ export default function RelationshipHealthTracker({ profileId, profileName }: Re
 
   // Fetch relationship stats
   const { data: stats } = useQuery<RelationshipStats>({
-    queryKey: ['/api/relationships', profileId, 'stats'],
+    queryKey: [`/api/relationships/${profileId}/stats`],
   });
 
   // Fetch behavioral flags
   const { data: flags = [] } = useQuery<BehavioralFlag[]>({
-    queryKey: ['/api/relationships', profileId, 'flags'],
+    queryKey: [`/api/relationships/${profileId}/flags`],
   });
 
   // Fetch emotional check-ins
   const { data: checkIns = [] } = useQuery<EmotionalCheckIn[]>({
-    queryKey: ['/api/relationships', profileId, 'check-ins'],
+    queryKey: [`/api/relationships/${profileId}/check-ins`],
   });
 
   // Add flag mutation
@@ -134,7 +134,8 @@ export default function RelationshipHealthTracker({ profileId, profileName }: Re
       );
     },
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['/api/relationships'] });
+      queryClient.invalidateQueries({ queryKey: [`/api/relationships/${profileId}/stats`] });
+      queryClient.invalidateQueries({ queryKey: [`/api/relationships/${profileId}/flags`] });
       setSelectedCategory("");
       setSelectedFlag("");
       setFlagNotes("");
@@ -156,7 +157,8 @@ export default function RelationshipHealthTracker({ profileId, profileName }: Re
       );
     },
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['/api/relationships'] });
+      queryClient.invalidateQueries({ queryKey: [`/api/relationships/${profileId}/stats`] });
+      queryClient.invalidateQueries({ queryKey: [`/api/relationships/${profileId}/check-ins`] });
       setCheckInData({
         feelSafeAndExcited: "",
         feelSupported: "",
