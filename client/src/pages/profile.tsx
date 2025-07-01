@@ -92,7 +92,7 @@ export default function Profile() {
   // Update profile mutation
   const updateProfileMutation = useMutation({
     mutationFn: async (updates: any) => {
-      await apiRequest("/api/profile", "PATCH", updates);
+      await apiRequest("PATCH", "/api/profile", updates);
     },
     onSuccess: () => {
       toast({
@@ -138,6 +138,7 @@ export default function Profile() {
   }, [isAuthenticated, isLoading, toast]);
 
   const handleSaveProfile = () => {
+    console.log("Saving profile with data:", profileData);
     updateProfileMutation.mutate(profileData);
   };
 
