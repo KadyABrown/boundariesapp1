@@ -1044,12 +1044,14 @@ export class DatabaseStorage implements IStorage {
       throw new Error('Goal not found');
     }
 
-    // Count relevant boundary entries
+    // Count relevant boundary entries - only for boundaries matching the goal category
     const totalEntries = await db
       .select({ count: count() })
       .from(boundaryEntries)
+      .innerJoin(boundaries, eq(boundaryEntries.boundaryId, boundaries.id))
       .where(and(
         eq(boundaryEntries.userId, userId),
+        eq(boundaries.category, goal.category),
         gte(boundaryEntries.createdAt, startDate),
         lte(boundaryEntries.createdAt, endDate)
       ));
@@ -1057,8 +1059,10 @@ export class DatabaseStorage implements IStorage {
     const respectEntries = await db
       .select({ count: count() })
       .from(boundaryEntries)
+      .innerJoin(boundaries, eq(boundaryEntries.boundaryId, boundaries.id))
       .where(and(
         eq(boundaryEntries.userId, userId),
+        eq(boundaries.category, goal.category),
         eq(boundaryEntries.status, 'respected'),
         gte(boundaryEntries.createdAt, startDate),
         lte(boundaryEntries.createdAt, endDate)
