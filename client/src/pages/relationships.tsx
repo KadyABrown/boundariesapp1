@@ -12,7 +12,9 @@ import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Switch } from "@/components/ui/switch";
+import { Checkbox } from "@/components/ui/checkbox";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
+import { Collapsible, CollapsibleContent, CollapsibleTrigger } from "@/components/ui/collapsible";
 import { Badge } from "@/components/ui/badge";
 import { Plus, Edit2, Trash2, Heart, User, Calendar, MapPin, Flag } from "lucide-react";
 import { Link } from "wouter";
@@ -144,10 +146,25 @@ export default function Relationships() {
     name: "",
     nickname: "",
     relationshipType: "",
+    relationshipStatus: "",
     dateMet: "",
     howMet: "",
     currentStatus: "active",
     isPrivate: false,
+    
+    // Privacy & Sharing Controls
+    shareWithFriends: false,
+    shareWithTherapist: false,
+    silentEndNotification: false,
+    flagVisibility: "private",
+    
+    // Emotional Tracking Preferences
+    enableEmotionalCheckins: true,
+    supportPrompts: [] as string[],
+    
+    // Notes & Tags
+    importantNotes: "",
+    customTags: [] as string[],
   });
 
   const handleSubmit = (e: React.FormEvent<HTMLFormElement>) => {
@@ -157,10 +174,25 @@ export default function Relationships() {
       name: formData.name,
       nickname: formData.nickname || null,
       relationshipType: formData.relationshipType,
+      relationshipStatus: formData.relationshipStatus || null,
       dateMet: formData.dateMet ? new Date(formData.dateMet) : null,
       howMet: formData.howMet || null,
       currentStatus: formData.currentStatus,
       isPrivate: formData.isPrivate,
+      
+      // Privacy & Sharing Controls
+      shareWithFriends: formData.shareWithFriends,
+      shareWithTherapist: formData.shareWithTherapist,
+      silentEndNotification: formData.silentEndNotification,
+      flagVisibility: formData.flagVisibility,
+      
+      // Emotional Tracking Preferences
+      enableEmotionalCheckins: formData.enableEmotionalCheckins,
+      supportPrompts: formData.supportPrompts,
+      
+      // Notes & Tags
+      importantNotes: formData.importantNotes || null,
+      customTags: formData.customTags,
     };
 
     console.log("Submitting profile data:", profileData);
@@ -178,10 +210,25 @@ export default function Relationships() {
       name: profile.name || "",
       nickname: profile.nickname || "",
       relationshipType: profile.relationshipType || "",
+      relationshipStatus: profile.relationshipStatus || "",
       dateMet: profile.dateMet ? new Date(profile.dateMet).toISOString().split('T')[0] : "",
       howMet: profile.howMet || "",
       currentStatus: profile.currentStatus || "active",
       isPrivate: profile.isPrivate || false,
+      
+      // Privacy & Sharing Controls
+      shareWithFriends: profile.shareWithFriends || false,
+      shareWithTherapist: profile.shareWithTherapist || false,
+      silentEndNotification: profile.silentEndNotification || false,
+      flagVisibility: profile.flagVisibility || "private",
+      
+      // Emotional Tracking Preferences
+      enableEmotionalCheckins: profile.enableEmotionalCheckins !== false,
+      supportPrompts: profile.supportPrompts || [],
+      
+      // Notes & Tags
+      importantNotes: profile.importantNotes || "",
+      customTags: profile.customTags || [],
     });
     setIsDialogOpen(true);
   };
@@ -192,10 +239,25 @@ export default function Relationships() {
       name: "",
       nickname: "",
       relationshipType: "",
+      relationshipStatus: "",
       dateMet: "",
       howMet: "",
       currentStatus: "active",
       isPrivate: false,
+      
+      // Privacy & Sharing Controls
+      shareWithFriends: false,
+      shareWithTherapist: false,
+      silentEndNotification: false,
+      flagVisibility: "private",
+      
+      // Emotional Tracking Preferences
+      enableEmotionalCheckins: true,
+      supportPrompts: [],
+      
+      // Notes & Tags
+      importantNotes: "",
+      customTags: [],
     });
     setIsDialogOpen(true);
   };
@@ -207,10 +269,25 @@ export default function Relationships() {
         name: "",
         nickname: "",
         relationshipType: "",
+        relationshipStatus: "",
         dateMet: "",
         howMet: "",
         currentStatus: "active",
         isPrivate: false,
+        
+        // Privacy & Sharing Controls
+        shareWithFriends: false,
+        shareWithTherapist: false,
+        silentEndNotification: false,
+        flagVisibility: "private",
+        
+        // Emotional Tracking Preferences
+        enableEmotionalCheckins: true,
+        supportPrompts: [],
+        
+        // Notes & Tags
+        importantNotes: "",
+        customTags: [],
       });
     }
   }, [isDialogOpen]);
@@ -259,14 +336,14 @@ export default function Relationships() {
                 Add Relationship
               </Button>
             </DialogTrigger>
-            <DialogContent className="max-w-2xl">
+            <DialogContent className="max-w-4xl max-h-[90vh] overflow-y-auto">
               <DialogHeader>
                 <DialogTitle>
                   {editingProfile ? "Edit Relationship Profile" : "Create New Relationship Profile"}
                 </DialogTitle>
               </DialogHeader>
               
-              <form onSubmit={handleSubmit} className="space-y-6">
+              <form onSubmit={handleSubmit} className="space-y-8">
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                   <div>
                     <Label htmlFor="name">Name</Label>
@@ -316,7 +393,36 @@ export default function Relationships() {
                   </div>
 
                   <div>
-                    <Label htmlFor="currentStatus">Current Status</Label>
+                    <Label htmlFor="relationshipStatus">Relationship Status</Label>
+                    <Select 
+                      name="relationshipStatus" 
+                      value={formData.relationshipStatus} 
+                      onValueChange={(value) => setFormData(prev => ({ ...prev, relationshipStatus: value }))}
+                    >
+                      <SelectTrigger>
+                        <SelectValue placeholder="Select relationship status" />
+                      </SelectTrigger>
+                      <SelectContent>
+                        <SelectItem value="interested">Interested</SelectItem>
+                        <SelectItem value="mutual-interest">Mutual Interest</SelectItem>
+                        <SelectItem value="talking">Talking</SelectItem>
+                        <SelectItem value="flirting">Flirting</SelectItem>
+                        <SelectItem value="friendly">Friendly</SelectItem>
+                        <SelectItem value="dating">Dating</SelectItem>
+                        <SelectItem value="casual-relationship">Relationship - Casual</SelectItem>
+                        <SelectItem value="committed-relationship">Relationship - Committed</SelectItem>
+                        <SelectItem value="off-and-on">Off & On</SelectItem>
+                        <SelectItem value="on-the-rocks">On the Rocks</SelectItem>
+                        <SelectItem value="ending-soon">The End is Near</SelectItem>
+                        <SelectItem value="over">Over</SelectItem>
+                      </SelectContent>
+                    </Select>
+                  </div>
+                </div>
+
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                  <div>
+                    <Label htmlFor="currentStatus">Activity Status</Label>
                     <Select 
                       name="currentStatus" 
                       value={formData.currentStatus} 
@@ -369,15 +475,164 @@ export default function Relationships() {
                   </div>
                 </div>
 
-                <div className="flex items-center space-x-2">
-                  <Switch
-                    id="isPrivate"
-                    name="isPrivate"
-                    checked={formData.isPrivate}
-                    onCheckedChange={(checked) => setFormData(prev => ({ ...prev, isPrivate: checked }))}
-                  />
-                  <Label htmlFor="isPrivate">Keep this profile private</Label>
-                </div>
+                {/* Privacy & Sharing Controls */}
+                <Collapsible>
+                  <CollapsibleTrigger asChild>
+                    <Button variant="outline" className="w-full justify-between">
+                      🔐 Privacy & Sharing Controls
+                      <span className="text-xs">Click to expand</span>
+                    </Button>
+                  </CollapsibleTrigger>
+                  <CollapsibleContent className="space-y-4 mt-4 p-4 border rounded-lg bg-neutral-50">
+                    <div className="space-y-4">
+                      <div className="flex items-center space-x-2">
+                        <Switch
+                          id="isPrivate"
+                          checked={formData.isPrivate}
+                          onCheckedChange={(checked) => setFormData(prev => ({ ...prev, isPrivate: checked }))}
+                        />
+                        <Label htmlFor="isPrivate">Private</Label>
+                      </div>
+                      
+                      <div className="flex items-center space-x-2">
+                        <Switch
+                          id="shareWithFriends"
+                          checked={formData.shareWithFriends}
+                          onCheckedChange={(checked) => setFormData(prev => ({ ...prev, shareWithFriends: checked }))}
+                        />
+                        <Label htmlFor="shareWithFriends">Share with Trusted Friends</Label>
+                      </div>
+                      
+                      <div className="flex items-center space-x-2">
+                        <Switch
+                          id="shareWithTherapist"
+                          checked={formData.shareWithTherapist}
+                          onCheckedChange={(checked) => setFormData(prev => ({ ...prev, shareWithTherapist: checked }))}
+                        />
+                        <Label htmlFor="shareWithTherapist">Share with Therapist/Guardian</Label>
+                      </div>
+                      
+                      <div className="flex items-center space-x-2">
+                        <Switch
+                          id="silentEndNotification"
+                          checked={formData.silentEndNotification}
+                          onCheckedChange={(checked) => setFormData(prev => ({ ...prev, silentEndNotification: checked }))}
+                        />
+                        <Label htmlFor="silentEndNotification">Silently notify shared viewers if this relationship ends</Label>
+                      </div>
+                      
+                      <div>
+                        <Label htmlFor="flagVisibility">Flag Visibility</Label>
+                        <Select 
+                          name="flagVisibility" 
+                          value={formData.flagVisibility} 
+                          onValueChange={(value) => setFormData(prev => ({ ...prev, flagVisibility: value }))}
+                        >
+                          <SelectTrigger>
+                            <SelectValue placeholder="Who can see red/green flags?" />
+                          </SelectTrigger>
+                          <SelectContent>
+                            <SelectItem value="private">Private (only me)</SelectItem>
+                            <SelectItem value="friends">Friends can see</SelectItem>
+                            <SelectItem value="therapist">Therapist can see</SelectItem>
+                          </SelectContent>
+                        </Select>
+                      </div>
+                    </div>
+                  </CollapsibleContent>
+                </Collapsible>
+
+                {/* Emotional Tracking Preferences */}
+                <Collapsible>
+                  <CollapsibleTrigger asChild>
+                    <Button variant="outline" className="w-full justify-between">
+                      📊 Emotional Tracking Preferences
+                      <span className="text-xs">Click to expand</span>
+                    </Button>
+                  </CollapsibleTrigger>
+                  <CollapsibleContent className="space-y-4 mt-4 p-4 border rounded-lg bg-neutral-50">
+                    <div className="space-y-4">
+                      <div className="flex items-center space-x-2">
+                        <Switch
+                          id="enableEmotionalCheckins"
+                          checked={formData.enableEmotionalCheckins}
+                          onCheckedChange={(checked) => setFormData(prev => ({ ...prev, enableEmotionalCheckins: checked }))}
+                        />
+                        <Label htmlFor="enableEmotionalCheckins">Track emotional check-ins</Label>
+                      </div>
+                      
+                      <div>
+                        <Label className="text-sm font-medium">Support prompts for:</Label>
+                        <div className="space-y-2 mt-2">
+                          {[
+                            { value: "boundaries", label: "Setting boundaries" },
+                            { value: "conversations", label: "Having a hard conversation" },
+                            { value: "ending", label: "Ending the relationship" },
+                            { value: "journaling", label: "Journaling/self-reflection" }
+                          ].map((prompt) => (
+                            <div key={prompt.value} className="flex items-center space-x-2">
+                              <Checkbox
+                                id={prompt.value}
+                                checked={formData.supportPrompts.includes(prompt.value)}
+                                onCheckedChange={(checked) => {
+                                  if (checked) {
+                                    setFormData(prev => ({ 
+                                      ...prev, 
+                                      supportPrompts: [...prev.supportPrompts, prompt.value] 
+                                    }));
+                                  } else {
+                                    setFormData(prev => ({ 
+                                      ...prev, 
+                                      supportPrompts: prev.supportPrompts.filter(p => p !== prompt.value) 
+                                    }));
+                                  }
+                                }}
+                              />
+                              <Label htmlFor={prompt.value} className="text-sm">{prompt.label}</Label>
+                            </div>
+                          ))}
+                        </div>
+                      </div>
+                    </div>
+                  </CollapsibleContent>
+                </Collapsible>
+
+                {/* Notes & Tags */}
+                <Collapsible>
+                  <CollapsibleTrigger asChild>
+                    <Button variant="outline" className="w-full justify-between">
+                      💬 Notes & Tags
+                      <span className="text-xs">Click to expand</span>
+                    </Button>
+                  </CollapsibleTrigger>
+                  <CollapsibleContent className="space-y-4 mt-4 p-4 border rounded-lg bg-neutral-50">
+                    <div className="space-y-4">
+                      <div>
+                        <Label htmlFor="importantNotes">What's important about this relationship to you?</Label>
+                        <Textarea
+                          id="importantNotes"
+                          value={formData.importantNotes}
+                          onChange={(e) => setFormData(prev => ({ ...prev, importantNotes: e.target.value }))}
+                          placeholder="Share your thoughts about this relationship..."
+                          rows={3}
+                        />
+                      </div>
+                      
+                      <div>
+                        <Label htmlFor="customTags">Custom Tags or Labels (Optional)</Label>
+                        <Input
+                          id="customTags"
+                          value={formData.customTags.join(", ")}
+                          onChange={(e) => setFormData(prev => ({ 
+                            ...prev, 
+                            customTags: e.target.value.split(",").map(tag => tag.trim()).filter(tag => tag) 
+                          }))}
+                          placeholder="work colleague, gym buddy, college friend (separate with commas)"
+                        />
+                      </div>
+                    </div>
+                  </CollapsibleContent>
+                </Collapsible>
 
                 <div className="flex space-x-3">
                   <Button 

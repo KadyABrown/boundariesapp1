@@ -90,11 +90,27 @@ export const relationshipProfiles = pgTable("relationship_profiles", {
   userId: varchar("user_id").notNull(),
   name: varchar("name").notNull(),
   nickname: varchar("nickname"),
-  relationshipType: varchar("relationship_type").notNull(), // romantic, platonic, situationship, other
+  relationshipType: varchar("relationship_type").notNull(), // romantic, platonic, situationship, family, workplace, other
+  relationshipStatus: varchar("relationship_status"), // interested, mutual-interest, talking, flirting, etc.
   dateMet: timestamp("date_met"),
   howMet: varchar("how_met"), // app, social-media, irl, work, friends, other
   currentStatus: varchar("current_status").default("active"), // active, inactive, ended
   isPrivate: boolean("is_private").notNull().default(false),
+  
+  // Privacy & Sharing Controls
+  shareWithFriends: boolean("share_with_friends").default(false),
+  shareWithTherapist: boolean("share_with_therapist").default(false),
+  silentEndNotification: boolean("silent_end_notification").default(false),
+  flagVisibility: varchar("flag_visibility").default("private"), // private, friends, therapist
+  
+  // Emotional Tracking Preferences
+  enableEmotionalCheckins: boolean("enable_emotional_checkins").default(true),
+  supportPrompts: text("support_prompts").array(), // boundaries, conversations, ending, journaling
+  
+  // Notes & Tags
+  importantNotes: text("important_notes"),
+  customTags: text("custom_tags").array(),
+  
   createdAt: timestamp("created_at").defaultNow(),
   updatedAt: timestamp("updated_at").defaultNow(),
 });
