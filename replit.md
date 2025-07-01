@@ -50,11 +50,12 @@ The system is built as a modern React SPA with an Express.js backend, using Post
 - **Contextual Notes**: Free-form text for detailed experience capture
 
 ### Dating Behavior Checklist
-- **Relationship Profiles**: Create detailed profiles for romantic connections with partner info and relationship metadata
+- **Relationship Profiles**: Create detailed profiles for romantic connections with comprehensive metadata and relationship status tracking (Interested → Over)
+- **Enhanced Privacy Controls**: Individual relationship-level settings for sharing with friends/therapists, silent notifications, and flag visibility
 - **Emotional Safety Check-ins**: Structured questionnaires tracking safety feelings and emotional tone changes over time
 - **Behavioral Flag System**: Green/red flag tracking across categories (Communication, Respect, Emotional Consistency, Trust & Reliability)
 - **Relationship Analytics**: Health scores, flag counts, safety ratings, and trend analysis
-- **Privacy Controls**: Per-relationship privacy settings and secure data management
+- **Support Preferences**: Customizable prompts for boundaries, conversations, ending relationships, and journaling
 
 ### Relationship Pattern Guide (Paired Flag System)
 - **Mobile-Friendly Paired Cards**: Display healthy and unhealthy relationship behaviors side-by-side by theme
@@ -137,6 +138,7 @@ The system is built as a modern React SPA with an Express.js backend, using Post
 - June 30, 2025. Initial setup
 - June 30, 2025. Added Dating Behavior Checklist feature with relationship profiles, emotional check-ins, and behavioral flag tracking
 - June 30, 2025. Completed functional relationship tracking system: behavioral flags (+1/-1 scoring), emotional check-ins, real-time health calculations, neutral status language, and full data persistence
+- July 1, 2025. Enhanced relationship profiles with comprehensive settings: privacy controls (friend/therapist sharing), emotional tracking preferences, custom tags, relationship status options (Interested → Over), and relationship-level settings dialog for post-creation editing
 
 ## User Preferences
 

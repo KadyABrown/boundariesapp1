@@ -31,7 +31,13 @@ export const users = pgTable("users", {
   email: varchar("email").unique(),
   firstName: varchar("first_name"),
   lastName: varchar("last_name"),
+  username: varchar("username").unique(),
   profileImageUrl: varchar("profile_image_url"),
+  userRole: varchar("user_role").default("standard"), // standard, therapist, guardian, minor
+  notificationPreferences: jsonb("notification_preferences").default({ email: true, push: false }),
+  defaultPrivacySetting: varchar("default_privacy_setting").default("private"), // private, friends_only, public
+  bio: text("bio"),
+  isProfileComplete: boolean("is_profile_complete").default(false),
   createdAt: timestamp("created_at").defaultNow(),
   updatedAt: timestamp("updated_at").defaultNow(),
 });

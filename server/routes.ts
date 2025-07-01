@@ -35,6 +35,73 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
+  // Profile routes
+  app.get('/api/profile', isAuthenticated, async (req: any, res) => {
+    try {
+      const userId = req.user.claims.sub;
+      const user = await storage.getUser(userId);
+      if (!user) {
+        return res.status(404).json({ message: "User profile not found" });
+      }
+      res.json(user);
+    } catch (error) {
+      console.error("Error fetching profile:", error);
+      res.status(500).json({ message: "Failed to fetch profile" });
+    }
+  });
+
+  app.patch('/api/profile', isAuthenticated, async (req: any, res) => {
+    try {
+      const userId = req.user.claims.sub;
+      const updates = {
+        ...req.body,
+        id: userId,
+        updatedAt: new Date(),
+      };
+      const user = await storage.upsertUser(updates);
+      res.json(user);
+    } catch (error) {
+      console.error("Error updating profile:", error);
+      res.status(500).json({ message: "Failed to update profile" });
+    }
+  });
+
+  app.get('/api/profile/stats', isAuthenticated, async (req: any, res) => {
+    try {
+      const userId = req.user.claims.sub;
+      
+      // Get relationship count
+      const relationships = await storage.getRelationshipProfilesByUser(userId);
+      const totalRelationships = relationships.length;
+      
+      // Get active boundaries count
+      const boundaries = await storage.getBoundariesByUser(userId);
+      const activeBoundaries = boundaries.filter(b => b.status === 'active').length;
+      
+      // Get weekly entries (last 7 days)
+      const weekAgo = new Date();
+      weekAgo.setDate(weekAgo.getDate() - 7);
+      const weeklyEntries = await storage.getBoundaryEntriesByDateRange(userId, weekAgo, new Date());
+      
+      // Count shared profiles (relationships with sharing enabled)
+      const sharedProfiles = relationships.filter(r => 
+        r.shareWithFriends || r.shareWithTherapist
+      ).length;
+      
+      const stats = {
+        totalRelationships,
+        activeBoundaries,
+        weeklyEntries: weeklyEntries.length,
+        sharedProfiles
+      };
+      
+      res.json(stats);
+    } catch (error) {
+      console.error("Error fetching profile stats:", error);
+      res.status(500).json({ message: "Failed to fetch profile stats" });
+    }
+  });
+
   // Dashboard stats
   app.get('/api/dashboard/stats', isAuthenticated, async (req: any, res) => {
     try {

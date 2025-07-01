@@ -4,7 +4,8 @@ import { useAuth } from "@/hooks/useAuth";
 import { Button } from "@/components/ui/button";
 import { Sheet, SheetContent, SheetTrigger } from "@/components/ui/sheet";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
-import { Shield, Menu, Bell, BarChart3, BookOpen, Settings, Target, Heart, Flag } from "lucide-react";
+import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuSeparator, DropdownMenuTrigger } from "@/components/ui/dropdown-menu";
+import { Shield, Menu, Bell, BarChart3, BookOpen, Settings, Target, Heart, Flag, User, LogOut } from "lucide-react";
 
 export default function Navigation() {
   const [location, setLocation] = useLocation();
@@ -15,7 +16,6 @@ export default function Navigation() {
     { name: "Dashboard", href: "/", icon: BarChart3, current: location === "/" },
     { name: "Boundaries", href: "/boundaries", icon: Target, current: location === "/boundaries" },
     { name: "Relationships", href: "/relationships", icon: Heart, current: location === "/relationships" || location.startsWith("/relationships/") },
-
     { name: "Flag Examples", href: "/flag-examples", icon: Flag, current: location === "/flag-examples" },
     { name: "Insights", href: "/insights", icon: BarChart3, current: location === "/insights" },
   ];
@@ -62,12 +62,48 @@ export default function Navigation() {
               <Bell className="w-4 h-4 text-neutral-400" />
             </Button>
             
-            <Avatar className="w-8 h-8">
-              <AvatarImage src={user?.profileImageUrl || ""} />
-              <AvatarFallback className="bg-primary text-white text-sm">
-                {userInitials}
-              </AvatarFallback>
-            </Avatar>
+            {/* User Menu Dropdown */}
+            <DropdownMenu>
+              <DropdownMenuTrigger asChild>
+                <Button variant="ghost" className="relative h-8 w-8 rounded-full">
+                  <Avatar className="h-8 w-8">
+                    <AvatarImage src={user?.profileImageUrl || ""} />
+                    <AvatarFallback className="bg-primary text-white text-sm">
+                      {userInitials}
+                    </AvatarFallback>
+                  </Avatar>
+                </Button>
+              </DropdownMenuTrigger>
+              <DropdownMenuContent className="w-56" align="end" forceMount>
+                <div className="flex items-center justify-start gap-2 p-2">
+                  <div className="flex flex-col space-y-1 leading-none">
+                    <p className="font-medium">
+                      {(user?.firstName && user?.lastName) 
+                        ? `${user.firstName} ${user.lastName}` 
+                        : "User"
+                      }
+                    </p>
+                    <p className="w-[200px] truncate text-sm text-muted-foreground">
+                      {user?.email || ""}
+                    </p>
+                  </div>
+                </div>
+                <DropdownMenuSeparator />
+                <DropdownMenuItem onClick={() => handleNavigation("/profile")}>
+                  <User className="mr-2 h-4 w-4" />
+                  <span>Profile</span>
+                </DropdownMenuItem>
+                <DropdownMenuItem onClick={() => handleNavigation("/settings")}>
+                  <Settings className="mr-2 h-4 w-4" />
+                  <span>Settings</span>
+                </DropdownMenuItem>
+                <DropdownMenuSeparator />
+                <DropdownMenuItem onClick={() => window.location.href = "/api/logout"}>
+                  <LogOut className="mr-2 h-4 w-4" />
+                  <span>Log out</span>
+                </DropdownMenuItem>
+              </DropdownMenuContent>
+            </DropdownMenu>
 
             {/* Mobile Menu */}
             <Sheet open={isSheetOpen} onOpenChange={setIsSheetOpen}>
