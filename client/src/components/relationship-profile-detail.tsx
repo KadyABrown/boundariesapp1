@@ -4,7 +4,7 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { X, Calendar, Heart, Flag, TrendingUp, MessageSquare, Brain, Plus } from "lucide-react";
+import { X, Calendar, Heart, Flag, TrendingUp, MessageSquare, Brain, Plus, Edit2 } from "lucide-react";
 import { format } from "date-fns";
 import ComprehensiveInteractionsView from "./comprehensive-interactions-view";
 import ComprehensiveInteractionTracker from "./comprehensive-interaction-tracker";
@@ -33,8 +33,8 @@ function InteractionAnalysis({ relationshipId }: { relationshipId: number }) {
 
   // Calculate simple metrics from interaction data
   const totalInteractions = interactions.length;
-  const avgEnergyBefore = interactions.reduce((sum: number, i: any) => sum + (i.energyBefore || 0), 0) / totalInteractions;
-  const avgEnergyAfter = interactions.reduce((sum: number, i: any) => sum + (i.energyAfter || 0), 0) / totalInteractions;
+  const avgEnergyBefore = interactions.reduce((sum: number, i: any) => sum + (i.preEnergyLevel || 0), 0) / totalInteractions;
+  const avgEnergyAfter = interactions.reduce((sum: number, i: any) => sum + (i.postEnergyLevel || 0), 0) / totalInteractions;
   const energyChange = avgEnergyAfter - avgEnergyBefore;
 
   return (
@@ -77,6 +77,9 @@ interface RelationshipProfileDetailProps {
 export default function RelationshipProfileDetail({ relationship, onClose }: RelationshipProfileDetailProps) {
   const { toast } = useToast();
   const [showCIT, setShowCIT] = useState(false);
+  const [showFlagDialog, setShowFlagDialog] = useState(false);
+  const [showCheckInDialog, setShowCheckInDialog] = useState(false);
+  const [showSettingsDialog, setShowSettingsDialog] = useState(false);
   
   const { data: flags, isLoading: flagsLoading } = useQuery({
     queryKey: ['/api/relationships', relationship.id, 'flags'],
@@ -303,7 +306,17 @@ export default function RelationshipProfileDetail({ relationship, onClose }: Rel
                   {/* Privacy Settings */}
                   <Card>
                     <CardHeader>
-                      <CardTitle>Privacy & Sharing</CardTitle>
+                      <CardTitle className="flex items-center justify-between">
+                        <span>Privacy & Sharing</span>
+                        <Button 
+                          size="sm" 
+                          variant="outline"
+                          onClick={() => setShowSettingsDialog(true)}
+                        >
+                          <Edit2 className="w-4 h-4 mr-1" />
+                          Edit
+                        </Button>
+                      </CardTitle>
                     </CardHeader>
                     <CardContent>
                       <div className="grid grid-cols-2 md:grid-cols-4 gap-4 text-sm">
@@ -379,13 +392,7 @@ export default function RelationshipProfileDetail({ relationship, onClose }: Rel
                           <Button 
                             size="sm" 
                             variant="outline"
-                            onClick={() => {
-                              // TODO: Open flag creation dialog
-                              toast({
-                                title: "Coming Soon",
-                                description: "Flag creation interface will be added soon.",
-                              });
-                            }}
+                            onClick={() => setShowFlagDialog(true)}
                           >
                             <Plus className="w-4 h-4 mr-1" />
                             Add Flag
@@ -437,13 +444,7 @@ export default function RelationshipProfileDetail({ relationship, onClose }: Rel
                           <Button 
                             size="sm" 
                             variant="outline"
-                            onClick={() => {
-                              // TODO: Open check-in creation dialog
-                              toast({
-                                title: "Coming Soon",
-                                description: "Check-in creation interface will be added soon.",
-                              });
-                            }}
+                            onClick={() => setShowCheckInDialog(true)}
                           >
                             <Plus className="w-4 h-4 mr-1" />
                             Check In
@@ -531,6 +532,57 @@ export default function RelationshipProfileDetail({ relationship, onClose }: Rel
             }
           }}
         />
+      )}
+
+      {/* Simple Flag Creation Dialog */}
+      {showFlagDialog && (
+        <div className="fixed inset-0 bg-black bg-opacity-50 z-50 flex items-center justify-center p-4">
+          <div className="bg-white rounded-lg p-6 w-full max-w-md">
+            <h3 className="text-lg font-semibold mb-4">Add Behavioral Flag</h3>
+            <p className="text-gray-600 mb-4">
+              Quick flag creation interface coming soon. For now, use the CIT tracker to log detailed interactions which will automatically generate behavioral insights.
+            </p>
+            <div className="flex gap-2">
+              <Button onClick={() => setShowFlagDialog(false)} className="flex-1">
+                Close
+              </Button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Simple Check-in Dialog */}
+      {showCheckInDialog && (
+        <div className="fixed inset-0 bg-black bg-opacity-50 z-50 flex items-center justify-center p-4">
+          <div className="bg-white rounded-lg p-6 w-full max-w-md">
+            <h3 className="text-lg font-semibold mb-4">Emotional Check-in</h3>
+            <p className="text-gray-600 mb-4">
+              Quick check-in interface coming soon. For now, use the Comprehensive Interaction Tracker to log detailed emotional states before and after interactions.
+            </p>
+            <div className="flex gap-2">
+              <Button onClick={() => setShowCheckInDialog(false)} className="flex-1">
+                Close
+              </Button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Simple Settings Dialog */}
+      {showSettingsDialog && (
+        <div className="fixed inset-0 bg-black bg-opacity-50 z-50 flex items-center justify-center p-4">
+          <div className="bg-white rounded-lg p-6 w-full max-w-md">
+            <h3 className="text-lg font-semibold mb-4">Edit Privacy Settings</h3>
+            <p className="text-gray-600 mb-4">
+              Privacy settings editor coming soon. For now, these settings can be modified when creating or editing the relationship profile.
+            </p>
+            <div className="flex gap-2">
+              <Button onClick={() => setShowSettingsDialog(false)} className="flex-1">
+                Close
+              </Button>
+            </div>
+          </div>
+        </div>
       )}
     </div>
   );
