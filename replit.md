@@ -136,6 +136,7 @@ The system is built as a modern React SPA with an Express.js backend, using Post
 
 - June 30, 2025. Initial setup
 - June 30, 2025. Added Dating Behavior Checklist feature with relationship profiles, emotional check-ins, and behavioral flag tracking
+- June 30, 2025. Completed functional relationship tracking system: behavioral flags (+1/-1 scoring), emotional check-ins, real-time health calculations, neutral status language, and full data persistence
 
 ## User Preferences
 
