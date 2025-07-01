@@ -1305,6 +1305,41 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
+  // Shared relationship data from friends
+  app.get('/api/friends/shared-data', isAuthenticated, async (req: any, res) => {
+    try {
+      const userId = req.user.claims.sub;
+      
+      // Get all accepted friends
+      const friends = await storage.getFriends(userId);
+      const friendIds = friends.map(f => f.friend.id);
+      
+      // Get shared relationship profiles from friends
+      const sharedProfiles = [];
+      for (const friendId of friendIds) {
+        const profiles = await storage.getRelationshipProfilesByUser(friendId);
+        const sharedByFriend = profiles.filter(profile => 
+          profile.shareWithFriends && 
+          (profile.visibility === 'all_friends' || 
+           (profile.visibility === 'selected_friends' && profile.visibleToFriends?.includes(userId)))
+        );
+        
+        for (const profile of sharedByFriend) {
+          const friend = friends.find(f => f.friend.id === friendId)?.friend;
+          sharedProfiles.push({
+            ...profile,
+            sharedBy: friend
+          });
+        }
+      }
+      
+      res.json(sharedProfiles);
+    } catch (error) {
+      console.error("Error fetching shared data:", error);
+      res.status(500).json({ message: "Failed to fetch shared data" });
+    }
+  });
+
   // Friend circles routes
   app.get('/api/friend-circles', isAuthenticated, async (req: any, res) => {
     try {

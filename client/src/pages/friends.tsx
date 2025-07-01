@@ -25,7 +25,8 @@ import {
   Shield,
   Circle,
   MessageCircle,
-  Settings
+  Settings,
+  Heart
 } from "lucide-react";
 
 interface Friend {
@@ -93,6 +94,12 @@ export default function Friends() {
     enabled: isAuthenticated,
   });
 
+  // Fetch shared relationship data from friends
+  const { data: sharedData = [], isLoading: sharedLoading } = useQuery({
+    queryKey: ["/api/friends/shared-data"],
+    enabled: isAuthenticated,
+  });
+
   // Search users mutation
   const searchMutation = useMutation({
     mutationFn: async (query: string) => {
@@ -104,7 +111,7 @@ export default function Friends() {
   // Send friend request mutation
   const sendRequestMutation = useMutation({
     mutationFn: async (userId: string) => {
-      await apiRequest("POST", "/api/friends/request", { receiverId: userId });
+      await apiRequest("POST", "/api/friend-requests", { receiverId: userId });
     },
     onSuccess: () => {
       toast({ title: "Friend request sent!" });
@@ -116,7 +123,7 @@ export default function Friends() {
   // Accept friend request mutation
   const acceptRequestMutation = useMutation({
     mutationFn: async (requestId: number) => {
-      await apiRequest("PATCH", `/api/friends/request/${requestId}/accept`);
+      await apiRequest("PATCH", `/api/friend-requests/${requestId}/accept`);
     },
     onSuccess: () => {
       toast({ title: "Friend request accepted!" });
@@ -128,7 +135,7 @@ export default function Friends() {
   // Decline friend request mutation
   const declineRequestMutation = useMutation({
     mutationFn: async (requestId: number) => {
-      await apiRequest("DELETE", `/api/friends/request/${requestId}`);
+      await apiRequest("DELETE", `/api/friend-requests/${requestId}`);
     },
     onSuccess: () => {
       toast({ title: "Friend request declined" });
@@ -267,10 +274,14 @@ export default function Friends() {
         </div>
 
         <Tabs defaultValue="friends" className="space-y-6">
-          <TabsList className="grid w-full grid-cols-3">
+          <TabsList className="grid w-full grid-cols-4">
             <TabsTrigger value="friends" className="flex items-center gap-2">
               <Users className="w-4 h-4" />
               Friends ({friends.length})
+            </TabsTrigger>
+            <TabsTrigger value="shared" className="flex items-center gap-2">
+              <Heart className="w-4 h-4" />
+              Shared Data
             </TabsTrigger>
             <TabsTrigger value="requests" className="flex items-center gap-2">
               <UserCheck className="w-4 h-4" />
@@ -339,6 +350,98 @@ export default function Friends() {
                             <Settings className="w-4 h-4" />
                           </Button>
                         </div>
+                      </div>
+                    ))}
+                  </div>
+                )}
+              </CardContent>
+            </Card>
+          </TabsContent>
+
+          {/* Shared Data */}
+          <TabsContent value="shared">
+            <Card>
+              <CardHeader>
+                <CardTitle className="flex items-center gap-2">
+                  <Heart className="w-5 h-5" />
+                  Shared Relationship Data
+                </CardTitle>
+              </CardHeader>
+              <CardContent>
+                {sharedLoading ? (
+                  <div className="space-y-4">
+                    {[1, 2].map(i => (
+                      <div key={i} className="animate-pulse">
+                        <div className="h-4 bg-neutral-200 rounded w-1/3 mb-2"></div>
+                        <div className="h-20 bg-neutral-200 rounded"></div>
+                      </div>
+                    ))}
+                  </div>
+                ) : sharedData.length === 0 ? (
+                  <div className="text-center py-8">
+                    <Heart className="w-12 h-12 text-neutral-400 mx-auto mb-3" />
+                    <p className="text-neutral-500">No shared relationship data</p>
+                    <p className="text-sm text-neutral-400">Friends can share their relationship profiles with you here</p>
+                  </div>
+                ) : (
+                  <div className="space-y-4">
+                    {sharedData.map((profile: any) => (
+                      <div key={`${profile.userId}-${profile.id}`} className="border rounded-lg p-4">
+                        <div className="flex items-start justify-between mb-3">
+                          <div>
+                            <h3 className="font-semibold text-lg">{profile.name}</h3>
+                            {profile.nickname && (
+                              <p className="text-sm text-neutral-500">"{profile.nickname}"</p>
+                            )}
+                          </div>
+                          <div className="text-right">
+                            <Badge variant="outline" className="mb-1">
+                              {profile.relationshipType || 'Connection'}
+                            </Badge>
+                            <p className="text-xs text-neutral-500">
+                              Shared by {profile.sharedBy?.firstName} {profile.sharedBy?.lastName}
+                            </p>
+                          </div>
+                        </div>
+                        
+                        <div className="grid grid-cols-1 md:grid-cols-2 gap-4 text-sm">
+                          {profile.relationshipStatus && (
+                            <div>
+                              <span className="font-medium">Status:</span> {profile.relationshipStatus}
+                            </div>
+                          )}
+                          {profile.dateMet && (
+                            <div>
+                              <span className="font-medium">Met:</span> {new Date(profile.dateMet).toLocaleDateString()}
+                            </div>
+                          )}
+                          {profile.howMet && (
+                            <div>
+                              <span className="font-medium">How:</span> {profile.howMet}
+                            </div>
+                          )}
+                          {profile.currentStatus && (
+                            <div>
+                              <span className="font-medium">Current:</span> {profile.currentStatus}
+                            </div>
+                          )}
+                        </div>
+                        
+                        {profile.importantNotes && (
+                          <div className="mt-3 p-3 bg-neutral-50 rounded">
+                            <p className="text-sm"><span className="font-medium">Notes:</span> {profile.importantNotes}</p>
+                          </div>
+                        )}
+                        
+                        {profile.customTags && profile.customTags.length > 0 && (
+                          <div className="flex flex-wrap gap-1 mt-3">
+                            {profile.customTags.map((tag: string, index: number) => (
+                              <Badge key={index} variant="secondary" className="text-xs">
+                                {tag}
+                              </Badge>
+                            ))}
+                          </div>
+                        )}
                       </div>
                     ))}
                   </div>
