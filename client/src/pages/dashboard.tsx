@@ -8,6 +8,9 @@ import BoundaryForm from "@/components/boundary-form";
 import ActivityTimeline from "@/components/activity-timeline";
 import WeeklyProgress from "@/components/weekly-progress";
 import BoundaryBuddy from "@/components/boundary-buddy";
+import DailyChallenges from "@/components/daily-challenges";
+import BoundaryQuotes from "@/components/boundary-quotes";
+import StreakRecovery from "@/components/streak-recovery";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { CheckCircle, AlertTriangle, Smile, Plus, BookOpen, TrendingUp, Heart, Users } from "lucide-react";
@@ -144,6 +147,21 @@ export default function Dashboard() {
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
           {/* Main Content Area */}
           <div className="lg:col-span-2 space-y-8">
+            {/* Streak Recovery - Shows when user hasn't logged entries for 2+ days */}
+            <StreakRecovery 
+              currentStreak={3} // Mock data - would come from real stats
+              longestStreak={14}
+              daysSinceLastEntry={3} // Mock: 3 days since last entry to show recovery
+              onStartRecovery={() => {
+                // Handle recovery start
+                console.log('Starting streak recovery');
+              }}
+              onQuickEntry={() => {
+                // Handle quick entry
+                window.location.href = '/boundaries';
+              }}
+            />
+
             {/* Today's Overview */}
             <Card>
               <CardHeader>
@@ -291,45 +309,14 @@ export default function Dashboard() {
               </CardContent>
             </Card>
 
-            {/* Reflection Corner */}
-            <Card>
-              <CardHeader>
-                <CardTitle>Reflection Corner</CardTitle>
-              </CardHeader>
-              <CardContent>
-                <div className="bg-gradient-to-br from-purple-50 to-blue-50 rounded-lg p-4 border border-purple-200 mb-4">
-                  <h4 className="font-medium text-neutral-800 mb-2">Today's Prompt</h4>
-                  <p className="text-sm text-neutral-600 mb-3">
-                    "What boundary felt most challenging to maintain today, and what can you learn from that experience?"
-                  </p>
-                  <Button variant="link" className="p-0 h-auto text-primary">
-                    Reflect on this →
-                  </Button>
-                </div>
-                
-                <div className="space-y-3">
-                  <Button variant="ghost" className="w-full justify-between">
-                    <span className="flex items-center">
-                      <BookOpen className="w-4 h-4 mr-2 text-neutral-400" />
-                      Open Journal
-                    </span>
-                    <span>→</span>
-                  </Button>
-                  
-                  <Button 
-                    variant="ghost" 
-                    className="w-full justify-between"
-                    onClick={() => window.location.href = '/insights'}
-                  >
-                    <span className="flex items-center">
-                      <TrendingUp className="w-4 h-4 mr-2 text-neutral-400" />
-                      View Insights
-                    </span>
-                    <span>→</span>
-                  </Button>
-                </div>
-              </CardContent>
-            </Card>
+            {/* Daily Challenges */}
+            <DailyChallenges />
+
+            {/* Boundary Inspiration */}
+            <BoundaryQuotes 
+              userProgress={75} // Based on user's boundary tracking progress
+              compact={false}
+            />
           </div>
         </div>
 

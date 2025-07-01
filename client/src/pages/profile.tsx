@@ -629,6 +629,32 @@ export default function Profile() {
                     Level Up
                   </Button>
                 </div>
+                <div className="mt-3">
+                  <Button
+                    variant="default"
+                    size="sm"
+                    onClick={() => {
+                      // Simulate achievement unlock for testing
+                      const testAchievement = {
+                        id: 'test_achievement',
+                        title: 'Test Achievement Unlocked!',
+                        description: 'Successfully tested the achievement system',
+                        icon: 'Trophy' as const,
+                        category: 'milestone' as const,
+                        points: 100,
+                        threshold: 1,
+                        progress: 1,
+                        unlocked: true
+                      };
+                      AudioEffects.playAchievementUnlock();
+                      // Note: This would normally be triggered by the BoundaryBoost component
+                    }}
+                    className="w-full flex items-center gap-2"
+                  >
+                    <Play className="w-3 h-3" />
+                    Test Achievement Toast
+                  </Button>
+                </div>
                 <p className="text-xs text-muted-foreground mt-3">
                   Test the subtle notification sounds used for achievements, streaks, and level ups.
                 </p>

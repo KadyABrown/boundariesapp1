@@ -5,6 +5,7 @@ import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Progress } from "@/components/ui/progress";
 import { AudioEffects } from "@/lib/audioEffects";
+import AchievementToast from "@/components/achievement-toast";
 import { 
   Trophy, 
   Flame, 
@@ -219,7 +220,16 @@ const AchievementCard = ({ achievement, onClaim }: {
               </span>
             </div>
             
-            <Progress value={progressPercent} className="h-2" />
+            <motion.div
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              transition={{ delay: 0.2 }}
+            >
+              <Progress 
+                value={progressPercent} 
+                className="h-2 transition-all duration-500 ease-out" 
+              />
+            </motion.div>
             
             <div className="flex justify-between items-center">
               <Badge variant="secondary" className="text-xs">
@@ -410,6 +420,8 @@ export default function BoundaryBoost({ gameStats, onClaimAchievement }: Boundar
     }))
   });
   const [previousStats, setPreviousStats] = useState<GameStats | null>(null);
+  const [toastAchievement, setToastAchievement] = useState<Achievement | null>(null);
+  const [showToast, setShowToast] = useState(false);
 
   useEffect(() => {
     if (gameStats) {
@@ -426,15 +438,21 @@ export default function BoundaryBoost({ gameStats, onClaimAchievement }: Boundar
           AudioEffects.playLevelUp();
         }
 
-        // Play sounds for newly unlocked achievements
-        newlyUnlocked.forEach(achievement => {
+        // Play sounds and show toasts for newly unlocked achievements
+        newlyUnlocked.forEach((achievement, index) => {
           setTimeout(() => {
             if (achievement.category === 'streak') {
               AudioEffects.playStreakMilestone();
             } else {
               AudioEffects.playAchievementUnlock();
             }
-          }, 300); // Small delay to not overlap with other sounds
+            
+            // Show toast notification
+            setTimeout(() => {
+              setToastAchievement(achievement);
+              setShowToast(true);
+            }, 100); // Small delay after sound
+          }, 300 + (index * 2000)); // Stagger multiple achievements
         });
       }
 
@@ -542,6 +560,16 @@ export default function BoundaryBoost({ gameStats, onClaimAchievement }: Boundar
           </Button>
         </motion.div>
       )}
+
+      {/* Achievement Toast Notification */}
+      <AchievementToast
+        achievement={toastAchievement}
+        isVisible={showToast}
+        onClose={() => {
+          setShowToast(false);
+          setToastAchievement(null);
+        }}
+      />
     </div>
   );
 }
