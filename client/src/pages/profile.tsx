@@ -56,6 +56,7 @@ export default function Profile() {
     firstName: "",
     lastName: "",
     username: "",
+    phoneNumber: "",
     bio: "",
     userRole: "standard",
     defaultPrivacySetting: "private",
@@ -87,6 +88,7 @@ export default function Profile() {
         firstName: profile.firstName || "",
         lastName: profile.lastName || "",
         username: profile.username || "",
+        phoneNumber: (profile as any).phoneNumber || "",
         bio: profile.bio || "",
         userRole: profile.userRole || "standard",
         defaultPrivacySetting: profile.defaultPrivacySetting || "private",
@@ -311,6 +313,20 @@ export default function Profile() {
                   />
                   <p className="text-xs text-neutral-500 mt-1">
                     This will be used for sharing profiles with others
+                  </p>
+                </div>
+
+                <div>
+                  <Label htmlFor="phoneNumber">Phone Number (Optional)</Label>
+                  <Input
+                    id="phoneNumber"
+                    type="tel"
+                    value={profileData.phoneNumber}
+                    onChange={(e) => setProfileData(prev => ({ ...prev, phoneNumber: e.target.value }))}
+                    placeholder="+1 (555) 123-4567"
+                  />
+                  <p className="text-xs text-neutral-500 mt-1">
+                    Allows friends to find you by phone number
                   </p>
                 </div>
 

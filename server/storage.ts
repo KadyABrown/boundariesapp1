@@ -9,6 +9,8 @@ import {
   behavioralFlags,
   flagExamples,
   userSavedFlags,
+  friendships,
+  friendCircles,
   type User,
   type UpsertUser,
   type Boundary,
@@ -29,6 +31,10 @@ import {
   type InsertFlagExample,
   type UserSavedFlag,
   type InsertUserSavedFlag,
+  type Friendship,
+  type InsertFriendship,
+  type FriendCircle,
+  type InsertFriendCircle,
 } from "@shared/schema";
 import { db } from "./db";
 import { eq, desc, and, gte, lte, sql, count } from "drizzle-orm";
@@ -110,6 +116,24 @@ export interface IStorage {
   getUserSavedFlags(userId: string): Promise<UserSavedFlag[]>;
   removeSavedFlag(userId: string, flagExampleId: number): Promise<void>;
   updateSavedFlagNotes(id: number, notes: string): Promise<UserSavedFlag>;
+  
+  // Friend system operations
+  sendFriendRequest(requesterId: string, receiverId: string, circleTag?: string): Promise<Friendship>;
+  acceptFriendRequest(friendshipId: number): Promise<Friendship>;
+  declineFriendRequest(friendshipId: number): Promise<void>;
+  blockUser(userId: string, blockedUserId: string): Promise<Friendship>;
+  unblockUser(userId: string, unblockUserId: string): Promise<void>;
+  removeFriend(userId: string, friendId: string): Promise<void>;
+  getFriends(userId: string): Promise<Array<Friendship & { friend: User }>>;
+  getFriendRequests(userId: string, type: 'sent' | 'received'): Promise<Array<Friendship & { user: User }>>;
+  searchUsers(query: string, searchBy: 'username' | 'email' | 'phone'): Promise<User[]>;
+  
+  // Friend circles operations
+  createFriendCircle(circle: InsertFriendCircle): Promise<FriendCircle>;
+  getFriendCircles(userId: string): Promise<FriendCircle[]>;
+  updateFriendCircle(id: number, updates: Partial<InsertFriendCircle>): Promise<FriendCircle>;
+  deleteFriendCircle(id: number): Promise<void>;
+  addFriendToCircle(friendshipId: number, circleTag: string): Promise<Friendship>;
 }
 
 export class DatabaseStorage implements IStorage {

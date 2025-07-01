@@ -32,6 +32,7 @@ export const users = pgTable("users", {
   firstName: varchar("first_name"),
   lastName: varchar("last_name"),
   username: varchar("username").unique(),
+  phoneNumber: varchar("phone_number").unique(),
   profileImageUrl: varchar("profile_image_url"),
   userRole: varchar("user_role").default("standard"), // standard, therapist, guardian, minor
   notificationPreferences: jsonb("notification_preferences").default({ email: true, push: false }),
@@ -90,6 +91,27 @@ export const userSettings = pgTable("user_settings", {
   updatedAt: timestamp("updated_at").defaultNow(),
 });
 
+// Friendship system
+export const friendships = pgTable("friendships", {
+  id: serial("id").primaryKey(),
+  requesterId: varchar("requester_id").notNull(),
+  receiverId: varchar("receiver_id").notNull(),
+  status: varchar("status").notNull().default("requested"), // requested, accepted, blocked
+  circleTag: varchar("circle_tag"), // optional grouping like "therapist", "trusted", etc.
+  createdAt: timestamp("created_at").defaultNow(),
+  updatedAt: timestamp("updated_at").defaultNow(),
+});
+
+// Friend circles for organizing friends
+export const friendCircles = pgTable("friend_circles", {
+  id: serial("id").primaryKey(),
+  userId: varchar("user_id").notNull(),
+  name: varchar("name").notNull(),
+  description: text("description"),
+  color: varchar("color").default("#3B82F6"), // hex color for UI
+  createdAt: timestamp("created_at").defaultNow(),
+});
+
 // Relationship profiles for dating behavior checklist
 export const relationshipProfiles = pgTable("relationship_profiles", {
   id: serial("id").primaryKey(),
@@ -108,6 +130,11 @@ export const relationshipProfiles = pgTable("relationship_profiles", {
   shareWithTherapist: boolean("share_with_therapist").default(false),
   silentEndNotification: boolean("silent_end_notification").default(false),
   flagVisibility: varchar("flag_visibility").default("private"), // private, friends, therapist
+  
+  // Enhanced Visibility Controls
+  visibility: varchar("visibility").default("private"), // private, all_friends, selected_friends, therapist_only
+  visibleToFriends: text("visible_to_friends").array().default([]), // array of friend IDs
+  visibleToCircles: text("visible_to_circles").array().default([]), // array of circle IDs
   
   // Emotional Tracking Preferences
   enableEmotionalCheckins: boolean("enable_emotional_checkins").default(true),
@@ -184,6 +211,9 @@ export const usersRelations = relations(users, ({ many, one }) => ({
   emotionalCheckIns: many(emotionalCheckIns),
   behavioralFlags: many(behavioralFlags),
   savedFlags: many(userSavedFlags),
+  sentFriendRequests: many(friendships, { relationName: "requester" }),
+  receivedFriendRequests: many(friendships, { relationName: "receiver" }),
+  friendCircles: many(friendCircles),
 }));
 
 export const boundariesRelations = relations(boundaries, ({ one, many }) => ({
@@ -265,6 +295,26 @@ export const userSavedFlagsRelations = relations(userSavedFlags, ({ one }) => ({
   }),
 }));
 
+export const friendshipsRelations = relations(friendships, ({ one }) => ({
+  requester: one(users, {
+    fields: [friendships.requesterId],
+    references: [users.id],
+    relationName: "requester",
+  }),
+  receiver: one(users, {
+    fields: [friendships.receiverId],
+    references: [users.id],
+    relationName: "receiver",
+  }),
+}));
+
+export const friendCirclesRelations = relations(friendCircles, ({ one }) => ({
+  user: one(users, {
+    fields: [friendCircles.userId],
+    references: [users.id],
+  }),
+}));
+
 // Schemas for validation
 export type UpsertUser = typeof users.$inferInsert;
 export type User = typeof users.$inferSelect;
@@ -338,3 +388,18 @@ export const insertUserSavedFlagSchema = createInsertSchema(userSavedFlags).omit
 });
 export type InsertUserSavedFlag = z.infer<typeof insertUserSavedFlagSchema>;
 export type UserSavedFlag = typeof userSavedFlags.$inferSelect;
+
+export const insertFriendshipSchema = createInsertSchema(friendships).omit({
+  id: true,
+  createdAt: true,
+  updatedAt: true,
+});
+export type InsertFriendship = z.infer<typeof insertFriendshipSchema>;
+export type Friendship = typeof friendships.$inferSelect;
+
+export const insertFriendCircleSchema = createInsertSchema(friendCircles).omit({
+  id: true,
+  createdAt: true,
+});
+export type InsertFriendCircle = z.infer<typeof insertFriendCircleSchema>;
+export type FriendCircle = typeof friendCircles.$inferSelect;

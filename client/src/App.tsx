@@ -10,6 +10,7 @@ import Boundaries from "@/pages/boundaries";
 import Relationships from "@/pages/relationships";
 import RelationshipDetail from "@/pages/relationship-detail";
 import Profile from "@/pages/profile";
+import Friends from "@/pages/friends";
 import Insights from "@/pages/insights";
 import FlagExamples from "@/pages/flag-examples";
 
@@ -28,6 +29,7 @@ function Router() {
           <Route path="/boundaries" component={Boundaries} />
           <Route path="/relationships" component={Relationships} />
           <Route path="/relationships/:id" component={RelationshipDetail} />
+          <Route path="/friends" component={Friends} />
           <Route path="/profile" component={Profile} />
           <Route path="/insights" component={Insights} />
           <Route path="/flag-examples" component={FlagExamples} />

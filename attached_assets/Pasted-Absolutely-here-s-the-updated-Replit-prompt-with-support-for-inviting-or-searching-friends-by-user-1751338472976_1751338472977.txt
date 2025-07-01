@@ -1,0 +1,78 @@
+Absolutely — here’s the updated Replit prompt with support for inviting or searching friends by username, email, or phone number, along with the necessary update to the user profile/account system.
+
+⸻
+
+🔧 Replit Prompt: Friend System + Search by Phone Number + Visibility Controls
+
+I’d like to add a Friend System to the app that allows users to:
+
+⸻
+
+🧑‍🤝‍🧑 1. Core Friend Functionality
+	•	Send/Accept Friend Requests
+	•	Users can search for other users by:
+	•	Username
+	•	Email
+	•	Phone number
+	•	Users can send friend requests
+	•	Recipient can accept or decline
+	•	Friendship is mutual (two-way)
+	•	Manage Friends List
+	•	View list of accepted friends
+	•	View incoming and outgoing requests
+	•	Unfriend or block users
+
+⸻
+
+🗂️ 2. Circles / Friend Groups
+	•	Users can optionally organize friends into custom circles or tags (e.g., “Therapist”, “Trusted”, “School Friends”)
+	•	Circles are private to the user
+
+⸻
+
+🔐 3. Relationship Visibility Integration
+	•	When creating/editing a relationship, the user should be able to select visibility options:
+	•	Private (only me)
+	•	All Friends
+	•	Selected Friends or Circles (multi-select)
+	•	Therapist/Guardian only
+	•	Each visibility level defines what a friend can see:
+	•	Relationship name + status only
+	•	Flag summary only
+	•	Full details
+
+⸻
+
+🔕 4. Silent Exit Notification Feature
+	•	When a user marks a relationship as “Over,” and it was shared with friends:
+	•	Option to silently notify selected friends (“[Name] has removed this relationship from their profile.”)
+
+⸻
+
+📱 5. User Profile Update (Phone Number Support)
+
+Update the user profile system to store a phone number field (optional but unique):
+	•	Validate for proper format
+	•	Store as phone_number in Supabase
+	•	Allow users to be found or invited via phone number
+
+⸻
+
+🛠️ Notes
+	•	Use Supabase for database logic
+	•	Add appropriate indexes for friend search (username, email, phone)
+	•	Each friendship record should include:
+	•	requester_id
+	•	receiver_id
+	•	status (requested, accepted, blocked)
+	•	created_at
+	•	optional circle or tag
+
+Use React (or current front-end framework) to:
+	•	Render add/search friend UI with all 3 options
+	•	Show visibility settings in relationship form
+	•	Enable multi-select sharing with friend circles
+
+⸻
+
+Let me know if you also want to include a “Pending Invite via Phone” state (for when someone hasn’t signed up yet), or if you’re ready to build the sharing engine logic next.

@@ -139,6 +139,7 @@ The system is built as a modern React SPA with an Express.js backend, using Post
 - June 30, 2025. Added Dating Behavior Checklist feature with relationship profiles, emotional check-ins, and behavioral flag tracking
 - June 30, 2025. Completed functional relationship tracking system: behavioral flags (+1/-1 scoring), emotional check-ins, real-time health calculations, neutral status language, and full data persistence
 - July 1, 2025. Enhanced relationship profiles with comprehensive settings: privacy controls (friend/therapist sharing), emotional tracking preferences, custom tags, relationship status options (Interested → Over), and relationship-level settings dialog for post-creation editing
+- July 1, 2025. Added comprehensive Friend System with search capabilities (username/email/phone), friend requests, friend circles, relationship visibility controls, and enhanced user profile system with phone number support
 
 ## User Preferences
 
