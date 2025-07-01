@@ -15,6 +15,7 @@ import { Switch } from "@/components/ui/switch";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
 import { Badge } from "@/components/ui/badge";
 import { Plus, Edit2, Trash2, Heart, User, Calendar, MapPin, Flag } from "lucide-react";
+import { Link } from "wouter";
 
 export default function Relationships() {
   const { toast } = useToast();
@@ -482,13 +483,14 @@ export default function Relationships() {
                       )}
                     </div>
                     
-                    <Button 
-                      className="w-full mt-4" 
-                      variant="outline"
-                      onClick={() => window.location.href = `/relationships/${profile.id}`}
-                    >
-                      View Details
-                    </Button>
+                    <Link href={`/relationships/${profile.id}`}>
+                      <Button 
+                        className="w-full mt-4" 
+                        variant="outline"
+                      >
+                        View Details
+                      </Button>
+                    </Link>
                   </div>
                 </CardContent>
               </Card>
