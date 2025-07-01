@@ -1,0 +1,83 @@
+Perfect. Here’s the Replit dev prompt that includes everything you’ve asked for—updating the relationship profile form to support nuanced tracking, social features, and eventual data sharing. This is written for clarity and implementation efficiency by your dev:
+
+⸻
+
+🧠 Replit Developer Prompt: Update Relationship Profile Input Feature
+
+Please update the relationship profile creation form to include the following expanded fields and functionality, designed for emotional and behavioral tracking across relationships, and to support social sharing, therapist integration, and deeper emotional analytics:
+
+⸻
+
+📌 SECTION 1: Required Core Details (existing or expanded)
+	1.	Name – Free text
+	2.	Nickname (Optional) – Free text
+	3.	Date Met – Date selector
+	4.	How You Met – Free text or dropdown
+	5.	Relationship Type – Dropdown with options like:
+	•	Romantic
+	•	Platonic
+	•	Familial
+	•	Professional
+	•	Situationship
+	•	Other
+
+⸻
+
+🧠 SECTION 2: New Required Field – Relationship Status
+
+Add a relationship status attribute (distinct from type). Use a dropdown or button selection menu with the following options:
+	•	Interested
+	•	Mutual Interest
+	•	Talking
+	•	Flirting
+	•	Friendly
+	•	Dating
+	•	Relationship – Casual
+	•	Relationship – Committed
+	•	Off & On
+	•	On the Rocks
+	•	The End is Near
+	•	Over
+
+This status should be editable later, as relationships evolve.
+
+⸻
+
+🔐 SECTION 3: Privacy & Sharing Controls
+
+Add toggles and checkboxes for visibility and silent notifications:
+	•	Visibility Settings:
+	•	Private
+	•	Share with Trusted Friends
+	•	Share with Therapist/Guardian
+	•	Silent End Toggle: “Silently notify shared viewers if this relationship ends”
+	•	Flag Visibility: Let user choose whether red/green flag logs are visible or hidden from friends/therapist views
+
+⸻
+
+📊 SECTION 4: Emotional Tracking Preferences
+
+Allow users to opt in to deeper tracking features:
+	•	Would you like to track emotional check-ins? (Yes/No)
+	•	Would you like support prompts for: (Multi-select)
+	•	Setting boundaries
+	•	Having a hard conversation
+	•	Ending the relationship
+	•	Journaling/self-reflection
+
+⸻
+
+💬 SECTION 5: Notes & Tags
+	•	What’s important about this relationship to you? (Optional text box)
+	•	Custom Tags or Labels (Optional free-entry tags)
+
+⸻
+
+🔄 OTHER CONSIDERATIONS
+	•	These fields should be editable later.
+	•	Form should validate entries and have tooltips or help icons explaining fields.
+	•	Prioritize mobile UX: collapse advanced fields under expandable sections.
+
+⸻
+
+Let me know if you’d like this converted into a wireframe layout, UI copy text, or data schema format next.
