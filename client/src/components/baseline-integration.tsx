@@ -7,11 +7,13 @@ import { useQuery } from "@tanstack/react-query";
 
 interface BaselineIntegrationProps {
   boundaries?: any[]; // Current user boundaries
+  relationships?: any[]; // User relationships with stats
   className?: string;
 }
 
 export default function BaselineIntegration({ 
   boundaries = [],
+  relationships = [],
   className = "" 
 }: BaselineIntegrationProps) {
   const [, setLocation] = useLocation();
@@ -201,6 +203,73 @@ export default function BaselineIntegration({
               {boundaries.length > 5 && (
                 <p className="text-sm text-gray-500 text-center pt-2">
                   ... and {boundaries.length - 5} more boundaries
+                </p>
+              )}
+            </div>
+          </CardContent>
+        </Card>
+      )}
+
+      {/* Relationship Compatibility Analysis */}
+      {userBaseline && relationships.length > 0 && (
+        <Card>
+          <CardHeader>
+            <CardTitle className="flex items-center gap-2">
+              <Heart className="w-5 h-5 text-purple-500" />
+              Relationship Compatibility Analysis
+            </CardTitle>
+          </CardHeader>
+          <CardContent>
+            <div className="space-y-4">
+              {relationships.slice(0, 3).map((relationship: any) => {
+                const stats = relationship.stats || {};
+                const greenFlags = stats.greenFlags || 0;
+                const redFlags = stats.redFlags || 0;
+                const totalFlags = greenFlags + redFlags;
+                const flagRatio = totalFlags > 0 ? Math.round((greenFlags / totalFlags) * 100) : 50;
+                
+                // Calculate basic compatibility based on flag ratio and safety rating
+                let compatibilityScore = flagRatio;
+                if (stats.averageSafetyRating) {
+                  compatibilityScore = Math.round((flagRatio * 0.7) + (stats.averageSafetyRating * 10 * 0.3));
+                }
+                
+                const getCompatibilityColor = (score: number) => {
+                  if (score >= 80) return 'text-green-700 bg-green-50 border-green-200';
+                  if (score >= 60) return 'text-blue-700 bg-blue-50 border-blue-200';
+                  if (score >= 40) return 'text-yellow-700 bg-yellow-50 border-yellow-200';
+                  return 'text-red-700 bg-red-50 border-red-200';
+                };
+                
+                return (
+                  <div key={relationship.id} className={`p-4 rounded-lg border ${getCompatibilityColor(compatibilityScore)}`}>
+                    <div className="flex items-center justify-between mb-2">
+                      <h4 className="font-medium">{relationship.name}</h4>
+                      <Badge className="bg-white">
+                        {compatibilityScore}% Compatible
+                      </Badge>
+                    </div>
+                    <div className="grid grid-cols-2 md:grid-cols-4 gap-3 text-sm">
+                      <div>
+                        <span className="text-green-600 font-medium">{greenFlags}</span> Green Flags
+                      </div>
+                      <div>
+                        <span className="text-red-600 font-medium">{redFlags}</span> Red Flags
+                      </div>
+                      <div>
+                        Safety: <span className="font-medium">{stats.averageSafetyRating ? `${stats.averageSafetyRating}/5` : 'Not rated'}</span>
+                      </div>
+                      <div>
+                        Check-ins: <span className="font-medium">{stats.checkInCount || 0}</span>
+                      </div>
+                    </div>
+                  </div>
+                );
+              })}
+              
+              {relationships.length > 3 && (
+                <p className="text-sm text-gray-500 text-center pt-2">
+                  ... and {relationships.length - 3} more relationships
                 </p>
               )}
             </div>

@@ -1,4 +1,5 @@
 import { useState, useEffect } from "react";
+import { useQuery } from "@tanstack/react-query";
 import { useAuth } from "@/hooks/useAuth";
 import { useToast } from "@/hooks/use-toast";
 import { queryClient } from "@/lib/queryClient";
@@ -12,6 +13,30 @@ export default function BaselinePage() {
   const { toast } = useToast();
   const { isAuthenticated, isLoading } = useAuth();
   const [userBaseline, setUserBaseline] = useState(null);
+
+  // Fetch relationships data for compatibility analysis
+  const { data: relationships = [] } = useQuery({
+    queryKey: ["/api/relationships"],
+    enabled: isAuthenticated,
+  });
+
+  // Fetch relationship stats for each relationship to enhance compatibility analysis
+  const { data: relationshipStats } = useQuery({
+    queryKey: ["/api/relationships", "stats"],
+    queryFn: async () => {
+      if (!Array.isArray(relationships) || !relationships.length) return [];
+      
+      const statsPromises = relationships.map(async (rel: any) => {
+        const response = await fetch(`/api/relationships/${rel.id}/stats`);
+        if (!response.ok) return null;
+        const stats = await response.json();
+        return { ...rel, stats };
+      });
+      
+      return Promise.all(statsPromises);
+    },
+    enabled: isAuthenticated && Array.isArray(relationships) && relationships.length > 0,
+  });
 
   // Redirect to home if not authenticated
   useEffect(() => {
@@ -142,7 +167,7 @@ export default function BaselinePage() {
         <PersonalBaselineAssessment
           baseline={userBaseline}
           onSaveBaseline={handleSaveBaseline}
-          relationshipData={[]} // This would come from your relationships API
+          relationshipData={relationshipStats || relationships || []}
         />
       </div>
     </div>
