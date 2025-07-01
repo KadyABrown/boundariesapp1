@@ -16,6 +16,7 @@ import {
   TrendingDown,
   Minus
 } from "lucide-react";
+import BoundaryBuddy from "@/components/boundary-buddy";
 
 interface WeatherData {
   condition: 'sunny' | 'partly-cloudy' | 'cloudy' | 'rainy' | 'stormy' | 'snowy';
@@ -178,19 +179,22 @@ export default function EmotionalWeather({ relationships, userProfile, showForec
                 </motion.div>
                 Emotional Weather
               </CardTitle>
-              {currentWeather.length > 1 && (
-                <select
-                  value={selectedRelationship}
-                  onChange={(e) => setSelectedRelationship(Number(e.target.value))}
-                  className="bg-transparent border border-current rounded px-2 py-1 text-sm"
-                >
-                  {currentWeather.map((rel, index) => (
-                    <option key={index} value={index} className="bg-white text-black">
-                      {rel.relationshipName}
-                    </option>
-                  ))}
-                </select>
-              )}
+              <div className="flex items-center gap-2">
+                <BoundaryBuddy context="emotional-weather" />
+                {currentWeather.length > 1 && (
+                  <select
+                    value={selectedRelationship}
+                    onChange={(e) => setSelectedRelationship(Number(e.target.value))}
+                    className="bg-transparent border border-current rounded px-2 py-1 text-sm"
+                  >
+                    {currentWeather.map((rel, index) => (
+                      <option key={index} value={index} className="bg-white text-black">
+                        {rel.relationshipName}
+                      </option>
+                    ))}
+                  </select>
+                )}
+              </div>
             </div>
           </CardHeader>
           <CardContent className="space-y-4">
@@ -209,6 +213,15 @@ export default function EmotionalWeather({ relationships, userProfile, showForec
               <Badge variant="secondary" className="text-xs">
                 {current.relationshipName}
               </Badge>
+              {!relationships || relationships.length === 0 ? (
+                <p className="text-xs opacity-60 italic mt-2">
+                  Sample data - Add relationships to see your real patterns
+                </p>
+              ) : (
+                <p className="text-xs opacity-60 italic mt-2">
+                  Based on your tracked flags and check-ins
+                </p>
+              )}
             </div>
 
             {/* Weather Metrics */}
@@ -324,13 +337,11 @@ export default function EmotionalWeather({ relationships, userProfile, showForec
 }
 
 function generateRealisticWeatherData(userProfile?: any): RelationshipWeather[] {
-  // Create personalized example relationships using user's name
-  const userName = userProfile?.firstName || userProfile?.username || "User";
-  
+  // Create example relationship categories (not actual relationships)
   const relationships = [
-    { name: `${userName}'s Work Environment`, baseTemp: 65, baseTension: 40 },
-    { name: `${userName}'s Social Circle`, baseTemp: 80, baseTension: 20 },
-    { name: `${userName}'s Family Dynamics`, baseTemp: 70, baseTension: 30 }
+    { name: "Work Environment", baseTemp: 65, baseTension: 40 },
+    { name: "Social Circle", baseTemp: 80, baseTension: 20 },
+    { name: "Family Dynamics", baseTemp: 70, baseTension: 30 }
   ];
 
   return relationships.map(rel => {

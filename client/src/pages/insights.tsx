@@ -5,6 +5,7 @@ import { useToast } from "@/hooks/use-toast";
 import Navigation from "@/components/navigation";
 import ActivityTimeline, { TimelineEvent } from "@/components/activity-timeline";
 import EmotionalWeather from "@/components/emotional-weather";
+import BoundaryBuddy from "@/components/boundary-buddy";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
@@ -408,6 +409,10 @@ export default function Insights() {
           </TabsContent>
 
           <TabsContent value="timeline" className="space-y-6">
+            <div className="flex justify-between items-center mb-4">
+              <h2 className="text-xl font-semibold">Relationship Activity Timeline</h2>
+              <BoundaryBuddy context="timeline" />
+            </div>
             <ActivityTimeline events={timelineEvents} />
           </TabsContent>
 
