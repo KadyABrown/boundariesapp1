@@ -196,17 +196,17 @@ export default function Profile() {
       <div className="max-w-4xl mx-auto p-6">
         {/* Profile Header */}
         <Card className="mb-6">
-          <CardHeader>
-            <div className="flex items-center gap-4">
+          <CardHeader className="pb-4">
+            <div className="flex flex-col md:flex-row items-start md:items-center gap-4">
               <Avatar className="w-16 h-16">
                 <AvatarImage src={profile?.profileImageUrl} alt="Profile" />
                 <AvatarFallback className="text-lg font-semibold">
                   {getUserInitials()}
                 </AvatarFallback>
               </Avatar>
-              <div className="flex-1">
-                <div className="flex items-center gap-3 mb-1">
-                  <h1 className="text-2xl font-bold">
+              <div className="flex-1 min-w-0">
+                <div className="flex flex-col sm:flex-row sm:items-center gap-2 sm:gap-3 mb-2">
+                  <h1 className="text-xl md:text-2xl font-bold truncate">
                     {profile?.firstName && profile?.lastName 
                       ? `${profile.firstName} ${profile.lastName}`
                       : profile?.username || "User Profile"
@@ -216,14 +216,14 @@ export default function Profile() {
                     {(profile?.userRole || "standard").charAt(0).toUpperCase() + (profile?.userRole || "standard").slice(1)}
                   </Badge>
                 </div>
-                <p className="text-neutral-600">{profile?.email}</p>
+                <p className="text-neutral-600 text-sm md:text-base truncate">{profile?.email}</p>
                 {profile?.username && (
                   <p className="text-sm text-neutral-500">@{profile.username}</p>
                 )}
               </div>
-              <div className="text-right">
-                <p className="text-sm text-neutral-500">Member since</p>
-                <p className="text-sm font-medium">
+              <div className="text-right flex-shrink-0 w-full md:w-auto">
+                <p className="text-xs md:text-sm text-neutral-500">Member since</p>
+                <p className="text-xs md:text-sm font-medium">
                   {profile?.createdAt ? new Date(profile.createdAt).toLocaleDateString() : "Unknown"}
                 </p>
               </div>

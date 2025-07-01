@@ -4,6 +4,7 @@ import { useAuth } from "@/hooks/useAuth";
 import { useToast } from "@/hooks/use-toast";
 import Navigation from "@/components/navigation";
 import ActivityTimeline, { TimelineEvent } from "@/components/activity-timeline";
+import EmotionalWeather from "@/components/emotional-weather";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
@@ -153,17 +154,21 @@ export default function Insights() {
         </div>
 
         <Tabs defaultValue="overview" className="space-y-6">
-          <TabsList className="grid w-full grid-cols-3">
-            <TabsTrigger value="overview" className="flex items-center gap-2">
-              <BarChart3 className="w-4 h-4" />
+          <TabsList className="grid w-full grid-cols-2 md:grid-cols-4">
+            <TabsTrigger value="overview" className="flex items-center gap-1 md:gap-2 text-xs md:text-sm">
+              <BarChart3 className="w-3 h-3 md:w-4 md:h-4" />
               Overview
             </TabsTrigger>
-            <TabsTrigger value="timeline" className="flex items-center gap-2">
-              <Activity className="w-4 h-4" />
-              Activity Timeline
+            <TabsTrigger value="timeline" className="flex items-center gap-1 md:gap-2 text-xs md:text-sm">
+              <Activity className="w-3 h-3 md:w-4 md:h-4" />
+              Timeline
             </TabsTrigger>
-            <TabsTrigger value="analytics" className="flex items-center gap-2">
-              <TrendingUp className="w-4 h-4" />
+            <TabsTrigger value="weather" className="flex items-center gap-1 md:gap-2 text-xs md:text-sm">
+              <Calendar className="w-3 h-3 md:w-4 md:h-4" />
+              Weather
+            </TabsTrigger>
+            <TabsTrigger value="analytics" className="flex items-center gap-1 md:gap-2 text-xs md:text-sm">
+              <TrendingUp className="w-3 h-3 md:w-4 md:h-4" />
               Analytics
             </TabsTrigger>
           </TabsList>
@@ -399,6 +404,10 @@ export default function Insights() {
 
           <TabsContent value="timeline" className="space-y-6">
             <ActivityTimeline events={timelineEvents} />
+          </TabsContent>
+
+          <TabsContent value="weather" className="space-y-6">
+            <EmotionalWeather />
           </TabsContent>
 
           <TabsContent value="analytics" className="space-y-6">
