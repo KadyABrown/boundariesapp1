@@ -44,6 +44,7 @@ interface ComprehensiveInteraction {
 export default function ComprehensiveInteractionsView({ relationshipId, relationshipName }: ComprehensiveInteractionsViewProps) {
   const { data: interactions, isLoading } = useQuery<ComprehensiveInteraction[]>({
     queryKey: ['/api/interactions', relationshipId],
+    queryFn: () => fetch(`/api/interactions/${relationshipId}`).then(res => res.json()),
     refetchOnWindowFocus: false,
   });
 
