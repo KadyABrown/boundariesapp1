@@ -24,7 +24,6 @@ import {
   UserX, 
   Shield,
   Circle,
-  MessageCircle,
   Settings,
   Heart
 } from "lucide-react";
@@ -379,7 +378,7 @@ export default function Friends() {
               <span className="sm:hidden">({receivedRequests.length})</span>
             </TabsTrigger>
             <TabsTrigger value="sent" className="flex items-center gap-1 px-2 text-xs sm:text-sm">
-              <MessageCircle className="w-3 h-3 sm:w-4 sm:h-4" />
+              <UserPlus className="w-3 h-3 sm:w-4 sm:h-4" />
               <span className="hidden sm:inline">Sent</span>
               <span className="sm:hidden">Out</span>
               <span className="hidden sm:inline">({sentRequests.length})</span>
@@ -437,9 +436,6 @@ export default function Friends() {
                           </div>
                         </div>
                         <div className="flex items-center gap-2">
-                          <Button variant="outline" size="sm">
-                            <MessageCircle className="w-4 h-4" />
-                          </Button>
                           <Button 
                             variant="outline" 
                             size="sm"
@@ -630,7 +626,7 @@ export default function Friends() {
             <Card>
               <CardHeader>
                 <CardTitle className="flex items-center gap-2">
-                  <MessageCircle className="w-5 h-5" />
+                  <UserPlus className="w-5 h-5" />
                   Sent Requests
                 </CardTitle>
               </CardHeader>
@@ -649,7 +645,7 @@ export default function Friends() {
                   </div>
                 ) : sentRequests.length === 0 ? (
                   <div className="text-center py-8">
-                    <MessageCircle className="w-12 h-12 text-neutral-400 mx-auto mb-3" />
+                    <UserPlus className="w-12 h-12 text-neutral-400 mx-auto mb-3" />
                     <p className="text-neutral-500">No sent requests</p>
                     <p className="text-sm text-neutral-400">Requests you send will appear here</p>
                   </div>
