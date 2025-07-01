@@ -11,6 +11,7 @@ import {
   userSavedFlags,
   friendships,
   friendCircles,
+  comprehensiveInteractions,
   type User,
   type UpsertUser,
   type Boundary,
@@ -35,6 +36,8 @@ import {
   type InsertFriendship,
   type FriendCircle,
   type InsertFriendCircle,
+  type ComprehensiveInteraction,
+  type InsertComprehensiveInteraction,
 } from "@shared/schema";
 import { db } from "./db";
 import { eq, desc, and, gte, lte, sql, count, or, like } from "drizzle-orm";
@@ -134,6 +137,11 @@ export interface IStorage {
   updateFriendCircle(id: number, updates: Partial<InsertFriendCircle>): Promise<FriendCircle>;
   deleteFriendCircle(id: number): Promise<void>;
   addFriendToCircle(friendshipId: number, circleTag: string): Promise<Friendship>;
+  
+  // Comprehensive interactions operations
+  createComprehensiveInteraction(interaction: InsertComprehensiveInteraction): Promise<ComprehensiveInteraction>;
+  getComprehensiveInteractionsByRelationship(relationshipId: number, userId: string): Promise<ComprehensiveInteraction[]>;
+  getComprehensiveInteractionsByUser(userId: string): Promise<ComprehensiveInteraction[]>;
 }
 
 export class DatabaseStorage implements IStorage {
@@ -894,6 +902,34 @@ export class DatabaseStorage implements IStorage {
       .where(eq(friendships.id, friendshipId))
       .returning();
     return updated;
+  }
+
+  // Comprehensive interactions operations
+  async createComprehensiveInteraction(interaction: InsertComprehensiveInteraction): Promise<ComprehensiveInteraction> {
+    const [created] = await db
+      .insert(comprehensiveInteractions)
+      .values(interaction)
+      .returning();
+    return created;
+  }
+
+  async getComprehensiveInteractionsByRelationship(relationshipId: number, userId: string): Promise<ComprehensiveInteraction[]> {
+    return await db
+      .select()
+      .from(comprehensiveInteractions)
+      .where(and(
+        eq(comprehensiveInteractions.relationshipId, relationshipId),
+        eq(comprehensiveInteractions.userId, userId)
+      ))
+      .orderBy(desc(comprehensiveInteractions.createdAt));
+  }
+
+  async getComprehensiveInteractionsByUser(userId: string): Promise<ComprehensiveInteraction[]> {
+    return await db
+      .select()
+      .from(comprehensiveInteractions)
+      .where(eq(comprehensiveInteractions.userId, userId))
+      .orderBy(desc(comprehensiveInteractions.createdAt));
   }
 }
 

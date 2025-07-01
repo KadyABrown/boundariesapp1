@@ -201,6 +201,57 @@ export const userSavedFlags = pgTable("user_saved_flags", {
   createdAt: timestamp("created_at").defaultNow(),
 });
 
+// Comprehensive interaction tracking
+export const comprehensiveInteractions = pgTable("comprehensive_interactions", {
+  id: serial("id").primaryKey(),
+  userId: varchar("user_id").notNull().references(() => users.id, { onDelete: "cascade" }),
+  relationshipId: integer("relationship_id").notNull().references(() => relationshipProfiles.id, { onDelete: "cascade" }),
+  timestamp: timestamp("timestamp").defaultNow(),
+  
+  // Pre-interaction state
+  energyBefore: integer("energy_before").notNull(), // 1-10
+  moodBefore: varchar("mood_before", { length: 20 }).notNull(), // very-negative, negative, neutral, positive, very-positive
+  anxietyBefore: integer("anxiety_before").notNull(), // 1-10
+  selfWorthBefore: integer("self_worth_before").notNull(), // 1-10
+  physicalStateBefore: jsonb("physical_state_before").default([]),
+  emotionalWarningSignsPresent: jsonb("emotional_warning_signs_present").default([]),
+  
+  // Interaction details
+  interactionType: varchar("interaction_type", { length: 100 }).notNull(),
+  duration: integer("duration").notNull(), // minutes
+  location: varchar("location", { length: 200 }),
+  witnesses: boolean("witnesses").default(false),
+  topicsDiscussed: jsonb("topics_discussed").default([]),
+  boundariesTested: boolean("boundaries_tested").default(false),
+  
+  // Immediate post-interaction
+  energyAfter: integer("energy_after").notNull(), // 1-10
+  moodAfter: varchar("mood_after", { length: 20 }).notNull(),
+  anxietyAfter: integer("anxiety_after").notNull(), // 1-10
+  selfWorthAfter: integer("self_worth_after").notNull(), // 1-10
+  physicalSymptomsAfter: jsonb("physical_symptoms_after").default([]),
+  emotionalStateAfter: jsonb("emotional_state_after").default([]),
+  
+  // Recovery tracking
+  recoveryTime: integer("recovery_time").notNull(), // minutes to feel normal
+  recoveryStrategies: jsonb("recovery_strategies").default([]),
+  whatHelped: jsonb("what_helped").default([]),
+  whatMadeItWorse: jsonb("what_made_it_worse").default([]),
+  
+  // Resilience building
+  boundariesMaintained: jsonb("boundaries_maintained").default([]),
+  copingSkillsUsed: jsonb("coping_skills_used").default([]),
+  supportSystemEngaged: boolean("support_system_engaged").default(false),
+  selfAdvocacyActions: jsonb("self_advocacy_actions").default([]),
+  
+  // Reflection
+  lessonsLearned: text("lessons_learned"),
+  warningSignsNoticed: jsonb("warning_signs_noticed").default([]),
+  futurePreparation: jsonb("future_preparation").default([]),
+  
+  createdAt: timestamp("created_at").defaultNow(),
+});
+
 // Relations
 export const usersRelations = relations(users, ({ many, one }) => ({
   boundaries: many(boundaries),
@@ -214,6 +265,7 @@ export const usersRelations = relations(users, ({ many, one }) => ({
   sentFriendRequests: many(friendships, { relationName: "requester" }),
   receivedFriendRequests: many(friendships, { relationName: "receiver" }),
   friendCircles: many(friendCircles),
+  comprehensiveInteractions: many(comprehensiveInteractions),
 }));
 
 export const boundariesRelations = relations(boundaries, ({ one, many }) => ({
@@ -256,6 +308,7 @@ export const relationshipProfilesRelations = relations(relationshipProfiles, ({ 
   }),
   emotionalCheckIns: many(emotionalCheckIns),
   behavioralFlags: many(behavioralFlags),
+  comprehensiveInteractions: many(comprehensiveInteractions),
 }));
 
 export const emotionalCheckInsRelations = relations(emotionalCheckIns, ({ one }) => ({
@@ -312,6 +365,17 @@ export const friendCirclesRelations = relations(friendCircles, ({ one }) => ({
   user: one(users, {
     fields: [friendCircles.userId],
     references: [users.id],
+  }),
+}));
+
+export const comprehensiveInteractionsRelations = relations(comprehensiveInteractions, ({ one }) => ({
+  user: one(users, {
+    fields: [comprehensiveInteractions.userId],
+    references: [users.id],
+  }),
+  relationshipProfile: one(relationshipProfiles, {
+    fields: [comprehensiveInteractions.relationshipId],
+    references: [relationshipProfiles.id],
   }),
 }));
 
@@ -403,3 +467,10 @@ export const insertFriendCircleSchema = createInsertSchema(friendCircles).omit({
 });
 export type InsertFriendCircle = z.infer<typeof insertFriendCircleSchema>;
 export type FriendCircle = typeof friendCircles.$inferSelect;
+
+export const insertComprehensiveInteractionSchema = createInsertSchema(comprehensiveInteractions).omit({
+  id: true,
+  createdAt: true,
+});
+export type InsertComprehensiveInteraction = z.infer<typeof insertComprehensiveInteractionSchema>;
+export type ComprehensiveInteraction = typeof comprehensiveInteractions.$inferSelect;

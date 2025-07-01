@@ -17,6 +17,7 @@ import {
   insertFlagExampleSchema,
   insertUserSavedFlagSchema,
   insertFriendCircleSchema,
+  insertComprehensiveInteractionSchema,
 } from "@shared/schema";
 import { z } from "zod";
 
@@ -1349,6 +1350,38 @@ export async function registerRoutes(app: Express): Promise<Server> {
     } catch (error) {
       console.error("Error fetching shared data:", error);
       res.status(500).json({ message: "Failed to fetch shared data" });
+    }
+  });
+
+  // Comprehensive interactions routes
+  app.post('/api/interactions', isAuthenticated, async (req: any, res) => {
+    try {
+      const userId = req.user.claims.sub;
+      const interactionData = insertComprehensiveInteractionSchema.parse({
+        ...req.body,
+        userId,
+      });
+      const interaction = await storage.createComprehensiveInteraction(interactionData);
+      res.json(interaction);
+    } catch (error) {
+      if (error instanceof z.ZodError) {
+        res.status(400).json({ message: "Invalid interaction data", errors: error.errors });
+      } else {
+        console.error("Error creating interaction:", error);
+        res.status(500).json({ message: "Failed to create interaction" });
+      }
+    }
+  });
+
+  app.get('/api/relationships/:id/interactions', isAuthenticated, async (req: any, res) => {
+    try {
+      const userId = req.user.claims.sub;
+      const relationshipId = parseInt(req.params.id);
+      const interactions = await storage.getComprehensiveInteractionsByRelationship(relationshipId, userId);
+      res.json(interactions);
+    } catch (error) {
+      console.error("Error fetching interactions:", error);
+      res.status(500).json({ message: "Failed to fetch interactions" });
     }
   });
 

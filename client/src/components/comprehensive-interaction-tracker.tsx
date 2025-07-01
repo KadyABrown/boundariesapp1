@@ -83,7 +83,7 @@ interface ComprehensiveInteractionTrackerProps {
   relationshipName: string;
   isOpen: boolean;
   onClose: () => void;
-  onSubmit: (data: ComprehensiveInteractionData) => void;
+  onSubmit: (data: ComprehensiveInteractionData) => Promise<void>;
 }
 
 const physicalSymptoms = [
@@ -192,10 +192,11 @@ export default function ComprehensiveInteractionTracker({
     return after - before;
   };
 
-  const handleSubmit = () => {
-    onSubmit(data as ComprehensiveInteractionData);
-    setStep(1);
-    setData({
+  const handleSubmit = async () => {
+    try {
+      await onSubmit(data as ComprehensiveInteractionData);
+      setStep(1);
+      setData({
       relationshipId,
       timestamp: new Date().toISOString(),
       energyBefore: 5,
@@ -223,7 +224,11 @@ export default function ComprehensiveInteractionTracker({
       warningSignsNoticed: [],
       futurePreparation: []
     });
-    onClose();
+      onClose();
+    } catch (error) {
+      console.error("Failed to submit interaction:", error);
+      // Don't close on error, let user try again
+    }
   };
 
   const renderStepContent = () => {

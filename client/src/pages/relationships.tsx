@@ -855,12 +855,74 @@ export default function Relationships() {
                       relationshipId={selectedRelationship.id}
                       relationshipName={selectedRelationship.name}
                       isOpen={true}
-                      onClose={() => setTrackingMode('interaction')}
-                      onSubmit={(data) => {
-                        toast({
-                          title: "Interaction Logged",
-                          description: "Your detailed interaction data has been saved for analysis",
-                        });
+                      onClose={() => {
+                        setSelectedRelationship(null);
+                        setTrackingMode('interaction');
+                      }}
+                      onSubmit={async (data) => {
+                        try {
+                          // Map frontend data to database schema
+                          const mappedData = {
+                            relationshipId: data.relationshipId,
+                            
+                            // Pre-interaction state
+                            preEnergyLevel: data.energyBefore,
+                            preAnxietyLevel: data.anxietyBefore,
+                            preSelfWorth: data.selfWorthBefore,
+                            preMood: data.moodBefore,
+                            preWarningSigns: data.emotionalWarningSignsPresent || [],
+                            
+                            // Interaction context
+                            interactionType: data.interactionType,
+                            durationMinutes: data.duration,
+                            locationSetting: data.location,
+                            witnessesPresent: data.witnesses,
+                            boundaryTesting: data.boundariesTested,
+                            
+                            // Post-interaction impact
+                            postEnergyLevel: data.energyAfter,
+                            postAnxietyLevel: data.anxietyAfter,
+                            postSelfWorth: data.selfWorthAfter,
+                            physicalSymptoms: data.physicalSymptomsAfter || [],
+                            emotionalStates: data.emotionalStateAfter || [],
+                            
+                            // Recovery analysis
+                            recoveryTimeMinutes: data.recoveryTime,
+                            recoveryStrategies: data.recoveryStrategies || [],
+                            whatHelped: data.whatHelped?.join(', ') || '',
+                            whatMadeWorse: data.whatMadeItWorse?.join(', ') || '',
+                            supportUsed: data.copingSkillsUsed || [],
+                            
+                            // Learning and growth
+                            warningSignsRecognized: data.warningSignsNoticed || [],
+                            boundariesMaintained: data.boundariesMaintained || [],
+                            selfAdvocacyActions: data.selfAdvocacyActions || [],
+                            lessonsLearned: data.lessonsLearned || '',
+                            futureStrategies: data.futurePreparation?.join(', ') || ''
+                          };
+                          
+                          // Save interaction data to backend
+                          await apiRequest("POST", "/api/interactions", mappedData);
+                          
+                          // Close modal and refresh data
+                          setSelectedRelationship(null);
+                          setTrackingMode('interaction');
+                          
+                          // Invalidate queries to refresh relationship data
+                          queryClient.invalidateQueries({ queryKey: ["/api/relationships"] });
+                          
+                          toast({
+                            title: "Interaction Logged",
+                            description: "Your detailed interaction data has been saved for analysis",
+                          });
+                        } catch (error) {
+                          console.error("Error saving interaction:", error);
+                          toast({
+                            title: "Error",
+                            description: "Failed to save interaction data. Please try again.",
+                            variant: "destructive",
+                          });
+                        }
                       }}
                     />
                   )}
