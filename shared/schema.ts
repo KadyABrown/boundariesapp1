@@ -244,6 +244,50 @@ export const comprehensiveInteractions = pgTable("comprehensive_interactions", {
   futureStrategies: text("future_strategies"),
 });
 
+// Personal baseline assessment
+export const personalBaselines = pgTable("personal_baselines", {
+  id: serial("id").primaryKey(),
+  userId: varchar("user_id").notNull().unique().references(() => users.id, { onDelete: "cascade" }),
+  
+  // Communication Preferences
+  communicationStyle: varchar("communication_style"), // direct, gentle, collaborative, assertive
+  conflictResolution: varchar("conflict_resolution"), // discuss-immediately, need-time-to-process, avoid-conflict, address-when-calm
+  feedbackPreference: varchar("feedback_preference"), // frequent-check-ins, only-when-needed, scheduled-discussions, in-the-moment
+  listeningNeeds: text("listening_needs").array(),
+  communicationDealBreakers: text("communication_deal_breakers").array(),
+  
+  // Emotional Needs
+  emotionalSupport: varchar("emotional_support"), // high, medium, low
+  affectionStyle: text("affection_style").array(),
+  validationNeeds: varchar("validation_needs"), // frequent, moderate, minimal
+  emotionalProcessingTime: integer("emotional_processing_time"), // hours
+  triggers: text("triggers").array(),
+  comfortingSources: text("comforting_sources").array(),
+  
+  // Boundary Requirements
+  personalSpaceNeeds: varchar("personal_space_needs"), // high, medium, low
+  aloneTimeFrequency: varchar("alone_time_frequency"), // daily, few-times-week, weekly, rarely
+  decisionMakingStyle: varchar("decision_making_style"), // independent, collaborative, seek-input, guided
+  privacyLevels: text("privacy_levels").array(),
+  nonNegotiableBoundaries: text("non_negotiable_boundaries").array(),
+  flexibleBoundaries: text("flexible_boundaries").array(),
+  
+  // Time and Availability
+  responseTimeExpectation: integer("response_time_expectation"), // hours
+  availabilityWindows: text("availability_windows").array(),
+  socialEnergyLevel: varchar("social_energy_level"), // high, medium, low
+  recoveryTimeNeeded: integer("recovery_time_needed"), // hours
+  
+  // Growth and Values
+  personalGrowthPriorities: text("personal_growth_priorities").array(),
+  relationshipGoals: text("relationship_goals").array(),
+  valueAlignment: text("value_alignment").array(),
+  dealBreakerBehaviors: text("deal_breaker_behaviors").array(),
+  
+  createdAt: timestamp("created_at").defaultNow(),
+  updatedAt: timestamp("updated_at").defaultNow(),
+});
+
 // Relations
 export const usersRelations = relations(users, ({ many, one }) => ({
   boundaries: many(boundaries),
@@ -258,6 +302,7 @@ export const usersRelations = relations(users, ({ many, one }) => ({
   receivedFriendRequests: many(friendships, { relationName: "receiver" }),
   friendCircles: many(friendCircles),
   comprehensiveInteractions: many(comprehensiveInteractions),
+  personalBaseline: one(personalBaselines),
 }));
 
 export const boundariesRelations = relations(boundaries, ({ one, many }) => ({
@@ -371,6 +416,13 @@ export const comprehensiveInteractionsRelations = relations(comprehensiveInterac
   }),
 }));
 
+export const personalBaselinesRelations = relations(personalBaselines, ({ one }) => ({
+  user: one(users, {
+    fields: [personalBaselines.userId],
+    references: [users.id],
+  }),
+}));
+
 // Schemas for validation
 export type UpsertUser = typeof users.$inferInsert;
 export type User = typeof users.$inferSelect;
@@ -466,3 +518,11 @@ export const insertComprehensiveInteractionSchema = createInsertSchema(comprehen
 });
 export type InsertComprehensiveInteraction = z.infer<typeof insertComprehensiveInteractionSchema>;
 export type ComprehensiveInteraction = typeof comprehensiveInteractions.$inferSelect;
+
+export const insertPersonalBaselineSchema = createInsertSchema(personalBaselines).omit({
+  id: true,
+  createdAt: true,
+  updatedAt: true,
+});
+export type InsertPersonalBaseline = z.infer<typeof insertPersonalBaselineSchema>;
+export type PersonalBaseline = typeof personalBaselines.$inferSelect;

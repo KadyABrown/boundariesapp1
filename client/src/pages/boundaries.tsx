@@ -15,6 +15,7 @@ import { Slider } from "@/components/ui/slider";
 import { Switch } from "@/components/ui/switch";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
 import { Plus, Edit2, Trash2, Shield } from "lucide-react";
+import BaselineIntegration from "@/components/baseline-integration";
 
 export default function Boundaries() {
   const { toast } = useToast();
@@ -300,6 +301,12 @@ export default function Boundaries() {
             </DialogContent>
           </Dialog>
         </div>
+
+        {/* Baseline Integration */}
+        <BaselineIntegration 
+          boundaries={boundaries}
+          className="mb-8"
+        />
 
         {boundariesLoading ? (
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
