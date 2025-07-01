@@ -230,6 +230,8 @@ export default function Relationships() {
     "romantic": "bg-red-500",
     "platonic": "bg-blue-500",
     "situationship": "bg-purple-500",
+    "family": "bg-green-500",
+    "workplace": "bg-orange-500",
     "other": "bg-neutral-500",
   };
 
@@ -306,6 +308,8 @@ export default function Relationships() {
                         <SelectItem value="romantic">Romantic</SelectItem>
                         <SelectItem value="platonic">Platonic</SelectItem>
                         <SelectItem value="situationship">Situationship</SelectItem>
+                        <SelectItem value="family">Family</SelectItem>
+                        <SelectItem value="workplace">Workplace</SelectItem>
                         <SelectItem value="other">Other</SelectItem>
                       </SelectContent>
                     </Select>
