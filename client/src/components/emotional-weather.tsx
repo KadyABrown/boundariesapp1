@@ -79,6 +79,9 @@ export default function EmotionalWeather({ relationships, userProfile, showForec
   const [currentWeather, setCurrentWeather] = useState<RelationshipWeather[]>([]);
 
   useEffect(() => {
+    console.log('EmotionalWeather - userProfile:', userProfile);
+    console.log('EmotionalWeather - relationships:', relationships);
+    
     if (relationships && relationships.length > 0) {
       // Convert actual relationship data to weather format
       const weatherData = relationships.map((rel: any) => {
