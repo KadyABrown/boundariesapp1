@@ -12,6 +12,7 @@ import {
   friendships,
   friendCircles,
   comprehensiveInteractions,
+  personalBaselines,
   type User,
   type UpsertUser,
   type Boundary,
@@ -38,6 +39,8 @@ import {
   type InsertFriendCircle,
   type ComprehensiveInteraction,
   type InsertComprehensiveInteraction,
+  type PersonalBaseline,
+  type InsertPersonalBaseline,
 } from "@shared/schema";
 import { db } from "./db";
 import { eq, desc, and, gte, lte, sql, count, or, like } from "drizzle-orm";
@@ -142,6 +145,11 @@ export interface IStorage {
   createComprehensiveInteraction(interaction: InsertComprehensiveInteraction): Promise<ComprehensiveInteraction>;
   getComprehensiveInteractionsByRelationship(relationshipId: number, userId: string): Promise<ComprehensiveInteraction[]>;
   getComprehensiveInteractionsByUser(userId: string): Promise<ComprehensiveInteraction[]>;
+  
+  // Personal baseline operations
+  createPersonalBaseline(baseline: InsertPersonalBaseline): Promise<PersonalBaseline>;
+  getPersonalBaseline(userId: string): Promise<PersonalBaseline | undefined>;
+  updatePersonalBaseline(userId: string, updates: Partial<InsertPersonalBaseline>): Promise<PersonalBaseline>;
 }
 
 export class DatabaseStorage implements IStorage {
@@ -930,6 +938,32 @@ export class DatabaseStorage implements IStorage {
       .from(comprehensiveInteractions)
       .where(eq(comprehensiveInteractions.userId, userId))
       .orderBy(desc(comprehensiveInteractions.createdAt));
+  }
+
+  async createPersonalBaseline(baseline: InsertPersonalBaseline): Promise<PersonalBaseline> {
+    const [newBaseline] = await db
+      .insert(personalBaselines)
+      .values(baseline)
+      .returning();
+    return newBaseline;
+  }
+
+  async getPersonalBaseline(userId: string): Promise<PersonalBaseline | undefined> {
+    const result = await db
+      .select()
+      .from(personalBaselines)
+      .where(eq(personalBaselines.userId, userId))
+      .limit(1);
+    return result[0];
+  }
+
+  async updatePersonalBaseline(userId: string, updates: Partial<InsertPersonalBaseline>): Promise<PersonalBaseline> {
+    const [updatedBaseline] = await db
+      .update(personalBaselines)
+      .set(updates)
+      .where(eq(personalBaselines.userId, userId))
+      .returning();
+    return updatedBaseline;
   }
 }
 

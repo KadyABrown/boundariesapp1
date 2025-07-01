@@ -18,6 +18,7 @@ import {
   insertUserSavedFlagSchema,
   insertFriendCircleSchema,
   insertComprehensiveInteractionSchema,
+  insertPersonalBaselineSchema,
 } from "@shared/schema";
 import { z } from "zod";
 
@@ -1432,6 +1433,47 @@ export async function registerRoutes(app: Express): Promise<Server> {
       } else {
         console.error("Error creating friend circle:", error);
         res.status(500).json({ message: "Failed to create friend circle" });
+      }
+    }
+  });
+
+  // Personal baseline routes
+  app.get('/api/baseline', isAuthenticated, async (req: any, res) => {
+    try {
+      const userId = req.user.claims.sub;
+      const baseline = await storage.getPersonalBaseline(userId);
+      res.json(baseline || null);
+    } catch (error) {
+      console.error("Error fetching baseline:", error);
+      res.status(500).json({ message: "Failed to fetch baseline" });
+    }
+  });
+
+  app.post('/api/baseline', isAuthenticated, async (req: any, res) => {
+    try {
+      const userId = req.user.claims.sub;
+      const baselineData = insertPersonalBaselineSchema.parse({
+        ...req.body,
+        userId,
+      });
+      
+      // Check if baseline exists, if so update, otherwise create
+      const existingBaseline = await storage.getPersonalBaseline(userId);
+      let baseline;
+      
+      if (existingBaseline) {
+        baseline = await storage.updatePersonalBaseline(userId, baselineData);
+      } else {
+        baseline = await storage.createPersonalBaseline(baselineData);
+      }
+      
+      res.json(baseline);
+    } catch (error) {
+      if (error instanceof z.ZodError) {
+        res.status(400).json({ message: "Invalid baseline data", errors: error.errors });
+      } else {
+        console.error("Error saving baseline:", error);
+        res.status(500).json({ message: "Failed to save baseline" });
       }
     }
   });

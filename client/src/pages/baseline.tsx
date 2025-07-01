@@ -1,6 +1,7 @@
 import { useState, useEffect } from "react";
 import { useAuth } from "@/hooks/useAuth";
 import { useToast } from "@/hooks/use-toast";
+import { queryClient } from "@/lib/queryClient";
 import Navigation from "@/components/navigation";
 import PersonalBaselineAssessment from "@/components/personal-baseline-assessment";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -27,13 +28,38 @@ export default function BaselinePage() {
     }
   }, [isAuthenticated, isLoading, toast]);
 
-  const handleSaveBaseline = (baseline: any) => {
-    // In a real app, this would save to the backend
-    setUserBaseline(baseline);
-    toast({
-      title: "Baseline Saved",
-      description: "Your personal baseline has been saved and will be used for relationship compatibility analysis.",
-    });
+  const handleSaveBaseline = async (baseline: any) => {
+    try {
+      const response = await fetch('/api/baseline', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify(baseline),
+      });
+
+      if (!response.ok) {
+        throw new Error('Failed to save baseline');
+      }
+
+      const savedBaseline = await response.json();
+      setUserBaseline(savedBaseline);
+      
+      // Invalidate baseline cache to refresh the data
+      queryClient.invalidateQueries({ queryKey: ["/api/baseline"] });
+      
+      toast({
+        title: "Baseline Saved",
+        description: "Your personal baseline has been saved and will be used for relationship compatibility analysis.",
+      });
+    } catch (error) {
+      console.error('Error saving baseline:', error);
+      toast({
+        title: "Error",
+        description: "Failed to save your baseline. Please try again.",
+        variant: "destructive",
+      });
+    }
   };
 
   if (isLoading) {
