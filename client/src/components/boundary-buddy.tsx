@@ -2,11 +2,12 @@ import { useState } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
-import { X, HelpCircle, Lightbulb, TrendingUp, Cloud } from "lucide-react";
+import { X, HelpCircle, Lightbulb, TrendingUp, Cloud, MessageCircle } from "lucide-react";
 
 interface BoundaryBuddyProps {
   context: 'emotional-weather' | 'timeline' | 'achievements' | 'general';
   trigger?: React.ReactNode;
+  position?: 'floating' | 'inline';
 }
 
 const explanations = {
@@ -88,21 +89,85 @@ const explanations = {
   }
 };
 
-export default function BoundaryBuddy({ context, trigger }: BoundaryBuddyProps) {
+export default function BoundaryBuddy({ context, trigger, position = 'inline' }: BoundaryBuddyProps) {
   const [isOpen, setIsOpen] = useState(false);
+  const [isAnimating, setIsAnimating] = useState(false);
   const explanation = explanations[context];
   const IconComponent = explanation.icon;
 
-  const defaultTrigger = (
-    <Button
-      variant="outline"
-      size="sm"
-      onClick={() => setIsOpen(true)}
-      className="flex items-center gap-2 text-blue-600 border-blue-200 hover:bg-blue-50"
+  const handleOpenDialog = () => {
+    setIsAnimating(true);
+    setIsOpen(true);
+    setTimeout(() => setIsAnimating(false), 300);
+  };
+
+  // Animated Buddy Character
+  const BuddyCharacter = () => (
+    <motion.div
+      className="relative cursor-pointer"
+      onClick={handleOpenDialog}
+      whileHover={{ scale: 1.1 }}
+      whileTap={{ scale: 0.95 }}
     >
-      <HelpCircle className="w-4 h-4" />
-      Ask Boundary Buddy
-    </Button>
+      {/* Buddy Body */}
+      <motion.div
+        className="w-12 h-12 bg-gradient-to-br from-blue-400 to-purple-500 rounded-full shadow-lg flex items-center justify-center border-3 border-white"
+        animate={{
+          y: [0, -2, 0],
+        }}
+        transition={{
+          duration: 2,
+          repeat: Infinity,
+          ease: "easeInOut"
+        }}
+      >
+        {/* Buddy Face */}
+        <div className="relative">
+          {/* Eyes */}
+          <div className="flex gap-1 mb-1">
+            <motion.div 
+              className="w-1.5 h-1.5 bg-white rounded-full"
+              animate={{ scale: [1, 0.8, 1] }}
+              transition={{ duration: 3, repeat: Infinity }}
+            />
+            <motion.div 
+              className="w-1.5 h-1.5 bg-white rounded-full"
+              animate={{ scale: [1, 0.8, 1] }}
+              transition={{ duration: 3, repeat: Infinity, delay: 0.1 }}
+            />
+          </div>
+          {/* Smile */}
+          <div className="w-2 h-1 border-b-2 border-white rounded-full mx-auto" />
+        </div>
+      </motion.div>
+
+      {/* Speech Bubble Indicator */}
+      <motion.div
+        className="absolute -top-2 -right-2 w-4 h-4 bg-green-400 rounded-full flex items-center justify-center"
+        animate={{
+          scale: [1, 1.2, 1],
+          opacity: [0.7, 1, 0.7]
+        }}
+        transition={{
+          duration: 1.5,
+          repeat: Infinity,
+        }}
+      >
+        <MessageCircle className="w-2 h-2 text-white" />
+      </motion.div>
+
+      {/* Hover hint */}
+      <motion.div
+        className="absolute -bottom-8 left-1/2 transform -translate-x-1/2 bg-black/80 text-white text-xs px-2 py-1 rounded whitespace-nowrap opacity-0 pointer-events-none"
+        whileHover={{ opacity: 1 }}
+      >
+        Ask me for help!
+      </motion.div>
+    </motion.div>
+  );
+
+  const defaultTrigger = position === 'floating' ? <BuddyCharacter /> : (
+    <BuddyCharacter />
   );
 
   return (
@@ -133,7 +198,7 @@ export default function BoundaryBuddy({ context, trigger }: BoundaryBuddyProps) 
               animate={{ opacity: 1, scale: 1, y: 0 }}
               exit={{ opacity: 0, scale: 0.95, y: 20 }}
               transition={{ duration: 0.2 }}
-              className="fixed top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 w-full max-w-lg mx-4 z-50"
+              className="fixed top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 w-full max-w-lg mx-4 z-50 max-h-[90vh] overflow-hidden"
             >
               <Card className="border-2 border-blue-200 shadow-xl">
                 <CardContent className="p-0">
@@ -141,12 +206,31 @@ export default function BoundaryBuddy({ context, trigger }: BoundaryBuddyProps) 
                   <div className="bg-gradient-to-r from-blue-500 to-purple-600 text-white p-4 rounded-t-lg">
                     <div className="flex items-center justify-between">
                       <div className="flex items-center gap-3">
-                        <div className="w-10 h-10 bg-white/20 rounded-full flex items-center justify-center">
-                          <IconComponent className="w-5 h-5" />
-                        </div>
+                        {/* Animated Buddy in Header */}
+                        <motion.div
+                          className="w-10 h-10 bg-white/20 rounded-full flex items-center justify-center border-2 border-white/30"
+                          animate={{
+                            rotate: [0, 5, -5, 0],
+                          }}
+                          transition={{
+                            duration: 2,
+                            repeat: Infinity,
+                            ease: "easeInOut"
+                          }}
+                        >
+                          <div className="relative">
+                            {/* Eyes */}
+                            <div className="flex gap-0.5 mb-0.5">
+                              <div className="w-1 h-1 bg-white rounded-full" />
+                              <div className="w-1 h-1 bg-white rounded-full" />
+                            </div>
+                            {/* Smile */}
+                            <div className="w-1.5 h-0.5 border-b border-white rounded-full mx-auto" />
+                          </div>
+                        </motion.div>
                         <div>
                           <h3 className="font-semibold text-lg">{explanation.title}</h3>
-                          <p className="text-blue-100 text-sm">Your friendly boundary guide</p>
+                          <p className="text-blue-100 text-sm">Hi! I'm Buddy, your boundary guide 👋</p>
                         </div>
                       </div>
                       <Button

@@ -7,6 +7,7 @@ import Navigation from "@/components/navigation";
 import BoundaryForm from "@/components/boundary-form";
 import ActivityTimeline from "@/components/activity-timeline";
 import WeeklyProgress from "@/components/weekly-progress";
+import BoundaryBuddy from "@/components/boundary-buddy";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { CheckCircle, AlertTriangle, Smile, Plus, BookOpen, TrendingUp, Heart, Users } from "lucide-react";
@@ -351,6 +352,11 @@ export default function Dashboard() {
             </div>
           </CardContent>
         </Card>
+      </div>
+
+      {/* Floating Boundary Buddy */}
+      <div className="fixed bottom-6 right-6 z-40">
+        <BoundaryBuddy context="general" position="floating" />
       </div>
     </div>
   );
