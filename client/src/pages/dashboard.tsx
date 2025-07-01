@@ -110,6 +110,8 @@ export default function Dashboard() {
   });
 
   const activeBoundaries = boundaries?.filter((b: any) => b.isActive) || [];
+  
+  console.log("Dashboard relationships data:", relationships);
 
   return (
     <div className="min-h-screen bg-neutral-50">
@@ -215,7 +217,7 @@ export default function Dashboard() {
             <WeeklyProgress />
 
             {/* Relationship Trends */}
-            {relationships && relationships.length > 0 && (
+            {relationships && Array.isArray(relationships) && relationships.length > 0 && (
               <Card>
                 <CardHeader>
                   <div className="flex items-center justify-between">
