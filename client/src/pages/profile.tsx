@@ -28,6 +28,9 @@ interface UserProfile {
   notificationPreferences: {
     email: boolean;
     push: boolean;
+    dailyReminders?: boolean;
+    weeklyReports?: boolean;
+    flagAlerts?: boolean;
   };
   defaultPrivacySetting: string;
   bio?: string;
@@ -58,7 +61,10 @@ export default function Profile() {
     defaultPrivacySetting: "private",
     notificationPreferences: {
       email: true,
-      push: false
+      push: false,
+      dailyReminders: true,
+      weeklyReports: true,
+      flagAlerts: true
     }
   });
 
@@ -84,7 +90,13 @@ export default function Profile() {
         bio: profile.bio || "",
         userRole: profile.userRole || "standard",
         defaultPrivacySetting: profile.defaultPrivacySetting || "private",
-        notificationPreferences: profile.notificationPreferences || { email: true, push: false }
+        notificationPreferences: {
+          email: profile.notificationPreferences?.email ?? true,
+          push: profile.notificationPreferences?.push ?? false,
+          dailyReminders: (profile.notificationPreferences as any)?.dailyReminders ?? true,
+          weeklyReports: (profile.notificationPreferences as any)?.weeklyReports ?? true,
+          flagAlerts: (profile.notificationPreferences as any)?.flagAlerts ?? true
+        }
       });
     }
   }, [profile]);
@@ -344,59 +356,158 @@ export default function Profile() {
 
           {/* Preferences Tab */}
           <TabsContent value="preferences">
-            <Card>
-              <CardHeader>
-                <CardTitle className="flex items-center gap-2">
-                  <Bell className="w-5 h-5" />
-                  Notification Preferences
-                </CardTitle>
-              </CardHeader>
-              <CardContent className="space-y-4">
-                <div className="flex items-center justify-between">
-                  <div>
-                    <Label>Email Notifications</Label>
-                    <p className="text-sm text-neutral-500">
-                      Receive updates about your relationships and boundaries
-                    </p>
+            <div className="space-y-6">
+              {/* Notification Preferences */}
+              <Card>
+                <CardHeader>
+                  <CardTitle className="flex items-center gap-2">
+                    <Bell className="w-5 h-5" />
+                    Notification Preferences
+                  </CardTitle>
+                </CardHeader>
+                <CardContent className="space-y-4">
+                  <div className="flex items-center justify-between">
+                    <div>
+                      <Label>Email Notifications</Label>
+                      <p className="text-sm text-neutral-500">
+                        Receive updates about your relationships and boundaries
+                      </p>
+                    </div>
+                    <Switch
+                      checked={profileData.notificationPreferences.email}
+                      onCheckedChange={(checked) => 
+                        setProfileData(prev => ({ 
+                          ...prev, 
+                          notificationPreferences: { ...prev.notificationPreferences, email: checked }
+                        }))
+                      }
+                    />
                   </div>
-                  <Switch
-                    checked={profileData.notificationPreferences.email}
-                    onCheckedChange={(checked) => 
-                      setProfileData(prev => ({ 
-                        ...prev, 
-                        notificationPreferences: { ...prev.notificationPreferences, email: checked }
-                      }))
-                    }
-                  />
-                </div>
 
-                <div className="flex items-center justify-between">
-                  <div>
-                    <Label>Push Notifications</Label>
-                    <p className="text-sm text-neutral-500">
-                      Get notified about important updates
-                    </p>
+                  <div className="flex items-center justify-between">
+                    <div>
+                      <Label>Push Notifications</Label>
+                      <p className="text-sm text-neutral-500">
+                        Get notified about important updates
+                      </p>
+                    </div>
+                    <Switch
+                      checked={profileData.notificationPreferences.push}
+                      onCheckedChange={(checked) => 
+                        setProfileData(prev => ({ 
+                          ...prev, 
+                          notificationPreferences: { ...prev.notificationPreferences, push: checked }
+                        }))
+                      }
+                    />
                   </div>
-                  <Switch
-                    checked={profileData.notificationPreferences.push}
-                    onCheckedChange={(checked) => 
-                      setProfileData(prev => ({ 
-                        ...prev, 
-                        notificationPreferences: { ...prev.notificationPreferences, push: checked }
-                      }))
-                    }
-                  />
-                </div>
+                </CardContent>
+              </Card>
 
-                <Button 
-                  onClick={handleSaveProfile}
-                  disabled={updateProfileMutation.isPending}
-                  className="w-full"
-                >
-                  {updateProfileMutation.isPending ? "Saving..." : "Save Preferences"}
-                </Button>
-              </CardContent>
-            </Card>
+              {/* App Preferences */}
+              <Card>
+                <CardHeader>
+                  <CardTitle className="flex items-center gap-2">
+                    <Settings className="w-5 h-5" />
+                    App Settings
+                  </CardTitle>
+                </CardHeader>
+                <CardContent className="space-y-4">
+                  <div className="flex items-center justify-between">
+                    <div>
+                      <Label>Daily Check-in Reminders</Label>
+                      <p className="text-sm text-neutral-500">
+                        Get reminded to log your boundary experiences
+                      </p>
+                    </div>
+                    <Switch
+                      checked={profileData.notificationPreferences.dailyReminders !== false}
+                      onCheckedChange={(checked) => 
+                        setProfileData(prev => ({ 
+                          ...prev, 
+                          notificationPreferences: { ...prev.notificationPreferences, dailyReminders: checked }
+                        }))
+                      }
+                    />
+                  </div>
+
+                  <div className="flex items-center justify-between">
+                    <div>
+                      <Label>Weekly Progress Reports</Label>
+                      <p className="text-sm text-neutral-500">
+                        Receive weekly summaries of your boundary tracking
+                      </p>
+                    </div>
+                    <Switch
+                      checked={profileData.notificationPreferences.weeklyReports !== false}
+                      onCheckedChange={(checked) => 
+                        setProfileData(prev => ({ 
+                          ...prev, 
+                          notificationPreferences: { ...prev.notificationPreferences, weeklyReports: checked }
+                        }))
+                      }
+                    />
+                  </div>
+
+                  <div className="flex items-center justify-between">
+                    <div>
+                      <Label>Relationship Flag Alerts</Label>
+                      <p className="text-sm text-neutral-500">
+                        Get notified when red flags are detected in relationships
+                      </p>
+                    </div>
+                    <Switch
+                      checked={profileData.notificationPreferences.flagAlerts !== false}
+                      onCheckedChange={(checked) => 
+                        setProfileData(prev => ({ 
+                          ...prev, 
+                          notificationPreferences: { ...prev.notificationPreferences, flagAlerts: checked }
+                        }))
+                      }
+                    />
+                  </div>
+                </CardContent>
+              </Card>
+
+              {/* Data & Export */}
+              <Card>
+                <CardHeader>
+                  <CardTitle className="flex items-center gap-2">
+                    <User className="w-5 h-5" />
+                    Data Management
+                  </CardTitle>
+                </CardHeader>
+                <CardContent className="space-y-4">
+                  <div className="p-4 bg-blue-50 rounded-lg">
+                    <h4 className="font-medium text-blue-900 mb-2">Export Your Data</h4>
+                    <p className="text-sm text-blue-800 mb-3">
+                      Download all your boundary entries, relationships, and progress data as a CSV file.
+                    </p>
+                    <Button variant="outline" size="sm" className="text-blue-700 border-blue-300">
+                      Download Data Export
+                    </Button>
+                  </div>
+
+                  <div className="p-4 bg-orange-50 rounded-lg">
+                    <h4 className="font-medium text-orange-900 mb-2">Account Deletion</h4>
+                    <p className="text-sm text-orange-800 mb-3">
+                      Permanently delete your account and all associated data. This action cannot be undone.
+                    </p>
+                    <Button variant="destructive" size="sm">
+                      Delete Account
+                    </Button>
+                  </div>
+                </CardContent>
+              </Card>
+
+              <Button 
+                onClick={handleSaveProfile}
+                disabled={updateProfileMutation.isPending}
+                className="w-full"
+              >
+                {updateProfileMutation.isPending ? "Saving..." : "Save All Preferences"}
+              </Button>
+            </div>
           </TabsContent>
 
           {/* Privacy & Sharing Tab */}
