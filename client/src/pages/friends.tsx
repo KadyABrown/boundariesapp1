@@ -275,21 +275,30 @@ export default function Friends() {
 
         <Tabs defaultValue="friends" className="space-y-6">
           <TabsList className="grid w-full grid-cols-4">
-            <TabsTrigger value="friends" className="flex items-center gap-2">
-              <Users className="w-4 h-4" />
-              Friends ({friends.length})
+            <TabsTrigger value="friends" className="flex items-center gap-1 px-2 text-xs sm:text-sm">
+              <Users className="w-3 h-3 sm:w-4 sm:h-4" />
+              <span className="hidden sm:inline">Friends</span>
+              <span className="sm:hidden">({friends.length})</span>
+              <span className="hidden sm:inline">({friends.length})</span>
             </TabsTrigger>
-            <TabsTrigger value="shared" className="flex items-center gap-2">
-              <Heart className="w-4 h-4" />
-              Shared Data
+            <TabsTrigger value="shared" className="flex items-center gap-1 px-2 text-xs sm:text-sm">
+              <Heart className="w-3 h-3 sm:w-4 sm:h-4" />
+              <span className="hidden sm:inline">Shared</span>
+              <span className="sm:hidden">Share</span>
             </TabsTrigger>
-            <TabsTrigger value="requests" className="flex items-center gap-2">
-              <UserCheck className="w-4 h-4" />
-              Requests ({receivedRequests.length})
+            <TabsTrigger value="requests" className="flex items-center gap-1 px-2 text-xs sm:text-sm">
+              <UserCheck className="w-3 h-3 sm:w-4 sm:h-4" />
+              <span className="hidden sm:inline">Requests</span>
+              <span className="sm:hidden">Req</span>
+              <span className="hidden sm:inline">({receivedRequests.length})</span>
+              <span className="sm:hidden">({receivedRequests.length})</span>
             </TabsTrigger>
-            <TabsTrigger value="sent" className="flex items-center gap-2">
-              <MessageCircle className="w-4 h-4" />
-              Sent ({sentRequests.length})
+            <TabsTrigger value="sent" className="flex items-center gap-1 px-2 text-xs sm:text-sm">
+              <MessageCircle className="w-3 h-3 sm:w-4 sm:h-4" />
+              <span className="hidden sm:inline">Sent</span>
+              <span className="sm:hidden">Out</span>
+              <span className="hidden sm:inline">({sentRequests.length})</span>
+              <span className="sm:hidden">({sentRequests.length})</span>
             </TabsTrigger>
           </TabsList>
 
