@@ -76,6 +76,15 @@ interface ComprehensiveInteractionData {
   lessonsLearned: string;
   warningSignsNoticed: string[];
   futurePreparation: string[];
+  
+  // Baseline Values Validation (NEW)
+  communicationStyleRespected: boolean;
+  emotionalNeedsMet: boolean;
+  boundariesRespected: boolean;
+  triggersAvoided: boolean;
+  coreValuesAligned: boolean;
+  dealBreakersPresent: boolean;
+  baselineCompatibilityScore: number; // 1-10
 }
 
 interface ComprehensiveInteractionTrackerProps {
