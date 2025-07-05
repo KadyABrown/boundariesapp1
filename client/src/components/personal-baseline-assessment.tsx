@@ -6,6 +6,7 @@ import { RadioGroupItem, RadioGroup } from "@/components/ui/radio-group";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { Input } from "@/components/ui/input";
+import { Checkbox } from "@/components/ui/checkbox";
 import { Brain, Heart, Shield, MessageSquare, AlertTriangle } from "lucide-react";
 import { apiRequest } from "@/lib/queryClient";
 import { useToast } from "@/hooks/use-toast";
@@ -238,7 +239,7 @@ export default function PersonalBaselineAssessment({
                           if (checked) {
                             updateData('triggers', [...baselineData.triggers, trigger]);
                           } else {
-                            updateData('triggers', baselineData.triggers.filter(t => t !== trigger));
+                            updateData('triggers', baselineData.triggers.filter((t: string) => t !== trigger));
                           }
                         }}
                       />
@@ -286,7 +287,7 @@ export default function PersonalBaselineAssessment({
                           if (checked) {
                             updateData('nonNegotiableBoundaries', [...baselineData.nonNegotiableBoundaries, boundary]);
                           } else {
-                            updateData('nonNegotiableBoundaries', baselineData.nonNegotiableBoundaries.filter(b => b !== boundary));
+                            updateData('nonNegotiableBoundaries', baselineData.nonNegotiableBoundaries.filter((b: string) => b !== boundary));
                           }
                         }}
                       />
@@ -483,7 +484,14 @@ export default function PersonalBaselineAssessment({
   };
 
   return (
-    <div className="fixed inset-0 bg-black bg-opacity-50 z-50 flex items-center justify-center p-4">
+    <div 
+      className="fixed inset-0 bg-black bg-opacity-50 z-50 flex items-center justify-center p-4"
+      onClick={(e) => {
+        if (e.target === e.currentTarget) {
+          onCancel();
+        }
+      }}
+    >
       <div className="bg-white rounded-lg w-full max-w-2xl max-h-[90vh] overflow-y-auto">
         <div className="p-6">
           <div className="flex items-center justify-between mb-6">
@@ -491,7 +499,7 @@ export default function PersonalBaselineAssessment({
               <h2 className="text-2xl font-bold">Personal Baseline Assessment</h2>
               <p className="text-gray-600">Step {currentStep} of 5</p>
             </div>
-            <Button variant="ghost" onClick={onCancel}>×</Button>
+            <Button variant="ghost" onClick={onCancel} className="text-xl">×</Button>
           </div>
 
           <div className="mb-6">
