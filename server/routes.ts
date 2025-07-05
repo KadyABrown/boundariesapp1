@@ -768,9 +768,10 @@ export async function registerRoutes(app: Express): Promise<Server> {
             }
           }
           
-          // Process the parsed row if we have enough fields
-          if (fields.length >= 8) {
-            const [greenFlag, redFlag, behaviorDesc, example, impact, worthAddressing, actionSteps, theme] = fields;
+          // Process the parsed row if we have enough fields for new format:
+          // Theme, Behavior Description, Green flag, Red flag, Red flag Example, Unhealthy Impact, Action steps
+          if (fields.length >= 7) {
+            const [theme, behaviorDesc, greenFlag, redFlag, redExample, unhealthyImpact, actionSteps] = fields;
             
             // Create paired entry
             if (greenFlag && redFlag && theme) {
@@ -779,19 +780,16 @@ export async function registerRoutes(app: Express): Promise<Server> {
                 greenFlag: {
                   title: greenFlag.replace(/💚/g, '').trim(),
                   description: behaviorDesc,
-                  exampleScenario: example,
-                  emotionalImpact: impact,
-                  actionSteps: actionSteps
+                  exampleScenario: `Healthy approach: ${greenFlag}`,
+                  emotionalImpact: 'Builds trust and emotional safety',
+                  actionSteps: 'Continue this positive pattern'
                 },
                 redFlag: {
                   title: redFlag.replace(/🚩/g, '').trim(),
                   description: behaviorDesc,
-                  exampleScenario: example,
-                  emotionalImpact: impact,
-                  actionSteps: actionSteps,
-                  addressability: worthAddressing?.toLowerCase().includes('never') ? 'dealbreaker' :
-                                 worthAddressing?.toLowerCase().includes('always') ? 'always_worth_addressing' :
-                                 'sometimes_worth_addressing'
+                  exampleScenario: redExample || `Unhealthy approach: ${redFlag}`,
+                  emotionalImpact: unhealthyImpact || 'Creates emotional disconnection',
+                  actionSteps: actionSteps || 'Address this pattern directly'
                 }
               });
             }
