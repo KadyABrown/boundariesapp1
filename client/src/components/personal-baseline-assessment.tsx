@@ -215,42 +215,36 @@ export default function PersonalBaselineAssessment({
 
               <div>
                 <Label className="text-base font-medium">My emotional triggers include:</Label>
-                <div className="mt-2 space-y-2">
-                  {baselineData.triggers.map((trigger, index) => (
-                    <div key={index} className="flex items-center gap-2">
-                      <Badge variant="outline" className="flex-1">{trigger}</Badge>
-                      <Button 
-                        size="sm" 
-                        variant="ghost" 
-                        onClick={() => removeFromArray('triggers', index)}
-                      >
-                        ×
-                      </Button>
+                <div className="mt-2 grid grid-cols-2 gap-2">
+                  {[
+                    'Being dismissed or ignored',
+                    'Raised voices or yelling',
+                    'Being interrupted',
+                    'Feeling criticized',
+                    'Being rushed or pressured',
+                    'Having boundaries violated',
+                    'Not being heard',
+                    'Being blamed',
+                    'Feeling misunderstood',
+                    'Being lied to',
+                    'Having decisions made for me',
+                    'Being compared to others'
+                  ].map(trigger => (
+                    <div key={trigger} className="flex items-center space-x-2">
+                      <Checkbox
+                        id={trigger}
+                        checked={baselineData.triggers.includes(trigger)}
+                        onCheckedChange={(checked) => {
+                          if (checked) {
+                            updateData('triggers', [...baselineData.triggers, trigger]);
+                          } else {
+                            updateData('triggers', baselineData.triggers.filter(t => t !== trigger));
+                          }
+                        }}
+                      />
+                      <Label htmlFor={trigger} className="text-sm">{trigger}</Label>
                     </div>
                   ))}
-                  <div className="flex gap-2">
-                    <Input 
-                      placeholder="Add trigger (e.g., being dismissed, raised voices)" 
-                      onKeyPress={(e) => {
-                        if (e.key === 'Enter') {
-                          addToArray('triggers', e.currentTarget.value);
-                          e.currentTarget.value = '';
-                        }
-                      }}
-                    />
-                    <Button 
-                      size="sm" 
-                      onClick={(e) => {
-                        const input = e.currentTarget.parentElement?.querySelector('input');
-                        if (input) {
-                          addToArray('triggers', input.value);
-                          input.value = '';
-                        }
-                      }}
-                    >
-                      Add
-                    </Button>
-                  </div>
                 </div>
               </div>
             </div>
@@ -269,42 +263,36 @@ export default function PersonalBaselineAssessment({
             <div className="space-y-4">
               <div>
                 <Label className="text-base font-medium">My non-negotiable boundaries:</Label>
-                <div className="mt-2 space-y-2">
-                  {baselineData.nonNegotiableBoundaries.map((boundary, index) => (
-                    <div key={index} className="flex items-center gap-2">
-                      <Badge variant="destructive" className="flex-1">{boundary}</Badge>
-                      <Button 
-                        size="sm" 
-                        variant="ghost" 
-                        onClick={() => removeFromArray('nonNegotiableBoundaries', index)}
-                      >
-                        ×
-                      </Button>
+                <div className="mt-2 grid grid-cols-1 gap-2">
+                  {[
+                    'No yelling or verbal abuse',
+                    'Respect my "no" when I say it',
+                    'No touching without permission',
+                    'Respect my privacy and personal space',
+                    'No lying or deception',
+                    'No pressuring me to do things I\'m uncomfortable with',
+                    'Respect my time and commitments',
+                    'No name-calling or insults',
+                    'Allow me to have my own opinions',
+                    'No threatening behavior',
+                    'Respect my relationships with others',
+                    'No controlling my choices or decisions'
+                  ].map(boundary => (
+                    <div key={boundary} className="flex items-center space-x-2">
+                      <Checkbox
+                        id={boundary}
+                        checked={baselineData.nonNegotiableBoundaries.includes(boundary)}
+                        onCheckedChange={(checked) => {
+                          if (checked) {
+                            updateData('nonNegotiableBoundaries', [...baselineData.nonNegotiableBoundaries, boundary]);
+                          } else {
+                            updateData('nonNegotiableBoundaries', baselineData.nonNegotiableBoundaries.filter(b => b !== boundary));
+                          }
+                        }}
+                      />
+                      <Label htmlFor={boundary} className="text-sm">{boundary}</Label>
                     </div>
                   ))}
-                  <div className="flex gap-2">
-                    <Input 
-                      placeholder="Add non-negotiable boundary" 
-                      onKeyPress={(e) => {
-                        if (e.key === 'Enter') {
-                          addToArray('nonNegotiableBoundaries', e.currentTarget.value);
-                          e.currentTarget.value = '';
-                        }
-                      }}
-                    />
-                    <Button 
-                      size="sm" 
-                      onClick={(e) => {
-                        const input = e.currentTarget.parentElement?.querySelector('input');
-                        if (input) {
-                          addToArray('nonNegotiableBoundaries', input.value);
-                          input.value = '';
-                        }
-                      }}
-                    >
-                      Add
-                    </Button>
-                  </div>
                 </div>
               </div>
 
@@ -349,83 +337,71 @@ export default function PersonalBaselineAssessment({
             <div className="space-y-4">
               <div>
                 <Label className="text-base font-medium">Things that drain my energy:</Label>
-                <div className="mt-2 space-y-2">
-                  {baselineData.energyDrains.map((drain, index) => (
-                    <div key={index} className="flex items-center gap-2">
-                      <Badge variant="outline" className="flex-1 text-red-600">{drain}</Badge>
-                      <Button 
-                        size="sm" 
-                        variant="ghost" 
-                        onClick={() => removeFromArray('energyDrains', index)}
-                      >
-                        ×
-                      </Button>
+                <div className="mt-2 grid grid-cols-2 gap-2">
+                  {[
+                    'Arguments and conflict',
+                    'Being interrupted constantly',
+                    'Feeling rushed or pressured',
+                    'Having to repeat myself',
+                    'Being criticized or judged',
+                    'Loud or chaotic environments',
+                    'Feeling unheard or dismissed',
+                    'Having my boundaries violated',
+                    'Being around negative energy',
+                    'Dealing with dishonesty',
+                    'Feeling controlled or manipulated',
+                    'Having to defend my choices'
+                  ].map(drain => (
+                    <div key={drain} className="flex items-center space-x-2">
+                      <Checkbox
+                        id={drain}
+                        checked={baselineData.energyDrains.includes(drain)}
+                        onCheckedChange={(checked) => {
+                          if (checked) {
+                            updateData('energyDrains', [...baselineData.energyDrains, drain]);
+                          } else {
+                            updateData('energyDrains', baselineData.energyDrains.filter((d: string) => d !== drain));
+                          }
+                        }}
+                      />
+                      <Label htmlFor={drain} className="text-sm">{drain}</Label>
                     </div>
                   ))}
-                  <div className="flex gap-2">
-                    <Input 
-                      placeholder="Add energy drain (e.g., arguments, being interrupted)" 
-                      onKeyPress={(e) => {
-                        if (e.key === 'Enter') {
-                          addToArray('energyDrains', e.currentTarget.value);
-                          e.currentTarget.value = '';
-                        }
-                      }}
-                    />
-                    <Button 
-                      size="sm" 
-                      onClick={(e) => {
-                        const input = e.currentTarget.parentElement?.querySelector('input');
-                        if (input) {
-                          addToArray('energyDrains', input.value);
-                          input.value = '';
-                        }
-                      }}
-                    >
-                      Add
-                    </Button>
-                  </div>
                 </div>
               </div>
 
               <div>
                 <Label className="text-base font-medium">Things that boost my energy:</Label>
-                <div className="mt-2 space-y-2">
-                  {baselineData.energySources.map((source, index) => (
-                    <div key={index} className="flex items-center gap-2">
-                      <Badge variant="outline" className="flex-1 text-green-600">{source}</Badge>
-                      <Button 
-                        size="sm" 
-                        variant="ghost" 
-                        onClick={() => removeFromArray('energySources', index)}
-                      >
-                        ×
-                      </Button>
+                <div className="mt-2 grid grid-cols-2 gap-2">
+                  {[
+                    'Deep, meaningful conversations',
+                    'Being truly heard and understood',
+                    'Feeling supported and validated',
+                    'Having my boundaries respected',
+                    'Laughing and having fun together',
+                    'Feeling appreciated and valued',
+                    'Honest and open communication',
+                    'Peaceful, calm environments',
+                    'Being encouraged to be myself',
+                    'Having my feelings acknowledged',
+                    'Feeling safe to express myself',
+                    'Collaborative problem-solving'
+                  ].map(source => (
+                    <div key={source} className="flex items-center space-x-2">
+                      <Checkbox
+                        id={source}
+                        checked={baselineData.energySources.includes(source)}
+                        onCheckedChange={(checked) => {
+                          if (checked) {
+                            updateData('energySources', [...baselineData.energySources, source]);
+                          } else {
+                            updateData('energySources', baselineData.energySources.filter((s: string) => s !== source));
+                          }
+                        }}
+                      />
+                      <Label htmlFor={source} className="text-sm">{source}</Label>
                     </div>
                   ))}
-                  <div className="flex gap-2">
-                    <Input 
-                      placeholder="Add energy source (e.g., good conversation, feeling heard)" 
-                      onKeyPress={(e) => {
-                        if (e.key === 'Enter') {
-                          addToArray('energySources', e.currentTarget.value);
-                          e.currentTarget.value = '';
-                        }
-                      }}
-                    />
-                    <Button 
-                      size="sm" 
-                      onClick={(e) => {
-                        const input = e.currentTarget.parentElement?.querySelector('input');
-                        if (input) {
-                          addToArray('energySources', input.value);
-                          input.value = '';
-                        }
-                      }}
-                    >
-                      Add
-                    </Button>
-                  </div>
                 </div>
               </div>
             </div>
