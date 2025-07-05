@@ -784,7 +784,7 @@ export default function Relationships() {
           </div>
         ) : profiles && profiles.length > 0 ? (
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-            {profiles.map((profile: any) => (
+            {profiles.slice(0, 1).map((profile: any) => (
               <Card key={profile.id} className="relative cursor-pointer hover:shadow-lg transition-shadow">
                 <CardHeader>
                   <div className="flex items-start justify-between">
@@ -867,6 +867,13 @@ export default function Relationships() {
                 </CardContent>
               </Card>
             ))}
+            
+            {/* Additional relationships paywall */}
+            {profiles.length > 1 && (
+              <Premium feature="Multiple Relationship Tracking">
+                <div></div>
+              </Premium>
+            )}
           </div>
         ) : (
           <Card className="text-center py-12">
