@@ -107,6 +107,13 @@ export interface IStorage {
     redFlags: number;
     averageSafetyRating: number;
     checkInCount: number;
+    overallHealthScore: number;
+    energyImpact: number;
+    anxietyImpact: number;
+    selfWorthImpact: number;
+    averageRecoveryTime: number;
+    physicalSymptomsFrequency: number;
+    interactionCount: number;
   }>;
   
   // Flag Example Bank operations
@@ -498,6 +505,13 @@ export class DatabaseStorage implements IStorage {
     redFlags: number;
     averageSafetyRating: number;
     checkInCount: number;
+    overallHealthScore: number;
+    energyImpact: number;
+    anxietyImpact: number;
+    selfWorthImpact: number;
+    averageRecoveryTime: number;
+    physicalSymptomsFrequency: number;
+    interactionCount: number;
   }> {
     const greenFlags = await db
       .select({ count: count() })
@@ -531,11 +545,83 @@ export class DatabaseStorage implements IStorage {
       .from(emotionalCheckIns)
       .where(eq(emotionalCheckIns.profileId, profileId));
 
+    // Get comprehensive interaction data for health calculations
+    const interactions = await db
+      .select()
+      .from(comprehensiveInteractions)
+      .where(eq(comprehensiveInteractions.relationshipId, profileId))
+      .orderBy(desc(comprehensiveInteractions.createdAt));
+
+    const interactionCount = interactions.length;
+    
+    let energyImpact = 0;
+    let anxietyImpact = 0;
+    let selfWorthImpact = 0;
+    let averageRecoveryTime = 0;
+    let physicalSymptomsFrequency = 0;
+
+    if (interactionCount > 0) {
+      // Calculate average impacts
+      energyImpact = interactions.reduce((sum, i) => sum + ((i.postEnergyLevel || 0) - (i.preEnergyLevel || 0)), 0) / interactionCount;
+      anxietyImpact = interactions.reduce((sum, i) => sum + ((i.postAnxietyLevel || 0) - (i.preAnxietyLevel || 0)), 0) / interactionCount;
+      selfWorthImpact = interactions.reduce((sum, i) => sum + ((i.postSelfWorth || 0) - (i.preSelfWorth || 0)), 0) / interactionCount;
+      averageRecoveryTime = interactions.reduce((sum, i) => sum + (i.recoveryTimeMinutes || 0), 0) / interactionCount;
+      
+      // Calculate physical symptoms frequency (% of interactions with symptoms)
+      const interactionsWithSymptoms = interactions.filter(i => 
+        i.physicalSymptoms && Array.isArray(i.physicalSymptoms) && i.physicalSymptoms.length > 0
+      ).length;
+      physicalSymptomsFrequency = (interactionsWithSymptoms / interactionCount) * 100;
+    }
+
+    // Calculate overall health score (0-100) integrating all factors
+    const flagScore = greenFlags[0]?.count || redFlags[0]?.count ? 
+      ((greenFlags[0]?.count || 0) / Math.max(1, (greenFlags[0]?.count || 0) + (redFlags[0]?.count || 0))) * 100 : 50;
+    
+    const safetyScore = (safetyData[0]?.avg || 5) * 10; // Convert 1-10 to 0-100
+    
+    const interactionScore = interactionCount > 0 ? Math.round(
+      ((energyImpact + 10) / 20) * 25 + // Energy impact (25%)
+      ((10 - anxietyImpact) / 20) * 25 + // Anxiety impact (25%)
+      ((selfWorthImpact + 10) / 20) * 25 + // Self-worth impact (25%)
+      (Math.max(0, (120 - averageRecoveryTime)) / 120) * 25 // Recovery time (25%)
+    ) : 50;
+
+    // Weighted overall health score
+    const weights = {
+      flags: interactionCount > 0 ? 0.3 : 0.6, // Less weight if we have interaction data
+      safety: checkInCount[0]?.count ? 0.2 : 0,
+      interactions: interactionCount > 0 ? 0.5 : 0
+    };
+    
+    // Normalize weights to sum to 1
+    const totalWeight = weights.flags + weights.safety + weights.interactions;
+    if (totalWeight > 0) {
+      weights.flags /= totalWeight;
+      weights.safety /= totalWeight;
+      weights.interactions /= totalWeight;
+    } else {
+      weights.flags = 1; // Fallback to flags only
+    }
+
+    const overallHealthScore = Math.round(
+      flagScore * weights.flags +
+      safetyScore * weights.safety +
+      interactionScore * weights.interactions
+    );
+
     return {
       greenFlags: greenFlags[0]?.count || 0,
       redFlags: redFlags[0]?.count || 0,
       averageSafetyRating: safetyData[0]?.avg || 0,
       checkInCount: checkInCount[0]?.count || 0,
+      overallHealthScore,
+      energyImpact,
+      anxietyImpact,
+      selfWorthImpact,
+      averageRecoveryTime,
+      physicalSymptomsFrequency,
+      interactionCount,
     };
   }
 

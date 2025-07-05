@@ -128,6 +128,12 @@ export default function RelationshipProfileDetail({ relationship, onClose }: Rel
   const [showFlagDialog, setShowFlagDialog] = useState(false);
   const [showCheckInDialog, setShowCheckInDialog] = useState(false);
   const [showSettingsDialog, setShowSettingsDialog] = useState(false);
+  const [flagFormData, setFlagFormData] = useState({
+    flagType: 'green',
+    category: 'Communication',
+    description: '',
+    notes: ''
+  });
   
   const { data: flags, isLoading: flagsLoading } = useQuery({
     queryKey: ['/api/relationships', relationship.id, 'flags'],
@@ -592,18 +598,26 @@ export default function RelationshipProfileDetail({ relationship, onClose }: Rel
             <div className="space-y-4">
               <div>
                 <label className="text-sm font-medium text-gray-700">Flag Type</label>
-                <select className="w-full mt-1 p-2 border rounded-md">
+                <select 
+                  className="w-full mt-1 p-2 border rounded-md"
+                  value={flagFormData.flagType}
+                  onChange={(e) => setFlagFormData(prev => ({ ...prev, flagType: e.target.value }))}
+                >
                   <option value="green">Green Flag (Positive)</option>
                   <option value="red">Red Flag (Concerning)</option>
                 </select>
               </div>
               <div>
                 <label className="text-sm font-medium text-gray-700">Category</label>
-                <select className="w-full mt-1 p-2 border rounded-md">
-                  <option value="communication">Communication</option>
-                  <option value="respect">Respect</option>
-                  <option value="trust">Trust & Reliability</option>
-                  <option value="emotional">Emotional Consistency</option>
+                <select 
+                  className="w-full mt-1 p-2 border rounded-md"
+                  value={flagFormData.category}
+                  onChange={(e) => setFlagFormData(prev => ({ ...prev, category: e.target.value }))}
+                >
+                  <option value="Communication">Communication</option>
+                  <option value="Respect">Respect</option>
+                  <option value="Trust & Reliability">Trust & Reliability</option>
+                  <option value="Emotional Consistency">Emotional Consistency</option>
                 </select>
               </div>
               <div>
@@ -612,6 +626,8 @@ export default function RelationshipProfileDetail({ relationship, onClose }: Rel
                   className="w-full mt-1 p-2 border rounded-md" 
                   rows={3} 
                   placeholder="Describe the specific behavior you observed..."
+                  value={flagFormData.description}
+                  onChange={(e) => setFlagFormData(prev => ({ ...prev, description: e.target.value }))}
                 />
               </div>
               <div>
@@ -620,6 +636,8 @@ export default function RelationshipProfileDetail({ relationship, onClose }: Rel
                   className="w-full mt-1 p-2 border rounded-md" 
                   rows={2} 
                   placeholder="Additional context or notes..."
+                  value={flagFormData.notes}
+                  onChange={(e) => setFlagFormData(prev => ({ ...prev, notes: e.target.value }))}
                 />
               </div>
             </div>
@@ -634,14 +652,24 @@ export default function RelationshipProfileDetail({ relationship, onClose }: Rel
               <Button 
                 onClick={async () => {
                   try {
-                    // TODO: Add actual flag creation API call
+                    await apiRequest(`/api/relationships/${relationship.id}/flags`, 'POST', {
+                      flagType: flagFormData.flagType,
+                      category: flagFormData.category,
+                      behavior: flagFormData.description,
+                      notes: flagFormData.notes,
+                      isPresent: true
+                    });
+                    
                     toast({
                       title: "Flag Added",
                       description: "Behavioral flag has been recorded successfully.",
                     });
                     setShowFlagDialog(false);
+                    setFlagFormData({ flagType: 'green', category: 'Communication', description: '', notes: '' });
                     queryClient.invalidateQueries({ queryKey: ['/api/relationships', relationship.id, 'flags'] });
+                    queryClient.invalidateQueries({ queryKey: ['/api/relationships', relationship.id, 'stats'] });
                   } catch (error) {
+                    console.error('Flag creation error:', error);
                     toast({
                       title: "Error",
                       description: "Failed to add flag. Please try again.",

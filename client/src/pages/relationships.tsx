@@ -58,6 +58,41 @@ export default function Relationships() {
     retry: false,
   });
 
+  // Load stats for all relationships
+  const { data: statsData } = useQuery({
+    queryKey: ['/api/relationships/stats'],
+    queryFn: async () => {
+      if (!profiles || !Array.isArray(profiles)) return {};
+      const statsMap: Record<number, any> = {};
+      
+      // Load stats for each relationship
+      await Promise.all(profiles.map(async (profile: any) => {
+        try {
+          const stats = await fetch(`/api/relationships/${profile.id}/stats`).then(r => r.json());
+          statsMap[profile.id] = stats;
+        } catch (error) {
+          console.error(`Failed to load stats for relationship ${profile.id}:`, error);
+          statsMap[profile.id] = {
+            greenFlags: 0,
+            redFlags: 0,
+            averageSafetyRating: 0,
+            checkInCount: 0,
+            overallHealthScore: 0,
+            energyImpact: 0,
+            anxietyImpact: 0,
+            selfWorthImpact: 0,
+            averageRecoveryTime: 0,
+            physicalSymptomsFrequency: 0,
+            interactionCount: 0
+          };
+        }
+      }));
+      
+      return statsMap;
+    },
+    enabled: !!profiles && Array.isArray(profiles) && profiles.length > 0,
+  });
+
   const createProfileMutation = useMutation({
     mutationFn: async (profileData: any) => {
       await apiRequest("POST", "/api/relationships", profileData);
@@ -687,9 +722,16 @@ export default function Relationships() {
                 </div>
                 <div className="text-center p-4 bg-blue-50 rounded-lg">
                   <div className="text-2xl font-bold text-blue-700">
-                    {Math.round(profiles.filter((p: any) => p.currentStatus === 'active').length / Math.max(profiles.length, 1) * 100)}%
+                    {(() => {
+                      if (!Array.isArray(profiles) || profiles.length === 0) return '0';
+                      const totalHealthScore = profiles.reduce((sum: number, p: any) => {
+                        const stats = statsData?.[p.id];
+                        return sum + (stats?.overallHealthScore || 0);
+                      }, 0);
+                      return Math.round(totalHealthScore / profiles.length);
+                    })()}%
                   </div>
-                  <div className="text-sm text-blue-600">Health Rate</div>
+                  <div className="text-sm text-blue-600">Average Health Score</div>
                 </div>
                 <div className="text-center p-4 bg-purple-50 rounded-lg">
                   <div className="text-2xl font-bold text-purple-700">
