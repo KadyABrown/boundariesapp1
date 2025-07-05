@@ -349,41 +349,89 @@ export default function AdminPage() {
 
         {/* Feature Analytics Dashboard */}
         {showFeatureHeatmap && (
-          <FeatureAnalyticsDashboard />
+          <Card>
+            <CardHeader>
+              <CardTitle className="flex items-center gap-2">
+                <BarChart3 className="w-5 h-5" />
+                Feature Analytics Dashboard
+              </CardTitle>
+            </CardHeader>
+            <CardContent>
+              <div className="text-center py-12 text-gray-500">
+                <BarChart3 className="w-12 h-12 mx-auto mb-4 text-gray-300" />
+                <h3 className="text-lg font-medium mb-2">Feature Analytics Coming Soon</h3>
+                <p>Detailed feature usage analytics will be available here.</p>
+              </div>
+            </CardContent>
+          </Card>
         )}
 
         {/* Churn Analysis Dashboard */}
         {showChurnDashboard && (
-          <ChurnAnalyticsDashboard />
+          <Card>
+            <CardHeader>
+              <CardTitle className="flex items-center gap-2">
+                <AlertTriangle className="w-5 h-5" />
+                Churn Analysis Dashboard
+              </CardTitle>
+            </CardHeader>
+            <CardContent>
+              <div className="text-center py-12 text-gray-500">
+                <AlertTriangle className="w-12 h-12 mx-auto mb-4 text-gray-300" />
+                <h3 className="text-lg font-medium mb-2">Churn Analysis Coming Soon</h3>
+                <p>User retention and churn analysis will be available here.</p>
+              </div>
+            </CardContent>
+          </Card>
         )}
 
         {/* User Profile Drill-Down */}
         {selectedUser && (
-          <UserProfileModal 
-            user={selectedUser} 
-            onClose={() => setSelectedUser(null)}
-          />
+          <Card className="fixed inset-0 z-50 bg-white m-4 overflow-auto">
+            <CardHeader className="border-b">
+              <div className="flex items-center justify-between">
+                <CardTitle className="flex items-center gap-2">
+                  <Eye className="w-5 h-5" />
+                  User Profile Details
+                </CardTitle>
+                <Button 
+                  variant="ghost" 
+                  onClick={() => setSelectedUser(null)}
+                  className="p-2"
+                >
+                  <UserX className="w-4 h-4" />
+                </Button>
+              </div>
+            </CardHeader>
+            <CardContent className="p-6">
+              <div className="text-center py-12 text-gray-500">
+                <Activity className="w-12 h-12 mx-auto mb-4 text-gray-300" />
+                <h3 className="text-lg font-medium mb-2">User Profile Details Coming Soon</h3>
+                <p>Detailed user activity and profile information will be available here.</p>
+              </div>
+            </CardContent>
+          </Card>
         )}
 
         {/* User Management */}
         {!showFeatureHeatmap && !showChurnDashboard && (
           <Card>
-          <CardHeader>
-            <div className="flex items-center justify-between">
-              <CardTitle>All Users</CardTitle>
-              <div className="flex items-center gap-2">
-                <div className="relative">
-                  <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 w-4 h-4" />
-                  <Input
-                    placeholder="Search users..."
-                    value={searchTerm}
-                    onChange={(e) => setSearchTerm(e.target.value)}
-                    className="pl-10 w-64"
-                  />
+            <CardHeader>
+              <div className="flex items-center justify-between">
+                <CardTitle>All Users</CardTitle>
+                <div className="flex items-center gap-2">
+                  <div className="relative">
+                    <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 w-4 h-4" />
+                    <Input
+                      placeholder="Search users..."
+                      value={searchTerm}
+                      onChange={(e) => setSearchTerm(e.target.value)}
+                      className="pl-10 w-64"
+                    />
+                  </div>
                 </div>
               </div>
-            </div>
-          </CardHeader>
+            </CardHeader>
           <CardContent>
             <div className="overflow-x-auto">
               <table className="w-full">
@@ -452,6 +500,7 @@ export default function AdminPage() {
             </div>
           </CardContent>
         </Card>
+        )}
       </div>
     </div>
   );
