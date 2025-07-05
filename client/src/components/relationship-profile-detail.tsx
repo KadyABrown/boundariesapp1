@@ -22,7 +22,7 @@ function InteractionAnalysis({ relationshipId }: { relationshipId: number }) {
     return <div className="text-center py-4 text-gray-500">Loading analysis...</div>;
   }
 
-  if (!interactions || interactions.length === 0) {
+  if (!interactions || !Array.isArray(interactions) || interactions.length === 0) {
     return (
       <div className="text-center py-8 text-gray-500">
         <p>No interaction data available yet.</p>
@@ -31,22 +31,70 @@ function InteractionAnalysis({ relationshipId }: { relationshipId: number }) {
     );
   }
 
-  // Calculate simple metrics from interaction data
+  // Calculate comprehensive health metrics from interaction data
   const totalInteractions = interactions.length;
   const avgEnergyBefore = interactions.reduce((sum: number, i: any) => sum + (i.preEnergyLevel || 0), 0) / totalInteractions;
   const avgEnergyAfter = interactions.reduce((sum: number, i: any) => sum + (i.postEnergyLevel || 0), 0) / totalInteractions;
   const energyChange = avgEnergyAfter - avgEnergyBefore;
+  
+  const avgAnxietyBefore = interactions.reduce((sum: number, i: any) => sum + (i.preAnxietyLevel || 0), 0) / totalInteractions;
+  const avgAnxietyAfter = interactions.reduce((sum: number, i: any) => sum + (i.postAnxietyLevel || 0), 0) / totalInteractions;
+  const anxietyChange = avgAnxietyAfter - avgAnxietyBefore;
+  
+  const avgSelfWorthBefore = interactions.reduce((sum: number, i: any) => sum + (i.preSelfWorth || 0), 0) / totalInteractions;
+  const avgSelfWorthAfter = interactions.reduce((sum: number, i: any) => sum + (i.postSelfWorth || 0), 0) / totalInteractions;
+  const selfWorthChange = avgSelfWorthAfter - avgSelfWorthBefore;
+  
+  const avgRecoveryTime = interactions.reduce((sum: number, i: any) => sum + (i.recoveryTimeMinutes || 0), 0) / totalInteractions;
+  
+  // Calculate overall health score (0-100)
+  const healthScore = Math.round(
+    ((energyChange + 10) / 20) * 25 + // Energy impact (25%)
+    ((10 - anxietyChange) / 20) * 25 + // Anxiety impact (25%)
+    ((selfWorthChange + 10) / 20) * 25 + // Self-worth impact (25%)
+    (Math.max(0, (120 - avgRecoveryTime)) / 120) * 25 // Recovery time (25%)
+  );
 
   return (
-    <div className="space-y-4">
-      <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+    <div className="space-y-6">
+      {/* Overall Health Score */}
+      <Card>
+        <CardHeader>
+          <CardTitle>Relationship Health Score</CardTitle>
+        </CardHeader>
+        <CardContent>
+          <div className="text-center">
+            <div className={`text-4xl font-bold ${healthScore >= 70 ? 'text-green-600' : healthScore >= 40 ? 'text-yellow-600' : 'text-red-600'}`}>
+              {healthScore}%
+            </div>
+            <p className="text-sm text-gray-600 mt-1">
+              Based on {totalInteractions} interaction{totalInteractions !== 1 ? 's' : ''}
+            </p>
+          </div>
+        </CardContent>
+      </Card>
+      
+      {/* Detailed Metrics */}
+      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
         <div className="text-center p-4 bg-blue-50 rounded-lg">
           <div className="text-2xl font-bold text-blue-600">{totalInteractions}</div>
           <div className="text-sm text-gray-600">Total Interactions</div>
         </div>
         <div className="text-center p-4 bg-green-50 rounded-lg">
-          <div className="text-2xl font-bold text-green-600">{avgEnergyBefore.toFixed(1)}</div>
-          <div className="text-sm text-gray-600">Avg Energy Before</div>
+          <div className={`text-2xl font-bold ${energyChange >= 0 ? 'text-green-600' : 'text-red-600'}`}>
+            {energyChange > 0 ? '+' : ''}{energyChange.toFixed(1)}
+          </div>
+          <div className="text-sm text-gray-600">Avg Energy Impact</div>
+        </div>
+        <div className="text-center p-4 bg-purple-50 rounded-lg">
+          <div className={`text-2xl font-bold ${anxietyChange <= 0 ? 'text-green-600' : 'text-red-600'}`}>
+            {anxietyChange > 0 ? '+' : ''}{anxietyChange.toFixed(1)}
+          </div>
+          <div className="text-sm text-gray-600">Avg Anxiety Impact</div>
+        </div>
+        <div className="text-center p-4 bg-orange-50 rounded-lg">
+          <div className="text-2xl font-bold text-orange-600">{Math.round(avgRecoveryTime)}</div>
+          <div className="text-sm text-gray-600">Avg Recovery (min)</div>
         </div>
         <div className="text-center p-4 bg-orange-50 rounded-lg">
           <div className={`text-2xl font-bold ${energyChange >= 0 ? 'text-green-600' : 'text-red-600'}`}>
@@ -97,10 +145,12 @@ export default function RelationshipProfileDetail({ relationship, onClose }: Rel
   });
 
   const getHealthScore = () => {
-    if (!stats) return 0;
-    const totalFlags = stats.greenFlags + stats.redFlags;
+    if (!stats || typeof stats !== 'object') return 0;
+    const greenFlags = (stats as any).greenFlags || 0;
+    const redFlags = (stats as any).redFlags || 0;
+    const totalFlags = greenFlags + redFlags;
     if (totalFlags === 0) return 0;
-    return Math.round((stats.greenFlags / totalFlags) * 100);
+    return Math.round((greenFlags / totalFlags) * 100);
   };
 
   const getHealthColor = (score: number) => {
@@ -179,33 +229,33 @@ export default function RelationshipProfileDetail({ relationship, onClose }: Rel
                         </div>
                         <div className="text-center p-4 bg-white rounded-lg shadow-sm">
                           <div className="text-3xl font-bold text-green-600">
-                            {stats?.greenFlags || 0}
+                            {(stats as any)?.greenFlags || 0}
                           </div>
                           <div className="text-sm text-gray-600 mt-1">Green Flags</div>
                         </div>
                         <div className="text-center p-4 bg-white rounded-lg shadow-sm">
                           <div className="text-3xl font-bold text-red-600">
-                            {stats?.redFlags || 0}
+                            {(stats as any)?.redFlags || 0}
                           </div>
                           <div className="text-sm text-gray-600 mt-1">Red Flags</div>
                         </div>
                         <div className="text-center p-4 bg-white rounded-lg shadow-sm">
                           <div className="text-3xl font-bold text-blue-600">
-                            {stats?.checkInCount || 0}
+                            {(stats as any)?.checkInCount || 0}
                           </div>
                           <div className="text-sm text-gray-600 mt-1">Check-ins</div>
                         </div>
                       </div>
-                      {stats?.averageSafetyRating && (
+                      {(stats as any)?.averageSafetyRating && (
                         <div className="mt-4 p-3 bg-white rounded-lg shadow-sm">
                           <div className="flex items-center justify-between">
                             <span className="text-sm text-gray-600">Average Safety Rating</span>
-                            <span className="font-semibold">{stats.averageSafetyRating}/10</span>
+                            <span className="font-semibold">{(stats as any).averageSafetyRating}/10</span>
                           </div>
                           <div className="w-full bg-gray-200 rounded-full h-2 mt-2">
                             <div 
                               className="bg-blue-600 h-2 rounded-full transition-all"
-                              style={{ width: `${(stats.averageSafetyRating / 10) * 100}%` }}
+                              style={{ width: `${((stats as any).averageSafetyRating / 10) * 100}%` }}
                             />
                           </div>
                         </div>

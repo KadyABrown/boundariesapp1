@@ -669,7 +669,7 @@ export default function Relationships() {
         </div>
 
         {/* Relationship Quality Summary */}
-        {profiles && profiles.length > 0 && (
+        {profiles && Array.isArray(profiles) && profiles.length > 0 && (
           <Card className="mb-6">
             <CardHeader>
               <CardTitle className="flex items-center gap-2">
