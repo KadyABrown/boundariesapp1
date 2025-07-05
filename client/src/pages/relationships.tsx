@@ -668,6 +668,58 @@ export default function Relationships() {
           </Dialog>
         </div>
 
+        {/* Relationship Quality Summary */}
+        {profiles && profiles.length > 0 && (
+          <Card className="mb-6">
+            <CardHeader>
+              <CardTitle className="flex items-center gap-2">
+                <BarChart3 className="w-5 h-5 text-primary" />
+                Relationship Quality Overview
+              </CardTitle>
+            </CardHeader>
+            <CardContent>
+              <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                <div className="text-center p-4 bg-green-50 rounded-lg">
+                  <div className="text-2xl font-bold text-green-700">
+                    {profiles.filter((p: any) => p.currentStatus === 'active').length}
+                  </div>
+                  <div className="text-sm text-green-600">Active Relationships</div>
+                </div>
+                <div className="text-center p-4 bg-blue-50 rounded-lg">
+                  <div className="text-2xl font-bold text-blue-700">
+                    {Math.round(profiles.filter((p: any) => p.currentStatus === 'active').length / Math.max(profiles.length, 1) * 100)}%
+                  </div>
+                  <div className="text-sm text-blue-600">Health Rate</div>
+                </div>
+                <div className="text-center p-4 bg-purple-50 rounded-lg">
+                  <div className="text-2xl font-bold text-purple-700">
+                    {profiles.filter((p: any) => p.relationshipType === 'romantic').length}
+                  </div>
+                  <div className="text-sm text-purple-600">Romantic Connections</div>
+                </div>
+              </div>
+              
+              <div className="mt-4 pt-4 border-t">
+                <div className="flex justify-between items-center text-sm">
+                  <span className="text-neutral-600">Relationship Types:</span>
+                  <div className="flex gap-2">
+                    {Object.entries(
+                      profiles.reduce((acc: any, p: any) => {
+                        acc[p.relationshipType] = (acc[p.relationshipType] || 0) + 1;
+                        return acc;
+                      }, {})
+                    ).map(([type, count]) => (
+                      <Badge key={type} variant="outline" className="text-xs">
+                        {type}: {count}
+                      </Badge>
+                    ))}
+                  </div>
+                </div>
+              </div>
+            </CardContent>
+          </Card>
+        )}
+
         {profilesLoading ? (
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
             {[...Array(6)].map((_, i) => (
