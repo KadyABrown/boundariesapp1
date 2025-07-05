@@ -1,0 +1,65 @@
+List of errors
+
+Fix these in batches, I don’t want to constantly test the same feature over and over to fail today. I rather test a group of features at once and report back on each one in each report. I’ll list each section based on page then tab.
+
+
+Relationships 
+
+Shouldn’t there be some kind of overall relationship quality summary? The thing you’re trying to accomplish with relationship weather feels like it may belong here. Insights is a good placement too but I just feel like this tab needs a summary of some kind before looking at each individual  relationship profile.
+
+Profiles
+
+Interaction tracker under log new on relationship profiles failed to save.
+
+There’s no relationship health data populating on the overview tab of relationship profiles. 
+
+What does the “Recent Check-ins” feature do? It says coming soon but I don’t know what that is or what feature this relates to? What does Safety: /10 mean?
+
+There’s nothing under analysis. What do you intend to put here? Show me or make it go away.
+
+My Baseline:
+
+Compatibility
+
+Tell me more about how this works? I don’t understand what’s being evaluated to determine how compatible each relationship is in respect the baseline quiz answers? What inputs in the relationship profile section are being measured? Against what? And how do we land on the percentages? How often does this update?
+
+
+Boundaries
+
+Boundary-Baseline Alignment
+
+I like this in theory, but I still don’t fully understand its functionality. Is it static just for the user to view and remember or does this influence any of the predictive features. I need more info on how that works by the way and the ability to see and test that to be sure that’s a capability of this build app.
+
+What does the importance and priority labels mean? What do they inform or influence? How does is this calculated in respect to relationship data input if at all?
+
+Shouldn’t boundaries exist for check in purposes AND to measure how often relationships violate or validate these boundaries? If yes, then won’t manual entry get messy? How could you count its occurrence in relationships? Shouldn’t there be a way for the CIT  or red/green flag entry to correspond to listed boundaries for tracking purposes? And given we have the baseline quiz feature should that not define the boundary baseline alignment? This feels fragmented.
+
+
+
+Red and Green flag bank
+
+There’s no navigation options on this page. No way to get back home or to go to other features. No drop down. I’m stuck on the page unless I hit back. Needs navigation. Especially for the mobile app export
+
+Updated mapped sheet attached. Card format is correct but we still need to update the card labels and content. Specially the Theme label error and the Action Steps label.
+
+Remove import css feature for now now. Remote sample data button for now
+
+Insights
+
+Weather is still weird. Tracks only one relationship. Either needs to consider the stats of all relationships or go away.
+
+What’s 5-day emotional forecast mean? Is it historical data like the Last 5 days of tracking? Is it predictive like the next 5 days of tracking? I need more clarity.
+
+Analytics
+
+Nothing is here and I don’t know what you intend to put there. Explain.
+
+In general tell me about the predictive analysis features we’ve discussed. How does that work? Where will that populate? And can you show me with sample data?
+
+
+Dashboard
+
+Just remember to update the logic here as you fix the fragmented data in the main sections: boundaries, relationships, my baseline.
+
+Maybe there should also be an overview for relationship and/or mood updates from friends that share data here?
+

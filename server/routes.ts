@@ -723,9 +723,16 @@ export async function registerRoutes(app: Express): Promise<Server> {
   // Enhanced CSV parser for paired flag format
   app.post('/api/import-paired-csv', async (req: any, res) => {
     try {
-      const { csvData } = req.body;
+      let { csvData } = req.body;
+      
+      // If no CSV data provided, try to read from attached file
       if (!csvData) {
-        return res.status(400).json({ message: "CSV data is required" });
+        try {
+          const csvPath = path.join(process.cwd(), 'attached_assets', 'Final Data Training - Red and Green flag data base - Red & Green Flag example bank (1)_1751747397428.csv');
+          csvData = fs.readFileSync(csvPath, 'utf-8');
+        } catch (error) {
+          return res.status(400).json({ message: "CSV data is required and no attached file found" });
+        }
       }
 
       // Advanced CSV parser that handles multi-line cells and quoted content
@@ -733,8 +740,8 @@ export async function registerRoutes(app: Express): Promise<Server> {
         const lines = csvContent.split('\n');
         const flags = [];
         
-        // Skip header rows (first 2 lines)
-        let i = 2;
+        // Skip header row (first line only for new format)
+        let i = 1;
         while (i < lines.length) {
           let currentLine = lines[i];
           let fields = [];
