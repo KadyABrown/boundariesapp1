@@ -1641,7 +1641,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
     const userEmail = req.user?.claims?.email;
     
     // Check if user is admin (update with your admin email)
-    if (userEmail === "babygirl@example.com" || userId === "admin") {
+    if (userEmail === "hello@roxzmedia.com" || userId === "44415082") {
       next();
     } else {
       res.status(403).json({ message: "Admin access required" });

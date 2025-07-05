@@ -25,7 +25,7 @@ export default function AdminPage() {
   const [searchTerm, setSearchTerm] = useState("");
 
   // Admin authorization check
-  const isAdmin = user?.email === "babygirl@example.com" || user?.id === "admin"; // Update with your admin email
+  const isAdmin = user?.email === "hello@roxzmedia.com" || user?.id === "44415082";
 
   // Fetch all users and their stats
   const { data: adminStats, isLoading: statsLoading } = useQuery({
