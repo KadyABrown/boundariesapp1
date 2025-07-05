@@ -176,6 +176,22 @@ export interface IStorage {
     respectEntries: number;
     progressPercentage: number;
   }>;
+  
+  // Admin operations
+  getAdminStats(): Promise<{
+    totalUsers: number;
+    newUsersThisWeek: number;
+    premiumUsers: number;
+    newSubscribersThisWeek: number;
+    activeTrials: number;
+    trialConversionRate: number;
+    monthlyRevenue: number;
+    revenueGrowth: number;
+  }>;
+  getAllUsersForAdmin(): Promise<Array<User & {
+    relationshipCount: number;
+    lastActiveAt: Date | null;
+  }>>;
 }
 
 export class DatabaseStorage implements IStorage {
@@ -1213,6 +1229,102 @@ export class DatabaseStorage implements IStorage {
       respectEntries: respected,
       progressPercentage,
     };
+  }
+
+  // Admin operations
+  async getAdminStats(): Promise<{
+    totalUsers: number;
+    newUsersThisWeek: number;
+    premiumUsers: number;
+    newSubscribersThisWeek: number;
+    activeTrials: number;
+    trialConversionRate: number;
+    monthlyRevenue: number;
+    revenueGrowth: number;
+  }> {
+    const oneWeekAgo = new Date();
+    oneWeekAgo.setDate(oneWeekAgo.getDate() - 7);
+
+    // Total users
+    const allUsers = await db.select().from(users);
+    const totalUsers = allUsers.length;
+
+    // New users this week
+    const newUsers = allUsers.filter(user => 
+      user.createdAt && new Date(user.createdAt) >= oneWeekAgo
+    );
+    const newUsersThisWeek = newUsers.length;
+
+    // Premium users (active subscriptions)
+    const premiumUsers = allUsers.filter(user => 
+      user.subscriptionStatus === 'active'
+    ).length;
+
+    // New subscribers this week
+    const newSubscribersThisWeek = allUsers.filter(user => 
+      user.subscriptionStatus === 'active' &&
+      user.updatedAt && new Date(user.updatedAt) >= oneWeekAgo
+    ).length;
+
+    // Active trials
+    const activeTrials = allUsers.filter(user => 
+      user.subscriptionStatus === 'trialing'
+    ).length;
+
+    // Trial conversion rate (simplified calculation)
+    const trialConversionRate = activeTrials > 0 ? Math.round((premiumUsers / (premiumUsers + activeTrials)) * 100) : 0;
+
+    // Monthly revenue (estimated at $10 per premium user)
+    const monthlyRevenue = premiumUsers * 10;
+
+    // Revenue growth (simplified - just based on new subscribers)
+    const revenueGrowth = newSubscribersThisWeek > 0 ? Math.round((newSubscribersThisWeek / Math.max(premiumUsers - newSubscribersThisWeek, 1)) * 100) : 0;
+
+    return {
+      totalUsers,
+      newUsersThisWeek,
+      premiumUsers,
+      newSubscribersThisWeek,
+      activeTrials,
+      trialConversionRate,
+      monthlyRevenue,
+      revenueGrowth,
+    };
+  }
+
+  async getAllUsersForAdmin(): Promise<Array<User & {
+    relationshipCount: number;
+    lastActiveAt: Date | null;
+  }>> {
+    const allUsers = await db.select().from(users);
+    
+    const usersWithMetadata = await Promise.all(
+      allUsers.map(async (user) => {
+        // Get relationship count
+        const relationships = await db
+          .select()
+          .from(relationshipProfiles)
+          .where(eq(relationshipProfiles.userId, user.id));
+        
+        // Get last active (last boundary entry or relationship activity)
+        const lastBoundaryEntry = await db
+          .select()
+          .from(boundaryEntries)
+          .where(eq(boundaryEntries.userId, user.id))
+          .orderBy(desc(boundaryEntries.createdAt))
+          .limit(1);
+
+        const lastActivity = lastBoundaryEntry.length > 0 ? lastBoundaryEntry[0].createdAt : null;
+
+        return {
+          ...user,
+          relationshipCount: relationships.length,
+          lastActiveAt: lastActivity,
+        };
+      })
+    );
+
+    return usersWithMetadata;
   }
 }
 
