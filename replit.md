@@ -2,7 +2,14 @@
 
 ## Overview
 
-BoundarySpace is a full-stack web application designed to help users define, track, and reflect on their personal boundaries. The application transforms a traditional boundary tracking journal into an interactive digital experience, enabling users to build healthier relationships through guided self-awareness tools.
+BoundarySpace is a comprehensive relationship health tracking application that automatically analyzes relationship patterns through detailed interaction tracking and personal baseline assessment. The core function is to help users understand how their relationships impact their physical health, emotional well-being, and personal boundaries by comparing real interaction data against their established personal needs and values.
+
+**Core App Function:**
+1. **Personal Baseline Assessment** - Users define their communication style, emotional needs, boundary requirements, and core values
+2. **Comprehensive Interaction Tracking (CIT)** - Detailed logging of relationship interactions with pre/post measurements of energy, anxiety, self-worth, and physical symptoms
+3. **Automatic Pattern Recognition** - The app analyzes CIT data against the baseline to automatically identify concerning patterns and positive behaviors
+4. **Intelligent Health Scoring** - Combines interaction data, baseline compatibility, and pattern analysis for meaningful relationship health scores
+5. **Actionable Insights** - Shows how relationships affect physical health, self-esteem, and boundary respect with specific recommendations based on personal baseline
 
 The system is built as a modern React SPA with an Express.js backend, using PostgreSQL for data persistence and Replit's authentication system for user management.
 

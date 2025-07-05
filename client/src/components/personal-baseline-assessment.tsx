@@ -1,567 +1,503 @@
-import { useState, useEffect } from "react";
-import { motion } from "framer-motion";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { useState } from "react";
 import { Button } from "@/components/ui/button";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Badge } from "@/components/ui/badge";
+import { RadioGroupItem, RadioGroup } from "@/components/ui/radio-group";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
-import { Slider } from "@/components/ui/slider";
-import { Checkbox } from "@/components/ui/checkbox";
-import { Badge } from "@/components/ui/badge";
-import { Progress } from "@/components/ui/progress";
-import { 
-  Heart, 
-  MessageCircle, 
-  Shield, 
-  Clock, 
-  Users, 
-  Target,
-  Brain,
-  Lightbulb,
-  CheckCircle,
-  AlertTriangle,
-  TrendingUp,
-  Star
-} from "lucide-react";
-
-interface PersonalBaseline {
-  // Communication Preferences
-  communicationStyle: 'direct' | 'gentle' | 'collaborative' | 'assertive';
-  conflictResolution: 'discuss-immediately' | 'need-time-to-process' | 'avoid-conflict' | 'address-when-calm';
-  feedbackPreference: 'frequent-check-ins' | 'only-when-needed' | 'scheduled-discussions' | 'in-the-moment';
-  listeningNeeds: string[];
-  communicationDealBreakers: string[];
-  
-  // Emotional Needs
-  emotionalSupport: 'high' | 'medium' | 'low';
-  affectionStyle: string[];
-  validationNeeds: 'frequent' | 'moderate' | 'minimal';
-  emotionalProcessingTime: number; // hours
-  triggers: string[];
-  comfortingSources: string[];
-  
-  // Boundary Requirements
-  personalSpaceNeeds: 'high' | 'medium' | 'low';
-  aloneTimeFrequency: 'daily' | 'few-times-week' | 'weekly' | 'rarely';
-  decisionMakingStyle: 'independent' | 'collaborative' | 'seek-input' | 'guided';
-  privacyLevels: string[];
-  nonNegotiableBoundaries: string[];
-  flexibleBoundaries: string[];
-  
-  // Time and Availability
-  responseTimeExpectation: number; // hours
-  availabilityWindows: string[];
-  socialEnergyLevel: 'high' | 'medium' | 'low';
-  recoveryTimeNeeded: number; // hours after social interaction
-  
-  // Growth and Values
-  personalGrowthPriorities: string[];
-  relationshipGoals: string[];
-  valueAlignment: string[];
-  dealBreakerBehaviors: string[];
-}
-
-interface CompatibilityScore {
-  overall: number;
-  communication: number;
-  emotional: number;
-  boundaries: number;
-  timeAvailability: number;
-  valuesAlignment: number;
-}
+import { Input } from "@/components/ui/input";
+import { Brain, Heart, Shield, MessageSquare, AlertTriangle } from "lucide-react";
+import { apiRequest } from "@/lib/queryClient";
+import { useToast } from "@/hooks/use-toast";
 
 interface PersonalBaselineAssessmentProps {
-  baseline?: PersonalBaseline;
-  onSaveBaseline: (baseline: PersonalBaseline) => void;
-  relationshipData?: any[]; // For compatibility analysis
+  existingBaseline?: any;
+  onComplete: (baseline: any) => void;
+  onCancel: () => void;
 }
 
-const communicationStyles = [
-  { value: 'direct', label: 'Direct & Straightforward', description: 'I prefer clear, honest communication' },
-  { value: 'gentle', label: 'Gentle & Considerate', description: 'I need kindness in how things are communicated' },
-  { value: 'collaborative', label: 'Collaborative', description: 'I like to work together to solve problems' },
-  { value: 'assertive', label: 'Assertive', description: 'I speak up for my needs confidently' }
-];
-
-const affectionStyles = [
-  'Words of affirmation', 'Quality time', 'Physical touch', 'Acts of service', 
-  'Gift giving', 'Active listening', 'Encouragement', 'Shared activities'
-];
-
-const listeningNeeds = [
-  'Full attention when speaking', 'No interrupting', 'Ask questions to understand',
-  'Validation of feelings', 'Solutions when asked', 'Just listen sometimes',
-  'Remember important details', 'Follow up later'
-];
-
-const privacyLevels = [
-  'Phone/device privacy', 'Personal space in home', 'Time with friends alone',
-  'Financial independence', 'Personal goals/dreams', 'Past relationships',
-  'Family relationships', 'Work life separation'
-];
-
-const valueAlignments = [
-  'Honesty and transparency', 'Personal growth', 'Family importance',
-  'Career ambition', 'Financial responsibility', 'Health and wellness',
-  'Social justice', 'Spirituality/religion', 'Adventure and travel',
-  'Community involvement', 'Environmental consciousness', 'Creativity'
-];
-
-export default function PersonalBaselineAssessment({
-  baseline,
-  onSaveBaseline,
-  relationshipData = []
+export default function PersonalBaselineAssessment({ 
+  existingBaseline, 
+  onComplete, 
+  onCancel 
 }: PersonalBaselineAssessmentProps) {
-  const [activeSection, setActiveSection] = useState<'communication' | 'emotional' | 'boundaries' | 'time' | 'values' | 'compatibility'>('communication');
-  const [formData, setFormData] = useState<PersonalBaseline>({
-    communicationStyle: 'collaborative',
-    conflictResolution: 'address-when-calm',
-    feedbackPreference: 'only-when-needed',
-    listeningNeeds: [],
-    communicationDealBreakers: [],
-    emotionalSupport: 'medium',
-    affectionStyle: [],
-    validationNeeds: 'moderate',
-    emotionalProcessingTime: 4,
-    triggers: [],
-    comfortingSources: [],
-    personalSpaceNeeds: 'medium',
-    aloneTimeFrequency: 'few-times-week',
-    decisionMakingStyle: 'collaborative',
-    privacyLevels: [],
-    nonNegotiableBoundaries: [],
-    flexibleBoundaries: [],
-    responseTimeExpectation: 4,
-    availabilityWindows: [],
-    socialEnergyLevel: 'medium',
-    recoveryTimeNeeded: 2,
-    personalGrowthPriorities: [],
-    relationshipGoals: [],
-    valueAlignment: [],
-    dealBreakerBehaviors: [],
-    ...baseline
+  const { toast } = useToast();
+  const [currentStep, setCurrentStep] = useState(1);
+  const [baselineData, setBaselineData] = useState({
+    // Communication Preferences
+    communicationStyle: existingBaseline?.communicationStyle || '',
+    conflictResolutionStyle: existingBaseline?.conflictResolutionStyle || '',
+    listeningNeeds: existingBaseline?.listeningNeeds || [],
+    feedbackPreference: existingBaseline?.feedbackPreference || '',
+    
+    // Emotional Needs
+    emotionalSupportLevel: existingBaseline?.emotionalSupportLevel || '',
+    affectionStyle: existingBaseline?.affectionStyle || [],
+    validationNeeds: existingBaseline?.validationNeeds || '',
+    processingTimeNeeds: existingBaseline?.processingTimeNeeds || '',
+    triggers: existingBaseline?.triggers || [],
+    comfortingSources: existingBaseline?.comfortingSources || [],
+    
+    // Boundary Requirements
+    personalSpaceNeeds: existingBaseline?.personalSpaceNeeds || '',
+    privacyLevel: existingBaseline?.privacyLevel || '',
+    decisionMakingStyle: existingBaseline?.decisionMakingStyle || '',
+    nonNegotiableBoundaries: existingBaseline?.nonNegotiableBoundaries || [],
+    flexibleBoundaries: existingBaseline?.flexibleBoundaries || [],
+    
+    // Core Values & Deal-breakers
+    coreValues: existingBaseline?.coreValues || [],
+    dealBreakers: existingBaseline?.dealBreakers || [],
+    toleranceLevels: existingBaseline?.toleranceLevels || {},
+    
+    // Physical & Mental Health Patterns
+    energyDrains: existingBaseline?.energyDrains || [],
+    energySources: existingBaseline?.energySources || [],
+    anxietyTriggers: existingBaseline?.anxietyTriggers || [],
+    selfWorthFactors: existingBaseline?.selfWorthFactors || [],
+    physicalSymptomTriggers: existingBaseline?.physicalSymptomTriggers || []
   });
 
-  const toggleArrayField = (field: keyof PersonalBaseline, value: string) => {
-    setFormData(prev => ({
+  const handleNext = () => {
+    if (currentStep < 5) {
+      setCurrentStep(currentStep + 1);
+    } else {
+      handleSubmit();
+    }
+  };
+
+  const handleBack = () => {
+    if (currentStep > 1) {
+      setCurrentStep(currentStep - 1);
+    }
+  };
+
+  const handleSubmit = async () => {
+    try {
+      const result = await apiRequest('/api/personal-baseline', 'POST', baselineData);
+      toast({
+        title: "Baseline Assessment Complete",
+        description: "Your personal baseline has been saved and will be used to analyze relationship patterns.",
+      });
+      onComplete(result);
+    } catch (error) {
+      console.error('Error saving baseline:', error);
+      toast({
+        title: "Error",
+        description: "Failed to save baseline assessment. Please try again.",
+        variant: "destructive",
+      });
+    }
+  };
+
+  const updateData = (key: string, value: any) => {
+    setBaselineData(prev => ({ ...prev, [key]: value }));
+  };
+
+  const addToArray = (key: string, value: string) => {
+    if (value.trim()) {
+      setBaselineData(prev => ({
+        ...prev,
+        [key]: [...(prev[key as keyof typeof prev] as string[]), value.trim()]
+      }));
+    }
+  };
+
+  const removeFromArray = (key: string, index: number) => {
+    setBaselineData(prev => ({
       ...prev,
-      [field]: (prev[field] as string[]).includes(value)
-        ? (prev[field] as string[]).filter(item => item !== value)
-        : [...(prev[field] as string[]), value]
+      [key]: (prev[key as keyof typeof prev] as string[]).filter((_, i) => i !== index)
     }));
   };
 
-  const calculateCompatibility = (relationshipId: number): CompatibilityScore => {
-    // Mock compatibility calculation - in real app would use relationship data
-    // This would analyze interaction patterns, boundary respect, communication success, etc.
-    
-    const baseScore = Math.random() * 40 + 30; // 30-70 base range
-    
-    return {
-      overall: Math.round(baseScore + Math.random() * 30),
-      communication: Math.round(baseScore + Math.random() * 20),
-      emotional: Math.round(baseScore + Math.random() * 25),
-      boundaries: Math.round(baseScore + Math.random() * 35),
-      timeAvailability: Math.round(baseScore + Math.random() * 15),
-      valuesAlignment: Math.round(baseScore + Math.random() * 30)
-    };
-  };
-
-  const getCompatibilityColor = (score: number) => {
-    if (score >= 80) return 'text-green-600 bg-green-100';
-    if (score >= 60) return 'text-blue-600 bg-blue-100';
-    if (score >= 40) return 'text-yellow-600 bg-yellow-100';
-    return 'text-red-600 bg-red-100';
-  };
-
-  const renderSection = () => {
-    switch (activeSection) {
-      case 'communication':
+  const renderStep = () => {
+    switch (currentStep) {
+      case 1:
         return (
           <div className="space-y-6">
-            <h3 className="text-lg font-semibold text-gray-800">Communication Preferences</h3>
-            
-            {/* Communication Style */}
-            <div className="space-y-3">
-              <Label className="text-base font-medium">Preferred Communication Style</Label>
-              <div className="grid gap-3">
-                {communicationStyles.map(style => (
-                  <button
-                    key={style.value}
-                    onClick={() => setFormData(prev => ({ ...prev, communicationStyle: style.value as any }))}
-                    className={`p-4 border-2 rounded-lg text-left transition-all ${
-                      formData.communicationStyle === style.value 
-                        ? 'border-blue-400 bg-blue-50' 
-                        : 'border-gray-200 hover:border-gray-300'
-                    }`}
-                  >
-                    <div className="font-medium mb-1">{style.label}</div>
-                    <div className="text-sm text-gray-600">{style.description}</div>
-                  </button>
-                ))}
-              </div>
+            <div className="text-center mb-6">
+              <MessageSquare className="w-12 h-12 mx-auto mb-3 text-blue-500" />
+              <h3 className="text-xl font-semibold">Communication Preferences</h3>
+              <p className="text-gray-600">How do you prefer to communicate and handle conflicts?</p>
             </div>
 
-            {/* Listening Needs */}
-            <div className="space-y-3">
-              <Label className="text-base font-medium">What I need when someone is listening to me</Label>
-              <div className="grid grid-cols-2 gap-2">
-                {listeningNeeds.map(need => (
-                  <div key={need} className="flex items-center space-x-2">
-                    <Checkbox
-                      id={need}
-                      checked={formData.listeningNeeds.includes(need)}
-                      onCheckedChange={() => toggleArrayField('listeningNeeds', need)}
-                    />
-                    <Label htmlFor={need} className="text-sm">{need}</Label>
+            <div className="space-y-4">
+              <div>
+                <Label className="text-base font-medium">My communication style is:</Label>
+                <RadioGroup 
+                  value={baselineData.communicationStyle} 
+                  onValueChange={(value) => updateData('communicationStyle', value)}
+                  className="mt-2"
+                >
+                  <div className="flex items-center space-x-2">
+                    <RadioGroupItem value="direct" id="direct" />
+                    <Label htmlFor="direct">Direct and straightforward</Label>
                   </div>
-                ))}
+                  <div className="flex items-center space-x-2">
+                    <RadioGroupItem value="gentle" id="gentle" />
+                    <Label htmlFor="gentle">Gentle and diplomatic</Label>
+                  </div>
+                  <div className="flex items-center space-x-2">
+                    <RadioGroupItem value="collaborative" id="collaborative" />
+                    <Label htmlFor="collaborative">Collaborative and discussion-focused</Label>
+                  </div>
+                  <div className="flex items-center space-x-2">
+                    <RadioGroupItem value="assertive" id="assertive" />
+                    <Label htmlFor="assertive">Assertive but respectful</Label>
+                  </div>
+                </RadioGroup>
               </div>
-            </div>
 
-            {/* Conflict Resolution */}
-            <div className="space-y-3">
-              <Label className="text-base font-medium">How I handle conflicts</Label>
-              <select
-                value={formData.conflictResolution}
-                onChange={(e) => setFormData(prev => ({ ...prev, conflictResolution: e.target.value as any }))}
-                className="w-full p-3 border border-gray-300 rounded-md"
-              >
-                <option value="discuss-immediately">I prefer to discuss issues immediately</option>
-                <option value="need-time-to-process">I need time to process before discussing</option>
-                <option value="avoid-conflict">I tend to avoid conflict when possible</option>
-                <option value="address-when-calm">I address issues when we're both calm</option>
-              </select>
-            </div>
-
-            {/* Communication Deal Breakers */}
-            <div className="space-y-3">
-              <Label className="text-base font-medium">Communication deal breakers (list specific behaviors)</Label>
-              <Textarea
-                value={formData.communicationDealBreakers.join('\n')}
-                onChange={(e) => setFormData(prev => ({ 
-                  ...prev, 
-                  communicationDealBreakers: e.target.value.split('\n').filter(Boolean) 
-                }))}
-                placeholder="e.g., Yelling or raising voice&#10;Interrupting constantly&#10;Name calling or insults"
-                className="min-h-[100px]"
-              />
+              <div>
+                <Label className="text-base font-medium">When there's conflict, I prefer to:</Label>
+                <RadioGroup 
+                  value={baselineData.conflictResolutionStyle} 
+                  onValueChange={(value) => updateData('conflictResolutionStyle', value)}
+                  className="mt-2"
+                >
+                  <div className="flex items-center space-x-2">
+                    <RadioGroupItem value="address-immediately" id="address-immediately" />
+                    <Label htmlFor="address-immediately">Address it immediately and openly</Label>
+                  </div>
+                  <div className="flex items-center space-x-2">
+                    <RadioGroupItem value="time-to-process" id="time-to-process" />
+                    <Label htmlFor="time-to-process">Take time to process before discussing</Label>
+                  </div>
+                  <div className="flex items-center space-x-2">
+                    <RadioGroupItem value="find-compromise" id="find-compromise" />
+                    <Label htmlFor="find-compromise">Focus on finding a compromise</Label>
+                  </div>
+                  <div className="flex items-center space-x-2">
+                    <RadioGroupItem value="understand-first" id="understand-first" />
+                    <Label htmlFor="understand-first">Understand their perspective first</Label>
+                  </div>
+                </RadioGroup>
+              </div>
             </div>
           </div>
         );
 
-      case 'emotional':
+      case 2:
         return (
           <div className="space-y-6">
-            <h3 className="text-lg font-semibold text-gray-800">Emotional Needs</h3>
-            
-            {/* Emotional Support Level */}
-            <div className="space-y-3">
-              <Label className="text-base font-medium">Level of emotional support I need</Label>
-              <div className="grid grid-cols-3 gap-3">
-                {[
-                  { value: 'high', label: 'High Support', desc: 'Frequent check-ins and validation' },
-                  { value: 'medium', label: 'Moderate Support', desc: 'Support during difficult times' },
-                  { value: 'low', label: 'Independent', desc: 'Minimal emotional support needed' }
-                ].map(level => (
-                  <button
-                    key={level.value}
-                    onClick={() => setFormData(prev => ({ ...prev, emotionalSupport: level.value as any }))}
-                    className={`p-3 border-2 rounded-lg text-center transition-all ${
-                      formData.emotionalSupport === level.value 
-                        ? 'border-blue-400 bg-blue-50' 
-                        : 'border-gray-200 hover:border-gray-300'
-                    }`}
-                  >
-                    <div className="font-medium mb-1">{level.label}</div>
-                    <div className="text-xs text-gray-600">{level.desc}</div>
-                  </button>
-                ))}
-              </div>
+            <div className="text-center mb-6">
+              <Heart className="w-12 h-12 mx-auto mb-3 text-red-500" />
+              <h3 className="text-xl font-semibold">Emotional Needs</h3>
+              <p className="text-gray-600">What do you need to feel emotionally supported and secure?</p>
             </div>
 
-            {/* Affection Styles */}
-            <div className="space-y-3">
-              <Label className="text-base font-medium">How I prefer to receive affection (select all that apply)</Label>
-              <div className="grid grid-cols-2 gap-2">
-                {affectionStyles.map(style => (
-                  <div key={style} className="flex items-center space-x-2">
-                    <Checkbox
-                      id={style}
-                      checked={formData.affectionStyle.includes(style)}
-                      onCheckedChange={() => toggleArrayField('affectionStyle', style)}
-                    />
-                    <Label htmlFor={style} className="text-sm">{style}</Label>
+            <div className="space-y-4">
+              <div>
+                <Label className="text-base font-medium">I need this level of emotional support:</Label>
+                <RadioGroup 
+                  value={baselineData.emotionalSupportLevel} 
+                  onValueChange={(value) => updateData('emotionalSupportLevel', value)}
+                  className="mt-2"
+                >
+                  <div className="flex items-center space-x-2">
+                    <RadioGroupItem value="high" id="high-support" />
+                    <Label htmlFor="high-support">High - frequent check-ins and emotional availability</Label>
                   </div>
-                ))}
+                  <div className="flex items-center space-x-2">
+                    <RadioGroupItem value="moderate" id="moderate-support" />
+                    <Label htmlFor="moderate-support">Moderate - regular but not constant support</Label>
+                  </div>
+                  <div className="flex items-center space-x-2">
+                    <RadioGroupItem value="low" id="low-support" />
+                    <Label htmlFor="low-support">Low - occasional support when needed</Label>
+                  </div>
+                  <div className="flex items-center space-x-2">
+                    <RadioGroupItem value="independent" id="independent-support" />
+                    <Label htmlFor="independent-support">Very independent - minimal emotional support needed</Label>
+                  </div>
+                </RadioGroup>
               </div>
-            </div>
 
-            {/* Processing Time */}
-            <div className="space-y-3">
-              <Label className="text-base font-medium">Time I need to process difficult emotions (hours)</Label>
-              <div className="flex items-center space-x-4">
-                <Slider
-                  value={[formData.emotionalProcessingTime]}
-                  onValueChange={([value]) => setFormData(prev => ({ ...prev, emotionalProcessingTime: value }))}
-                  min={0.5}
-                  max={48}
-                  step={0.5}
-                  className="flex-1"
-                />
-                <span className="text-lg font-medium w-16">
-                  {formData.emotionalProcessingTime < 1 ? 
-                    `${formData.emotionalProcessingTime * 60}m` : 
-                    `${formData.emotionalProcessingTime}h`}
-                </span>
+              <div>
+                <Label className="text-base font-medium">My emotional triggers include:</Label>
+                <div className="mt-2 space-y-2">
+                  {baselineData.triggers.map((trigger, index) => (
+                    <div key={index} className="flex items-center gap-2">
+                      <Badge variant="outline" className="flex-1">{trigger}</Badge>
+                      <Button 
+                        size="sm" 
+                        variant="ghost" 
+                        onClick={() => removeFromArray('triggers', index)}
+                      >
+                        ×
+                      </Button>
+                    </div>
+                  ))}
+                  <div className="flex gap-2">
+                    <Input 
+                      placeholder="Add trigger (e.g., being dismissed, raised voices)" 
+                      onKeyPress={(e) => {
+                        if (e.key === 'Enter') {
+                          addToArray('triggers', e.currentTarget.value);
+                          e.currentTarget.value = '';
+                        }
+                      }}
+                    />
+                    <Button 
+                      size="sm" 
+                      onClick={(e) => {
+                        const input = e.currentTarget.parentElement?.querySelector('input');
+                        if (input) {
+                          addToArray('triggers', input.value);
+                          input.value = '';
+                        }
+                      }}
+                    >
+                      Add
+                    </Button>
+                  </div>
+                </div>
               </div>
-            </div>
-
-            {/* Triggers */}
-            <div className="space-y-3">
-              <Label className="text-base font-medium">My emotional triggers (things that upset me)</Label>
-              <Textarea
-                value={formData.triggers.join('\n')}
-                onChange={(e) => setFormData(prev => ({ 
-                  ...prev, 
-                  triggers: e.target.value.split('\n').filter(Boolean) 
-                }))}
-                placeholder="e.g., Being ignored or dismissed&#10;Criticism about appearance&#10;Feeling controlled"
-                className="min-h-[100px]"
-              />
-            </div>
-
-            {/* Comforting Sources */}
-            <div className="space-y-3">
-              <Label className="text-base font-medium">What comforts me when I'm upset</Label>
-              <Textarea
-                value={formData.comfortingSources.join('\n')}
-                onChange={(e) => setFormData(prev => ({ 
-                  ...prev, 
-                  comfortingSources: e.target.value.split('\n').filter(Boolean) 
-                }))}
-                placeholder="e.g., Physical comfort (hugs, holding hands)&#10;Verbal reassurance&#10;Quality time together&#10;Space to process alone"
-                className="min-h-[100px]"
-              />
             </div>
           </div>
         );
 
-      case 'boundaries':
+      case 3:
         return (
           <div className="space-y-6">
-            <h3 className="text-lg font-semibold text-gray-800">Boundary Requirements</h3>
-            
-            {/* Personal Space */}
-            <div className="space-y-3">
-              <Label className="text-base font-medium">Personal space needs</Label>
-              <div className="grid grid-cols-3 gap-3">
-                {[
-                  { value: 'high', label: 'High', desc: 'Need significant alone time' },
-                  { value: 'medium', label: 'Moderate', desc: 'Some alone time needed' },
-                  { value: 'low', label: 'Low', desc: 'Prefer being together most times' }
-                ].map(level => (
-                  <button
-                    key={level.value}
-                    onClick={() => setFormData(prev => ({ ...prev, personalSpaceNeeds: level.value as any }))}
-                    className={`p-3 border-2 rounded-lg text-center transition-all ${
-                      formData.personalSpaceNeeds === level.value 
-                        ? 'border-blue-400 bg-blue-50' 
-                        : 'border-gray-200 hover:border-gray-300'
-                    }`}
-                  >
-                    <div className="font-medium mb-1">{level.label}</div>
-                    <div className="text-xs text-gray-600">{level.desc}</div>
-                  </button>
-                ))}
-              </div>
+            <div className="text-center mb-6">
+              <Shield className="w-12 h-12 mx-auto mb-3 text-green-500" />
+              <h3 className="text-xl font-semibold">Boundary Requirements</h3>
+              <p className="text-gray-600">What boundaries are essential for your wellbeing?</p>
             </div>
 
-            {/* Privacy Levels */}
-            <div className="space-y-3">
-              <Label className="text-base font-medium">Important privacy areas for me</Label>
-              <div className="grid grid-cols-2 gap-2">
-                {privacyLevels.map(level => (
-                  <div key={level} className="flex items-center space-x-2">
-                    <Checkbox
-                      id={level}
-                      checked={formData.privacyLevels.includes(level)}
-                      onCheckedChange={() => toggleArrayField('privacyLevels', level)}
+            <div className="space-y-4">
+              <div>
+                <Label className="text-base font-medium">My non-negotiable boundaries:</Label>
+                <div className="mt-2 space-y-2">
+                  {baselineData.nonNegotiableBoundaries.map((boundary, index) => (
+                    <div key={index} className="flex items-center gap-2">
+                      <Badge variant="destructive" className="flex-1">{boundary}</Badge>
+                      <Button 
+                        size="sm" 
+                        variant="ghost" 
+                        onClick={() => removeFromArray('nonNegotiableBoundaries', index)}
+                      >
+                        ×
+                      </Button>
+                    </div>
+                  ))}
+                  <div className="flex gap-2">
+                    <Input 
+                      placeholder="Add non-negotiable boundary" 
+                      onKeyPress={(e) => {
+                        if (e.key === 'Enter') {
+                          addToArray('nonNegotiableBoundaries', e.currentTarget.value);
+                          e.currentTarget.value = '';
+                        }
+                      }}
                     />
-                    <Label htmlFor={level} className="text-sm">{level}</Label>
+                    <Button 
+                      size="sm" 
+                      onClick={(e) => {
+                        const input = e.currentTarget.parentElement?.querySelector('input');
+                        if (input) {
+                          addToArray('nonNegotiableBoundaries', input.value);
+                          input.value = '';
+                        }
+                      }}
+                    >
+                      Add
+                    </Button>
                   </div>
-                ))}
+                </div>
               </div>
-            </div>
 
-            {/* Non-Negotiable Boundaries */}
-            <div className="space-y-3">
-              <Label className="text-base font-medium">Non-negotiable boundaries (absolute requirements)</Label>
-              <Textarea
-                value={formData.nonNegotiableBoundaries.join('\n')}
-                onChange={(e) => setFormData(prev => ({ 
-                  ...prev, 
-                  nonNegotiableBoundaries: e.target.value.split('\n').filter(Boolean) 
-                }))}
-                placeholder="e.g., No yelling or verbal abuse&#10;Respect my 'no' without arguing&#10;No checking my phone without permission"
-                className="min-h-[100px]"
-              />
-            </div>
-
-            {/* Flexible Boundaries */}
-            <div className="space-y-3">
-              <Label className="text-base font-medium">Flexible boundaries (can be discussed and adjusted)</Label>
-              <Textarea
-                value={formData.flexibleBoundaries.join('\n')}
-                onChange={(e) => setFormData(prev => ({ 
-                  ...prev, 
-                  flexibleBoundaries: e.target.value.split('\n').filter(Boolean) 
-                }))}
-                placeholder="e.g., How much time we spend together&#10;Social media boundaries&#10;Time with friends"
-                className="min-h-[100px]"
-              />
+              <div>
+                <Label className="text-base font-medium">Personal space and privacy needs:</Label>
+                <RadioGroup 
+                  value={baselineData.personalSpaceNeeds} 
+                  onValueChange={(value) => updateData('personalSpaceNeeds', value)}
+                  className="mt-2"
+                >
+                  <div className="flex items-center space-x-2">
+                    <RadioGroupItem value="high" id="high-space" />
+                    <Label htmlFor="high-space">High - need significant alone time and personal space</Label>
+                  </div>
+                  <div className="flex items-center space-x-2">
+                    <RadioGroupItem value="moderate" id="moderate-space" />
+                    <Label htmlFor="moderate-space">Moderate - need some personal time and space</Label>
+                  </div>
+                  <div className="flex items-center space-x-2">
+                    <RadioGroupItem value="low" id="low-space" />
+                    <Label htmlFor="low-space">Low - comfortable with limited personal space</Label>
+                  </div>
+                  <div className="flex items-center space-x-2">
+                    <RadioGroupItem value="flexible" id="flexible-space" />
+                    <Label htmlFor="flexible-space">Flexible - varies based on relationship and context</Label>
+                  </div>
+                </RadioGroup>
+              </div>
             </div>
           </div>
         );
 
-      case 'values':
+      case 4:
         return (
           <div className="space-y-6">
-            <h3 className="text-lg font-semibold text-gray-800">Values & Growth</h3>
-            
-            {/* Value Alignment */}
-            <div className="space-y-3">
-              <Label className="text-base font-medium">Values that are important to me in relationships</Label>
-              <div className="grid grid-cols-2 gap-2">
-                {valueAlignments.map(value => (
-                  <div key={value} className="flex items-center space-x-2">
-                    <Checkbox
-                      id={value}
-                      checked={formData.valueAlignment.includes(value)}
-                      onCheckedChange={() => toggleArrayField('valueAlignment', value)}
+            <div className="text-center mb-6">
+              <AlertTriangle className="w-12 h-12 mx-auto mb-3 text-yellow-500" />
+              <h3 className="text-xl font-semibold">Health Impact Patterns</h3>
+              <p className="text-gray-600">What behaviors and situations affect your physical and mental health?</p>
+            </div>
+
+            <div className="space-y-4">
+              <div>
+                <Label className="text-base font-medium">Things that drain my energy:</Label>
+                <div className="mt-2 space-y-2">
+                  {baselineData.energyDrains.map((drain, index) => (
+                    <div key={index} className="flex items-center gap-2">
+                      <Badge variant="outline" className="flex-1 text-red-600">{drain}</Badge>
+                      <Button 
+                        size="sm" 
+                        variant="ghost" 
+                        onClick={() => removeFromArray('energyDrains', index)}
+                      >
+                        ×
+                      </Button>
+                    </div>
+                  ))}
+                  <div className="flex gap-2">
+                    <Input 
+                      placeholder="Add energy drain (e.g., arguments, being interrupted)" 
+                      onKeyPress={(e) => {
+                        if (e.key === 'Enter') {
+                          addToArray('energyDrains', e.currentTarget.value);
+                          e.currentTarget.value = '';
+                        }
+                      }}
                     />
-                    <Label htmlFor={value} className="text-sm">{value}</Label>
+                    <Button 
+                      size="sm" 
+                      onClick={(e) => {
+                        const input = e.currentTarget.parentElement?.querySelector('input');
+                        if (input) {
+                          addToArray('energyDrains', input.value);
+                          input.value = '';
+                        }
+                      }}
+                    >
+                      Add
+                    </Button>
                   </div>
-                ))}
+                </div>
               </div>
-            </div>
 
-            {/* Relationship Goals */}
-            <div className="space-y-3">
-              <Label className="text-base font-medium">What I want from my relationships</Label>
-              <Textarea
-                value={formData.relationshipGoals.join('\n')}
-                onChange={(e) => setFormData(prev => ({ 
-                  ...prev, 
-                  relationshipGoals: e.target.value.split('\n').filter(Boolean) 
-                }))}
-                placeholder="e.g., Mutual growth and support&#10;Building a life together&#10;Having fun and enjoying each other&#10;Deep emotional connection"
-                className="min-h-[100px]"
-              />
-            </div>
-
-            {/* Deal Breaker Behaviors */}
-            <div className="space-y-3">
-              <Label className="text-base font-medium">Behaviors that would end a relationship for me</Label>
-              <Textarea
-                value={formData.dealBreakerBehaviors.join('\n')}
-                onChange={(e) => setFormData(prev => ({ 
-                  ...prev, 
-                  dealBreakerBehaviors: e.target.value.split('\n').filter(Boolean) 
-                }))}
-                placeholder="e.g., Any form of abuse&#10;Cheating or betrayal&#10;Addiction without seeking help&#10;Consistent disrespect of boundaries"
-                className="min-h-[100px]"
-              />
+              <div>
+                <Label className="text-base font-medium">Things that boost my energy:</Label>
+                <div className="mt-2 space-y-2">
+                  {baselineData.energySources.map((source, index) => (
+                    <div key={index} className="flex items-center gap-2">
+                      <Badge variant="outline" className="flex-1 text-green-600">{source}</Badge>
+                      <Button 
+                        size="sm" 
+                        variant="ghost" 
+                        onClick={() => removeFromArray('energySources', index)}
+                      >
+                        ×
+                      </Button>
+                    </div>
+                  ))}
+                  <div className="flex gap-2">
+                    <Input 
+                      placeholder="Add energy source (e.g., good conversation, feeling heard)" 
+                      onKeyPress={(e) => {
+                        if (e.key === 'Enter') {
+                          addToArray('energySources', e.currentTarget.value);
+                          e.currentTarget.value = '';
+                        }
+                      }}
+                    />
+                    <Button 
+                      size="sm" 
+                      onClick={(e) => {
+                        const input = e.currentTarget.parentElement?.querySelector('input');
+                        if (input) {
+                          addToArray('energySources', input.value);
+                          input.value = '';
+                        }
+                      }}
+                    >
+                      Add
+                    </Button>
+                  </div>
+                </div>
+              </div>
             </div>
           </div>
         );
 
-      case 'compatibility':
+      case 5:
         return (
           <div className="space-y-6">
-            <h3 className="text-lg font-semibold text-gray-800">Relationship Compatibility Analysis</h3>
-            
-            {relationshipData.length === 0 ? (
+            <div className="text-center mb-6">
+              <Brain className="w-12 h-12 mx-auto mb-3 text-purple-500" />
+              <h3 className="text-xl font-semibold">Review & Complete</h3>
+              <p className="text-gray-600">Review your baseline assessment before saving</p>
+            </div>
+
+            <div className="space-y-4 max-h-96 overflow-y-auto">
               <Card>
-                <CardContent className="p-8 text-center">
-                  <Users className="w-12 h-12 text-gray-400 mx-auto mb-4" />
-                  <h3 className="text-lg font-medium text-gray-800 mb-2">No relationship data yet</h3>
-                  <p className="text-gray-600">
-                    Log interactions with people to see compatibility analysis based on your baseline
-                  </p>
+                <CardHeader>
+                  <CardTitle className="text-lg">Communication Style</CardTitle>
+                </CardHeader>
+                <CardContent>
+                  <p><strong>Style:</strong> {baselineData.communicationStyle}</p>
+                  <p><strong>Conflict Resolution:</strong> {baselineData.conflictResolutionStyle}</p>
                 </CardContent>
               </Card>
-            ) : (
-              <div className="space-y-4">
-                {relationshipData.slice(0, 5).map((relationship) => {
-                  const compatibility = calculateCompatibility(relationship.id);
-                  
-                  return (
-                    <Card key={relationship.id} className="border-2">
-                      <CardContent className="p-6">
-                        <div className="flex items-start justify-between mb-4">
-                          <div>
-                            <h4 className="text-lg font-semibold text-gray-800">{relationship.name}</h4>
-                            <p className="text-sm text-gray-600">{relationship.relationshipType}</p>
-                          </div>
-                          <Badge className={`text-lg px-3 py-1 ${getCompatibilityColor(compatibility.overall)}`}>
-                            {compatibility.overall}% Match
-                          </Badge>
-                        </div>
 
-                        <div className="grid grid-cols-1 md:grid-cols-5 gap-4">
-                          {[
-                            { label: 'Communication', score: compatibility.communication, icon: MessageCircle },
-                            { label: 'Emotional', score: compatibility.emotional, icon: Heart },
-                            { label: 'Boundaries', score: compatibility.boundaries, icon: Shield },
-                            { label: 'Time/Availability', score: compatibility.timeAvailability, icon: Clock },
-                            { label: 'Values', score: compatibility.valuesAlignment, icon: Star }
-                          ].map(({ label, score, icon: Icon }) => (
-                            <div key={label} className="text-center">
-                              <Icon className="w-5 h-5 mx-auto mb-2 text-gray-600" />
-                              <div className="text-sm text-gray-600 mb-1">{label}</div>
-                              <div className="font-semibold text-lg">{score}%</div>
-                              <Progress value={score} className="h-1 mt-1" />
-                            </div>
-                          ))}
-                        </div>
+              <Card>
+                <CardHeader>
+                  <CardTitle className="text-lg">Emotional Needs</CardTitle>
+                </CardHeader>
+                <CardContent>
+                  <p><strong>Support Level:</strong> {baselineData.emotionalSupportLevel}</p>
+                  {baselineData.triggers.length > 0 && (
+                    <div>
+                      <strong>Triggers:</strong> {baselineData.triggers.join(', ')}
+                    </div>
+                  )}
+                </CardContent>
+              </Card>
 
-                        {/* Compatibility Insights */}
-                        <div className="mt-4 p-3 bg-gray-50 rounded-lg">
-                          <div className="flex items-start gap-2">
-                            <Lightbulb className="w-4 h-4 text-blue-600 mt-0.5" />
-                            <div className="text-sm text-gray-700">
-                              {compatibility.overall >= 80 ? (
-                                <span className="text-green-700">
-                                  <strong>Excellent compatibility!</strong> This relationship aligns well with your baseline needs across most areas.
-                                </span>
-                              ) : compatibility.overall >= 60 ? (
-                                <span className="text-blue-700">
-                                  <strong>Good compatibility.</strong> Some areas may need attention, particularly {
-                                    [
-                                      { name: 'communication', score: compatibility.communication },
-                                      { name: 'boundaries', score: compatibility.boundaries },
-                                      { name: 'emotional needs', score: compatibility.emotional }
-                                    ].sort((a, b) => a.score - b.score)[0].name
-                                  }.
-                                </span>
-                              ) : compatibility.overall >= 40 ? (
-                                <span className="text-yellow-700">
-                                  <strong>Moderate compatibility.</strong> Significant differences in key areas may require ongoing work or compromise.
-                                </span>
-                              ) : (
-                                <span className="text-red-700">
-                                  <strong>Low compatibility.</strong> This relationship may be causing stress due to misaligned needs and boundaries.
-                                </span>
-                              )}
-                            </div>
-                          </div>
-                        </div>
-                      </CardContent>
-                    </Card>
-                  );
-                })}
-              </div>
-            )}
+              <Card>
+                <CardHeader>
+                  <CardTitle className="text-lg">Boundaries</CardTitle>
+                </CardHeader>
+                <CardContent>
+                  <p><strong>Personal Space:</strong> {baselineData.personalSpaceNeeds}</p>
+                  {baselineData.nonNegotiableBoundaries.length > 0 && (
+                    <div>
+                      <strong>Non-negotiables:</strong> {baselineData.nonNegotiableBoundaries.join(', ')}
+                    </div>
+                  )}
+                </CardContent>
+              </Card>
+
+              <Card>
+                <CardHeader>
+                  <CardTitle className="text-lg">Health Impact</CardTitle>
+                </CardHeader>
+                <CardContent>
+                  {baselineData.energyDrains.length > 0 && (
+                    <div className="mb-2">
+                      <strong>Energy Drains:</strong> {baselineData.energyDrains.join(', ')}
+                    </div>
+                  )}
+                  {baselineData.energySources.length > 0 && (
+                    <div>
+                      <strong>Energy Sources:</strong> {baselineData.energySources.join(', ')}
+                    </div>
+                  )}
+                </CardContent>
+              </Card>
+            </div>
           </div>
         );
 
@@ -571,63 +507,41 @@ export default function PersonalBaselineAssessment({
   };
 
   return (
-    <div className="space-y-6">
-      {/* Navigation */}
-      <div className="flex flex-wrap gap-2 bg-gray-100 p-2 rounded-lg">
-        {[
-          { id: 'communication', label: 'Communication', icon: MessageCircle },
-          { id: 'emotional', label: 'Emotional Needs', icon: Heart },
-          { id: 'boundaries', label: 'Boundaries', icon: Shield },
-          { id: 'values', label: 'Values & Growth', icon: Star },
-          { id: 'compatibility', label: 'Compatibility', icon: TrendingUp }
-        ].map(({ id, label, icon: Icon }) => (
-          <button
-            key={id}
-            onClick={() => setActiveSection(id as any)}
-            className={`flex items-center gap-2 px-4 py-2 rounded-md transition-all ${
-              activeSection === id 
-                ? 'bg-white shadow-sm text-blue-600 font-medium' 
-                : 'text-gray-600 hover:text-gray-800'
-            }`}
-          >
-            <Icon className="w-4 h-4" />
-            {label}
-          </button>
-        ))}
+    <div className="fixed inset-0 bg-black bg-opacity-50 z-50 flex items-center justify-center p-4">
+      <div className="bg-white rounded-lg w-full max-w-2xl max-h-[90vh] overflow-y-auto">
+        <div className="p-6">
+          <div className="flex items-center justify-between mb-6">
+            <div>
+              <h2 className="text-2xl font-bold">Personal Baseline Assessment</h2>
+              <p className="text-gray-600">Step {currentStep} of 5</p>
+            </div>
+            <Button variant="ghost" onClick={onCancel}>×</Button>
+          </div>
+
+          <div className="mb-6">
+            <div className="w-full bg-gray-200 rounded-full h-2">
+              <div 
+                className="bg-blue-600 h-2 rounded-full transition-all duration-300"
+                style={{ width: `${(currentStep / 5) * 100}%` }}
+              />
+            </div>
+          </div>
+
+          {renderStep()}
+
+          <div className="flex justify-between mt-8">
+            <Button 
+              variant="outline" 
+              onClick={currentStep === 1 ? onCancel : handleBack}
+            >
+              {currentStep === 1 ? 'Cancel' : 'Back'}
+            </Button>
+            <Button onClick={handleNext}>
+              {currentStep === 5 ? 'Complete Assessment' : 'Next'}
+            </Button>
+          </div>
+        </div>
       </div>
-
-      {/* Section Content */}
-      <Card>
-        <CardContent className="p-6">
-          {renderSection()}
-          
-          {activeSection !== 'compatibility' && (
-            <div className="flex justify-end mt-6 pt-6 border-t">
-              <Button onClick={() => onSaveBaseline(formData)} className="flex items-center gap-2">
-                <CheckCircle className="w-4 h-4" />
-                Save Baseline
-              </Button>
-            </div>
-          )}
-        </CardContent>
-      </Card>
-
-      {/* Completion Status */}
-      {baseline && (
-        <Card className="border-green-200 bg-green-50">
-          <CardContent className="p-4">
-            <div className="flex items-center gap-3">
-              <CheckCircle className="w-6 h-6 text-green-600" />
-              <div>
-                <h4 className="font-medium text-green-800">Baseline Assessment Complete</h4>
-                <p className="text-sm text-green-700">
-                  Your personal baseline is saved and being used for compatibility analysis with your relationships.
-                </p>
-              </div>
-            </div>
-          </CardContent>
-        </Card>
-      )}
     </div>
   );
 }
