@@ -15,7 +15,10 @@ import {
   Search,
   Mail,
   Phone,
-  Crown
+  Crown,
+  Download,
+  FileText,
+  Database
 } from "lucide-react";
 import { useState, useEffect } from "react";
 
@@ -123,6 +126,76 @@ export default function AdminPage() {
     }
   };
 
+  const exportToCSV = (data: any[], filename: string) => {
+    if (!data.length) return;
+    
+    const headers = Object.keys(data[0]);
+    const csvContent = [
+      headers.join(','),
+      ...data.map(row => 
+        headers.map(header => {
+          const value = row[header];
+          if (value === null || value === undefined) return '';
+          if (typeof value === 'string' && value.includes(',')) return `"${value}"`;
+          return value;
+        }).join(',')
+      )
+    ].join('\n');
+    
+    const blob = new Blob([csvContent], { type: 'text/csv' });
+    const url = window.URL.createObjectURL(blob);
+    const link = document.createElement('a');
+    link.href = url;
+    link.download = filename;
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+    window.URL.revokeObjectURL(url);
+  };
+
+  const exportUserData = () => {
+    const exportData = filteredUsers.map((user: any) => ({
+      'User ID': user.id,
+      'First Name': user.firstName || '',
+      'Last Name': user.lastName || '',
+      'Email': user.email || '',
+      'Subscription Status': user.subscriptionStatus || 'free',
+      'Relationship Count': user.relationshipCount || 0,
+      'Join Date': user.createdAt ? formatDate(user.createdAt) : '',
+      'Last Active': user.lastActiveAt ? formatDate(user.lastActiveAt) : 'Never'
+    }));
+    
+    const timestamp = new Date().toISOString().split('T')[0];
+    exportToCSV(exportData, `boundaryspace-users-${timestamp}.csv`);
+    
+    toast({
+      title: "Export Complete",
+      description: `Exported ${exportData.length} user records to CSV`,
+    });
+  };
+
+  const exportBusinessData = () => {
+    const businessData = [{
+      'Total Users': adminStats?.totalUsers || allUsers.length,
+      'Premium Users': adminStats?.premiumUsers || 0,
+      'Active Trials': adminStats?.activeTrials || 0,
+      'Monthly Revenue': adminStats?.monthlyRevenue || 0,
+      'New Users This Week': adminStats?.newUsersThisWeek || 0,
+      'New Subscribers This Week': adminStats?.newSubscribersThisWeek || 0,
+      'Trial Conversion Rate': `${adminStats?.trialConversionRate || 0}%`,
+      'Revenue Growth': `${adminStats?.revenueGrowth || 0}%`,
+      'Export Date': new Date().toLocaleDateString()
+    }];
+    
+    const timestamp = new Date().toISOString().split('T')[0];
+    exportToCSV(businessData, `boundaryspace-analytics-${timestamp}.csv`);
+    
+    toast({
+      title: "Analytics Export Complete",
+      description: "Business metrics exported to CSV",
+    });
+  };
+
   return (
     <div className="min-h-screen bg-neutral-50">
       <Navigation />
@@ -197,6 +270,31 @@ export default function AdminPage() {
             </CardContent>
           </Card>
         </div>
+
+        {/* Export Section */}
+        <Card className="mb-8">
+          <CardHeader>
+            <CardTitle className="flex items-center gap-2">
+              <Database className="w-5 h-5" />
+              Data Export
+            </CardTitle>
+          </CardHeader>
+          <CardContent>
+            <div className="flex flex-wrap gap-4">
+              <Button onClick={exportUserData} className="flex items-center gap-2">
+                <Download className="w-4 h-4" />
+                Export User Data
+              </Button>
+              <Button onClick={exportBusinessData} variant="outline" className="flex items-center gap-2">
+                <FileText className="w-4 h-4" />
+                Export Analytics
+              </Button>
+              <div className="text-sm text-gray-600 flex items-center">
+                <span>Downloads include: User profiles, subscription status, activity data</span>
+              </div>
+            </div>
+          </CardContent>
+        </Card>
 
         {/* User Management */}
         <Card>
