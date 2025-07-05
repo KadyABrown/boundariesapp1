@@ -1,0 +1,56 @@
+I don’t think I need to know how many relationships a user has but usage data could be helpful. So here are some other helpful features for the admin dash:
+
+
+
+User Profile Drill-Down
+Click on a user’s name to view:
+* Signup date
+* Subscription history
+* Activity logs (e.g. last login, key actions)
+* App usage breakdown (pages/modules used most)
+* Manual override (e.g. pause access, reset password, extend trial, block user, etc)
+* Account type (Regular vs. Therapist/Coach) 
+
+
+Admin Role Management
+* Grant/restrict access to other admins (e.g. support vs marketing roles)
+* Activity logs: which admin made what changes
+
+
+Feature Usage Heatmap
+* Track usage frequency of key features/modules
+* Visual heatmap or table: “Which features are used most?”
+* Helps you improve UX, prioritize dev, and sunset dead weight.
+Example: If 80% use the Emotional Clarity Log but only 12% use the Trigger Tracker, that’s actionable.
+
+
+Churn Dashboard
+* List of recently canceled users with reasons (if you collect them)
+* Monthly churn rate %
+* Average subscription length
+* High-risk churn predictors (e.g. no activity for X days)
+
+
+Support Ticket Integration / Flags
+* See if a user has opened a support ticket (via integration with HelpScout, Zendesk, etc.)
+* Add internal notes or flags to specific users ("reported bug", "requested refund", etc.
+ Conversion Funnel Tracking
+* Track user flow from signup → onboarding → activation → subscription
+* Drop-off points = improvement opportunities  Or some kind of integration that allows me to use Google Analytics or some other 3rd party tracking tool to understand user behavior
+
+A/B Test Controls
+If you ever want to experiment:
+* Assign users to test groups (early access, different onboarding flow)
+* Compare activation or retention rates by cohort
+ System Health + Logs
+* Basic error tracking (you can integrate with Sentry or similar)
+* Server uptime (via your host or custom ping)
+* Performance stats (page load times, API failures, etc.)  
+Founder Dashboard Metrics
+If you're managing this as a solopreneur/founder:
+* Monthly Recurring Revenue (MRR)
+* Average Revenue Per User (ARPU)
+* Customer Lifetime Value (CLV)
+* Customer Acquisition Cost (CAC) (if you're running paid ads)
+* Referral Sources (e.g. organic, social, email campaigns)
+

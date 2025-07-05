@@ -18,7 +18,13 @@ import {
   Crown,
   Download,
   FileText,
-  Database
+  Database,
+  Eye,
+  Activity,
+  BarChart3,
+  AlertTriangle,
+  Settings,
+  UserX
 } from "lucide-react";
 import { useState, useEffect } from "react";
 
@@ -26,6 +32,9 @@ export default function AdminPage() {
   const { user, isAuthenticated, isLoading } = useAuth();
   const { toast } = useToast();
   const [searchTerm, setSearchTerm] = useState("");
+  const [selectedUser, setSelectedUser] = useState(null);
+  const [showFeatureHeatmap, setShowFeatureHeatmap] = useState(false);
+  const [showChurnDashboard, setShowChurnDashboard] = useState(false);
 
   // Admin authorization check
   const isAdmin = user?.email === "hello@roxzmedia.com" || user?.id === "44415082";
@@ -271,6 +280,48 @@ export default function AdminPage() {
           </Card>
         </div>
 
+        {/* Admin Navigation */}
+        <div className="mb-8">
+          <div className="flex gap-2 border-b">
+            <Button 
+              variant={!showFeatureHeatmap && !showChurnDashboard ? "default" : "ghost"}
+              onClick={() => {
+                setShowFeatureHeatmap(false);
+                setShowChurnDashboard(false);
+                setSelectedUser(null);
+              }}
+              className="flex items-center gap-2"
+            >
+              <Users className="w-4 h-4" />
+              User Management
+            </Button>
+            <Button 
+              variant={showFeatureHeatmap ? "default" : "ghost"}
+              onClick={() => {
+                setShowFeatureHeatmap(true);
+                setShowChurnDashboard(false);
+                setSelectedUser(null);
+              }}
+              className="flex items-center gap-2"
+            >
+              <BarChart3 className="w-4 h-4" />
+              Feature Analytics
+            </Button>
+            <Button 
+              variant={showChurnDashboard ? "default" : "ghost"}
+              onClick={() => {
+                setShowChurnDashboard(true);
+                setShowFeatureHeatmap(false);
+                setSelectedUser(null);
+              }}
+              className="flex items-center gap-2"
+            >
+              <AlertTriangle className="w-4 h-4" />
+              Churn Analysis
+            </Button>
+          </div>
+        </div>
+
         {/* Export Section */}
         <Card className="mb-8">
           <CardHeader>
@@ -296,8 +347,27 @@ export default function AdminPage() {
           </CardContent>
         </Card>
 
+        {/* Feature Analytics Dashboard */}
+        {showFeatureHeatmap && (
+          <FeatureAnalyticsDashboard />
+        )}
+
+        {/* Churn Analysis Dashboard */}
+        {showChurnDashboard && (
+          <ChurnAnalyticsDashboard />
+        )}
+
+        {/* User Profile Drill-Down */}
+        {selectedUser && (
+          <UserProfileModal 
+            user={selectedUser} 
+            onClose={() => setSelectedUser(null)}
+          />
+        )}
+
         {/* User Management */}
-        <Card>
+        {!showFeatureHeatmap && !showChurnDashboard && (
+          <Card>
           <CardHeader>
             <div className="flex items-center justify-between">
               <CardTitle>All Users</CardTitle>

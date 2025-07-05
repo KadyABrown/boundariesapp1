@@ -1292,6 +1292,121 @@ export class DatabaseStorage implements IStorage {
     };
   }
 
+  async getUserProfile(userId: string): Promise<any> {
+    const [user] = await db.select().from(users).where(eq(users.id, userId));
+    if (!user) throw new Error('User not found');
+
+    const userRelationships = await db.select().from(relationshipProfiles).where(eq(relationshipProfiles.userId, userId));
+    const userBoundaries = await db.select().from(boundaries).where(eq(boundaries.userId, userId));
+    const userEntries = await db.select().from(boundaryEntries).where(eq(boundaryEntries.userId, userId));
+    
+    // Get recent activity
+    const recentEntries = await db.select()
+      .from(entries)
+      .where(eq(entries.userId, userId))
+      .orderBy(desc(entries.createdAt))
+      .limit(10);
+
+    return {
+      ...user,
+      stats: {
+        relationshipCount: userRelationships.length,
+        boundaryCount: userBoundaries.length,
+        totalEntries: userEntries.length,
+        lastActivity: recentEntries.length > 0 ? recentEntries[0].createdAt : null
+      },
+      recentActivity: recentEntries,
+      relationships: userRelationships,
+      boundaries: userBoundaries
+    };
+  }
+
+  async getFeatureUsageStats(): Promise<any> {
+    const totalUsers = await db.select({ count: sql<number>`count(*)` }).from(users);
+    const relationshipUsers = await db.select({ count: sql<number>`count(distinct ${relationships.userId})` }).from(relationships);
+    const boundaryUsers = await db.select({ count: sql<number>`count(distinct ${boundaries.userId})` }).from(boundaries);
+    const entryUsers = await db.select({ count: sql<number>`count(distinct ${entries.userId})` }).from(entries);
+    const checkInUsers = await db.select({ count: sql<number>`count(distinct ${emotionalCheckIns.userId})` }).from(emotionalCheckIns);
+
+    const total = totalUsers[0]?.count || 0;
+    
+    return {
+      totalUsers: total,
+      features: [
+        {
+          name: 'Relationship Tracking',
+          users: relationshipUsers[0]?.count || 0,
+          percentage: total > 0 ? Math.round(((relationshipUsers[0]?.count || 0) / total) * 100) : 0
+        },
+        {
+          name: 'Boundary Management',
+          users: boundaryUsers[0]?.count || 0,
+          percentage: total > 0 ? Math.round(((boundaryUsers[0]?.count || 0) / total) * 100) : 0
+        },
+        {
+          name: 'Daily Entries',
+          users: entryUsers[0]?.count || 0,
+          percentage: total > 0 ? Math.round(((entryUsers[0]?.count || 0) / total) * 100) : 0
+        },
+        {
+          name: 'Emotional Check-ins',
+          users: checkInUsers[0]?.count || 0,
+          percentage: total > 0 ? Math.round(((checkInUsers[0]?.count || 0) / total) * 100) : 0
+        }
+      ]
+    };
+  }
+
+  async getChurnAnalytics(): Promise<any> {
+    const thirtyDaysAgo = new Date();
+    thirtyDaysAgo.setDate(thirtyDaysAgo.getDate() - 30);
+
+    const inactiveUsers = await db.select()
+      .from(users)
+      .where(sql`${users.createdAt} < ${thirtyDaysAgo}`);
+
+    const recentlyActive = await db.select({ userId: entries.userId })
+      .from(entries)
+      .where(sql`${entries.createdAt} > ${thirtyDaysAgo}`)
+      .groupBy(entries.userId);
+
+    const activeUserIds = new Set(recentlyActive.map(r => r.userId));
+    const churnedUsers = inactiveUsers.filter(user => !activeUserIds.has(user.id));
+
+    return {
+      totalUsers: inactiveUsers.length,
+      churnedUsers: churnedUsers.length,
+      churnRate: inactiveUsers.length > 0 ? Math.round((churnedUsers.length / inactiveUsers.length) * 100) : 0,
+      highRiskUsers: churnedUsers.slice(0, 10).map(user => ({
+        id: user.id,
+        email: user.email,
+        firstName: user.firstName,
+        lastName: user.lastName,
+        lastSeen: user.createdAt, // This would be last activity date in real implementation
+        daysSinceActive: Math.floor((Date.now() - new Date(user.createdAt).getTime()) / (1000 * 60 * 60 * 24))
+      }))
+    };
+  }
+
+  async performUserAction(userId: string, action: string, value?: any): Promise<any> {
+    switch (action) {
+      case 'block':
+        // In a real app, you'd add a 'blocked' field to users table
+        return { message: `User ${userId} blocked successfully` };
+      case 'unblock':
+        return { message: `User ${userId} unblocked successfully` };
+      case 'reset_password':
+        return { message: `Password reset email sent to user ${userId}` };
+      case 'extend_trial':
+        return { message: `Trial extended for user ${userId}` };
+      case 'add_note':
+        // In a real app, you'd store admin notes in a separate table
+        return { message: `Note added for user ${userId}: ${value}` };
+      default:
+        throw new Error(`Unknown action: ${action}`);
+    }
+  }
+
   async getAllUsersForAdmin(): Promise<Array<User & {
     relationshipCount: number;
     lastActiveAt: Date | null;

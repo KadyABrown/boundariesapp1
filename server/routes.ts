@@ -1670,6 +1670,54 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
+  // User profile drill-down
+  app.get('/api/admin/user/:userId', isAuthenticated, isAdmin, async (req: any, res) => {
+    try {
+      const { userId } = req.params;
+      const userProfile = await storage.getUserProfile(userId);
+      res.json(userProfile);
+    } catch (error) {
+      console.error("Error fetching user profile:", error);
+      res.status(500).json({ message: "Failed to fetch user profile" });
+    }
+  });
+
+  // Feature usage analytics
+  app.get('/api/admin/feature-usage', isAuthenticated, isAdmin, async (req: any, res) => {
+    try {
+      const featureUsage = await storage.getFeatureUsageStats();
+      res.json(featureUsage);
+    } catch (error) {
+      console.error("Error fetching feature usage:", error);
+      res.status(500).json({ message: "Failed to fetch feature usage" });
+    }
+  });
+
+  // Churn analytics
+  app.get('/api/admin/churn', isAuthenticated, isAdmin, async (req: any, res) => {
+    try {
+      const churnData = await storage.getChurnAnalytics();
+      res.json(churnData);
+    } catch (error) {
+      console.error("Error fetching churn data:", error);
+      res.status(500).json({ message: "Failed to fetch churn data" });
+    }
+  });
+
+  // User management actions
+  app.patch('/api/admin/user/:userId/action', isAuthenticated, isAdmin, async (req: any, res) => {
+    try {
+      const { userId } = req.params;
+      const { action, value } = req.body;
+      
+      const result = await storage.performUserAction(userId, action, value);
+      res.json(result);
+    } catch (error) {
+      console.error("Error performing user action:", error);
+      res.status(500).json({ message: "Failed to perform user action" });
+    }
+  });
+
   const httpServer = createServer(app);
   return httpServer;
 }
