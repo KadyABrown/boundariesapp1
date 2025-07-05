@@ -12,8 +12,9 @@ export function Paywall({ children, feature = "this feature" }: PaywallProps) {
   const { user } = useAuth();
   
   // Check if user has active subscription
-  const hasSubscription = user?.subscriptionStatus === 'active' || 
-                          user?.subscriptionStatus === 'trial';
+  // DEMO: Temporarily set to false to show paywall
+  const hasSubscription = false; 
+  // Real code: user?.subscriptionStatus === 'active' || user?.subscriptionStatus === 'trial';
   
   if (hasSubscription) {
     return <>{children}</>;
