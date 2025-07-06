@@ -97,7 +97,7 @@ export default function Navigation() {
                   <User className="mr-2 h-4 w-4" />
                   <span>Profile</span>
                 </DropdownMenuItem>
-                <DropdownMenuItem onClick={() => handleNavigation("/settings")}>
+                <DropdownMenuItem onClick={() => handleNavigation("/profile")}>
                   <Settings className="mr-2 h-4 w-4" />
                   <span>Settings</span>
                 </DropdownMenuItem>
