@@ -102,7 +102,7 @@ export default function FAQ() {
         },
         {
           q: "Do you offer refunds?",
-          a: "We offer a 7-day free trial to ensure the app meets your needs. For paid subscriptions, we handle refund requests on a case-by-case basis - just contact our support team."
+          a: "We offer a 7-day free trial to ensure the app meets your needs before you subscribe. All subscriptions are final once the trial period ends."
         }
       ]
     },

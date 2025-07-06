@@ -216,7 +216,7 @@ export default function Pricing() {
                 Do you offer refunds?
               </h3>
               <p className="text-gray-600">
-                We offer a 7-day free trial, and we're happy to discuss refunds on a case-by-case basis if you're not satisfied.
+                We offer a 7-day free trial to ensure the app meets your needs before you subscribe. All subscriptions are final once the trial period ends.
               </p>
             </div>
           </div>
