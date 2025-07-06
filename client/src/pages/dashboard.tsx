@@ -11,6 +11,7 @@ import BoundaryBuddy from "@/components/boundary-buddy";
 import DailyChallenges from "@/components/daily-challenges";
 import BoundaryQuotes from "@/components/boundary-quotes";
 import StreakRecovery from "@/components/streak-recovery";
+import BaselineDashboardIntegration from "@/components/baseline-dashboard-integration";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { CheckCircle, AlertTriangle, Smile, Plus, BookOpen, TrendingUp, Heart, Users } from "lucide-react";
@@ -147,6 +148,9 @@ export default function Dashboard() {
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
           {/* Main Content Area */}
           <div className="lg:col-span-2 space-y-8">
+            {/* Baseline Data Integration - Shows critical data flow */}
+            <BaselineDashboardIntegration />
+
             {/* Streak Recovery - Shows when user hasn't logged entries for 2+ days */}
             <StreakRecovery 
               currentStreak={3} // Mock data - would come from real stats

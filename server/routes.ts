@@ -1470,6 +1470,9 @@ export async function registerRoutes(app: Express): Promise<Server> {
         baseline = await storage.updatePersonalBaseline(userId, baselineData);
       } else {
         baseline = await storage.createPersonalBaseline(baselineData);
+        
+        // Auto-generate boundaries from baseline for new users
+        await storage.generateBoundariesFromBaseline(userId, baselineData);
       }
       
       res.json(baseline);

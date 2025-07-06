@@ -1101,6 +1101,103 @@ export class DatabaseStorage implements IStorage {
     return newBaseline;
   }
 
+  async generateBoundariesFromBaseline(userId: string, baseline: any): Promise<void> {
+    const boundariesToCreate = [];
+
+    // Communication boundaries from baseline
+    if (baseline.communicationStyle) {
+      boundariesToCreate.push({
+        userId,
+        title: `${baseline.communicationStyle.replace('-', ' ')} Communication`,
+        description: `I prefer ${baseline.communicationStyle.replace('-', ' ')} communication style`,
+        category: 'communication',
+        importance: 8,
+        isActive: true,
+      });
+    }
+
+    if (baseline.conflictResolution) {
+      boundariesToCreate.push({
+        userId,
+        title: `Conflict Resolution: ${baseline.conflictResolution.replace('-', ' ')}`,
+        description: `I need ${baseline.conflictResolution.replace('-', ' ')} when addressing conflicts`,
+        category: 'communication',
+        importance: 9,
+        isActive: true,
+      });
+    }
+
+    // Personal space boundaries
+    if (baseline.personalSpaceNeeds) {
+      const importance = baseline.personalSpaceNeeds === 'high' ? 9 : baseline.personalSpaceNeeds === 'medium' ? 7 : 5;
+      boundariesToCreate.push({
+        userId,
+        title: `Personal Space: ${baseline.personalSpaceNeeds} need`,
+        description: `I require ${baseline.personalSpaceNeeds} levels of personal space`,
+        category: 'personal-space',
+        importance,
+        isActive: true,
+      });
+    }
+
+    if (baseline.aloneTimeFrequency) {
+      boundariesToCreate.push({
+        userId,
+        title: `Alone Time: ${baseline.aloneTimeFrequency}`,
+        description: `I need alone time ${baseline.aloneTimeFrequency.replace('-', ' ')}`,
+        category: 'personal-space',
+        importance: 7,
+        isActive: true,
+      });
+    }
+
+    // Emotional support boundaries
+    if (baseline.emotionalSupport) {
+      const importance = baseline.emotionalSupport === 'high' ? 8 : baseline.emotionalSupport === 'medium' ? 6 : 4;
+      boundariesToCreate.push({
+        userId,
+        title: `Emotional Support: ${baseline.emotionalSupport} need`,
+        description: `I require ${baseline.emotionalSupport} levels of emotional support`,
+        category: 'emotional-support',
+        importance,
+        isActive: true,
+      });
+    }
+
+    // Non-negotiable boundaries
+    if (baseline.nonNegotiableBoundaries && baseline.nonNegotiableBoundaries.length > 0) {
+      for (const boundary of baseline.nonNegotiableBoundaries) {
+        boundariesToCreate.push({
+          userId,
+          title: `Non-negotiable: ${boundary}`,
+          description: `This is a non-negotiable boundary for me: ${boundary}`,
+          category: 'non-negotiable',
+          importance: 10,
+          isActive: true,
+        });
+      }
+    }
+
+    // Trigger-based boundaries
+    if (baseline.triggers && baseline.triggers.length > 0) {
+      for (const trigger of baseline.triggers.slice(0, 3)) { // Limit to top 3
+        boundariesToCreate.push({
+          userId,
+          title: `Trigger Awareness: ${trigger}`,
+          description: `Please be mindful that ${trigger} is a trigger for me`,
+          category: 'emotional-safety',
+          importance: 8,
+          isActive: true,
+        });
+      }
+    }
+
+    // Create all boundaries in bulk
+    if (boundariesToCreate.length > 0) {
+      await db.insert(boundaries).values(boundariesToCreate);
+    }
+  }
+
   async createBoundaryGoal(goal: InsertBoundaryGoal): Promise<BoundaryGoal> {
     const [newGoal] = await db
       .insert(boundaryGoals)

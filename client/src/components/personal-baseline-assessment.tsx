@@ -75,7 +75,7 @@ export default function PersonalBaselineAssessment({
 
   const handleSubmit = async () => {
     try {
-      const result = await apiRequest('/api/personal-baseline', 'POST', baselineData);
+      const result = await apiRequest('/api/baseline', 'POST', baselineData);
       toast({
         title: "Baseline Assessment Complete",
         description: "Your personal baseline has been saved and will be used to analyze relationship patterns.",
