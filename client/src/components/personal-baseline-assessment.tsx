@@ -27,12 +27,16 @@ export default function PersonalBaselineAssessment({
   const [baselineData, setBaselineData] = useState({
     // Communication Preferences
     communicationStyle: existingBaseline?.communicationStyle || '',
+    communicationStyleRanking: existingBaseline?.communicationStyleRanking || [],
+    communicationDislikes: existingBaseline?.communicationDislikes || [],
     conflictResolutionStyle: existingBaseline?.conflictResolutionStyle || '',
     listeningNeeds: existingBaseline?.listeningNeeds || [],
     feedbackPreference: existingBaseline?.feedbackPreference || '',
     
     // Emotional Needs
     emotionalSupportLevel: existingBaseline?.emotionalSupportLevel || '',
+    emotionalValidationNeeds: existingBaseline?.emotionalValidationNeeds || '',
+    validationStyle: existingBaseline?.validationStyle || [],
     affectionStyle: existingBaseline?.affectionStyle || [],
     validationNeeds: existingBaseline?.validationNeeds || '',
     processingTimeNeeds: existingBaseline?.processingTimeNeeds || '',
@@ -122,31 +126,58 @@ export default function PersonalBaselineAssessment({
               <p className="text-gray-600">How do you prefer to communicate and handle conflicts?</p>
             </div>
 
-            <div className="space-y-4">
+            <div className="space-y-6">
+              {/* Communication Style Ranking */}
               <div>
-                <Label className="text-base font-medium">My communication style is:</Label>
-                <RadioGroup 
-                  value={baselineData.communicationStyle} 
-                  onValueChange={(value) => updateData('communicationStyle', value)}
-                  className="mt-2"
-                >
-                  <div className="flex items-center space-x-2">
-                    <RadioGroupItem value="direct" id="direct" />
-                    <Label htmlFor="direct">Direct and straightforward</Label>
-                  </div>
-                  <div className="flex items-center space-x-2">
-                    <RadioGroupItem value="gentle" id="gentle" />
-                    <Label htmlFor="gentle">Gentle and diplomatic</Label>
-                  </div>
-                  <div className="flex items-center space-x-2">
-                    <RadioGroupItem value="collaborative" id="collaborative" />
-                    <Label htmlFor="collaborative">Collaborative and discussion-focused</Label>
-                  </div>
-                  <div className="flex items-center space-x-2">
-                    <RadioGroupItem value="assertive" id="assertive" />
-                    <Label htmlFor="assertive">Assertive but respectful</Label>
-                  </div>
-                </RadioGroup>
+                <Label className="text-base font-medium">Rank your communication style preferences (1 = most important):</Label>
+                <div className="mt-3 space-y-2">
+                  {[
+                    { value: "direct", label: "Direct and straightforward", weight: 10 },
+                    { value: "gentle", label: "Gentle and diplomatic", weight: 8 },
+                    { value: "collaborative", label: "Collaborative and discussion-focused", weight: 6 },
+                    { value: "assertive", label: "Assertive but respectful", weight: 4 }
+                  ].map((style, index) => (
+                    <div key={style.value} className="flex items-center gap-3 p-3 border rounded-lg">
+                      <span className="font-medium text-lg w-8">{index + 1}.</span>
+                      <Label className="flex-1">{style.label}</Label>
+                      <div className="text-sm text-gray-500">Weight: {style.weight}</div>
+                    </div>
+                  ))}
+                </div>
+                <p className="text-sm text-gray-600 mt-2">This ranking will be used to automatically score how well others communicate with you.</p>
+              </div>
+
+              {/* Communication Dislikes */}
+              <div>
+                <Label className="text-base font-medium">Communication styles I strongly dislike:</Label>
+                <div className="mt-2 space-y-2">
+                  {[
+                    "Passive-aggressive comments",
+                    "Interrupting or talking over me",
+                    "Dismissive tone or language",
+                    "Raised voice or yelling",
+                    "Silent treatment",
+                    "Sarcasm during serious conversations",
+                    "Being rushed to respond",
+                    "Public criticism or correction"
+                  ].map((dislike) => (
+                    <div key={dislike} className="flex items-center space-x-2">
+                      <Checkbox
+                        id={dislike}
+                        checked={baselineData.communicationDislikes.includes(dislike)}
+                        onCheckedChange={(checked) => {
+                          if (checked) {
+                            addToArray('communicationDislikes', dislike);
+                          } else {
+                            const index = baselineData.communicationDislikes.indexOf(dislike);
+                            if (index > -1) removeFromArray('communicationDislikes', index);
+                          }
+                        }}
+                      />
+                      <Label htmlFor={dislike} className="text-sm">{dislike}</Label>
+                    </div>
+                  ))}
+                </div>
               </div>
 
               <div>
@@ -210,6 +241,65 @@ export default function PersonalBaselineAssessment({
                   <div className="flex items-center space-x-2">
                     <RadioGroupItem value="independent" id="independent-support" />
                     <Label htmlFor="independent-support">Very independent - minimal emotional support needed</Label>
+                  </div>
+                </RadioGroup>
+              </div>
+
+              {/* Emotional Validation Needs */}
+              <div>
+                <Label className="text-base font-medium">I need emotional validation through:</Label>
+                <div className="mt-2 space-y-2">
+                  {[
+                    "Verbal acknowledgment of my feelings",
+                    "Active listening without trying to fix",
+                    "Being asked how I'm feeling",
+                    "Having my perspective acknowledged",
+                    "Receiving empathy when I'm struggling",
+                    "Being told my feelings are valid",
+                    "Having someone sit with me in difficult emotions",
+                    "Being reassured that I'm understood"
+                  ].map((validation) => (
+                    <div key={validation} className="flex items-center space-x-2">
+                      <Checkbox
+                        id={validation}
+                        checked={baselineData.validationStyle.includes(validation)}
+                        onCheckedChange={(checked) => {
+                          if (checked) {
+                            addToArray('validationStyle', validation);
+                          } else {
+                            const index = baselineData.validationStyle.indexOf(validation);
+                            if (index > -1) removeFromArray('validationStyle', index);
+                          }
+                        }}
+                      />
+                      <Label htmlFor={validation} className="text-sm">{validation}</Label>
+                    </div>
+                  ))}
+                </div>
+              </div>
+
+              <div>
+                <Label className="text-base font-medium">When I need emotional validation, I prefer:</Label>
+                <RadioGroup 
+                  value={baselineData.emotionalValidationNeeds} 
+                  onValueChange={(value) => updateData('emotionalValidationNeeds', value)}
+                  className="mt-2"
+                >
+                  <div className="flex items-center space-x-2">
+                    <RadioGroupItem value="immediate" id="immediate-validation" />
+                    <Label htmlFor="immediate-validation">Immediate acknowledgment and support</Label>
+                  </div>
+                  <div className="flex items-center space-x-2">
+                    <RadioGroupItem value="gentle" id="gentle-validation" />
+                    <Label htmlFor="gentle-validation">Gentle, patient validation at my pace</Label>
+                  </div>
+                  <div className="flex items-center space-x-2">
+                    <RadioGroupItem value="space-first" id="space-first-validation" />
+                    <Label htmlFor="space-first-validation">Space to process, then validation when I ask</Label>
+                  </div>
+                  <div className="flex items-center space-x-2">
+                    <RadioGroupItem value="minimal" id="minimal-validation" />
+                    <Label htmlFor="minimal-validation">Minimal validation - I process internally</Label>
                   </div>
                 </RadioGroup>
               </div>

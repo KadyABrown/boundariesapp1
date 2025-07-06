@@ -259,6 +259,8 @@ export const personalBaselines = pgTable("personal_baselines", {
   
   // Communication Preferences
   communicationStyle: varchar("communication_style"), // direct, gentle, collaborative, assertive
+  communicationStyleRanking: text("communication_style_ranking").array(), // Ranked preferences with weights
+  communicationDislikes: text("communication_dislikes").array(), // Things they strongly dislike
   conflictResolution: varchar("conflict_resolution"), // discuss-immediately, need-time-to-process, avoid-conflict, address-when-calm
   feedbackPreference: varchar("feedback_preference"), // frequent-check-ins, only-when-needed, scheduled-discussions, in-the-moment
   listeningNeeds: text("listening_needs").array(),
@@ -266,6 +268,8 @@ export const personalBaselines = pgTable("personal_baselines", {
   
   // Emotional Needs
   emotionalSupport: varchar("emotional_support"), // high, medium, low
+  emotionalValidationNeeds: varchar("emotional_validation_needs"), // immediate, gentle, space-first, minimal
+  validationStyle: text("validation_style").array(), // Ways they need validation
   affectionStyle: text("affection_style").array(),
   validationNeeds: varchar("validation_needs"), // frequent, moderate, minimal
   emotionalProcessingTime: integer("emotional_processing_time"), // hours
