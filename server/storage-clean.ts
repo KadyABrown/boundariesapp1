@@ -89,7 +89,7 @@ export class Storage {
     const result = await db.delete(relationships)
       .where(and(eq(relationships.id, id), eq(relationships.userId, userId)));
     
-    return (result.rowCount || 0) > 0;
+    return result.rowCount > 0;
   }
 
   // Interaction Methods (CIT)
