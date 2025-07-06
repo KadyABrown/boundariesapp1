@@ -23,6 +23,7 @@ import Friends from "@/pages/friends";
 import Insights from "@/pages/insights";
 import FlagExamples from "@/pages/flag-examples";
 import BaselinePage from "@/pages/baseline";
+import BaselineTestPage from "@/pages/baseline-test";
 import AdminPage from "@/pages/admin";
 
 import NotFound from "@/pages/not-found";
@@ -61,6 +62,7 @@ function Router() {
           <Route path="/relationships" component={Relationships} />
           <Route path="/relationships/:id" component={RelationshipDetail} />
           <Route path="/baseline" component={BaselinePage} />
+          <Route path="/baseline-test" component={BaselineTestPage} />
           <Route path="/friends" component={Friends} />
           <Route path="/profile" component={Profile} />
           <Route path="/insights" component={Insights} />
