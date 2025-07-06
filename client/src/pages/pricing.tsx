@@ -1,13 +1,10 @@
-import { useState } from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
-import { Badge } from "@/components/ui/badge";
 import { Check, Star, Heart, Shield, TrendingUp } from "lucide-react";
 import { useAuth } from "@/hooks/useAuth";
 
 export default function Pricing() {
   const { user } = useAuth();
-  const [isAnnual, setIsAnnual] = useState(false);
 
   const features = [
     "Unlimited relationship profiles",
@@ -81,26 +78,7 @@ export default function Pricing() {
             One plan with everything you need to build healthier relationships
           </p>
           
-          {/* Billing Toggle */}
-          <div className="flex items-center justify-center space-x-4 mb-8">
-            <span className={`${!isAnnual ? 'text-gray-900 font-medium' : 'text-gray-500'}`}>Monthly</span>
-            <button
-              onClick={() => setIsAnnual(!isAnnual)}
-              className={`relative inline-flex h-6 w-11 items-center rounded-full transition-colors ${
-                isAnnual ? 'bg-indigo-600' : 'bg-gray-200'
-              }`}
-            >
-              <span
-                className={`inline-block h-4 w-4 transform rounded-full bg-white transition-transform ${
-                  isAnnual ? 'translate-x-6' : 'translate-x-1'
-                }`}
-              />
-            </button>
-            <span className={`${isAnnual ? 'text-gray-900 font-medium' : 'text-gray-500'}`}>
-              Annual
-              <Badge variant="secondary" className="ml-2">Save 20%</Badge>
-            </span>
-          </div>
+
         </div>
 
         {/* Pricing Card */}
@@ -121,16 +99,11 @@ export default function Pricing() {
               </CardTitle>
               <div className="mt-4">
                 <span className="text-4xl font-bold text-gray-900">
-                  ${isAnnual ? Math.round(annualPrice / 12 * 100) / 100 : monthlyPrice}
+                  $12.99
                 </span>
                 <span className="text-gray-600 ml-2">
-                  /{isAnnual ? 'month' : 'month'}
+                  /month
                 </span>
-                {isAnnual && (
-                  <div className="text-sm text-gray-500 mt-1">
-                    Billed annually (${annualPrice}/year)
-                  </div>
-                )}
               </div>
             </CardHeader>
             <CardContent className="pt-6">
