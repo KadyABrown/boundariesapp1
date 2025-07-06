@@ -307,7 +307,10 @@ export default function RelationshipProfileDetail({ relationship, onClose }: Rel
                   <Card>
                     <CardHeader>
                       <CardTitle className="flex items-center justify-between">
-                        <span>Privacy & Sharing</span>
+                        <div className="flex items-center gap-2">
+                          <span>Privacy & Sharing</span>
+                          <Badge variant="secondary" className="text-xs">Coming Soon</Badge>
+                        </div>
                         <Button 
                           size="sm" 
                           variant="outline"
