@@ -1874,6 +1874,70 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
+  // Verify successful checkout and create user account (no authentication required)
+  app.post('/api/subscription/verify-session', async (req: any, res) => {
+    try {
+      const { sessionId } = req.body;
+      
+      if (!sessionId) {
+        return res.status(400).json({ message: 'Session ID required' });
+      }
+
+      if (!process.env.STRIPE_SECRET_KEY) {
+        return res.status(500).json({ message: 'Stripe integration not configured' });
+      }
+
+      const stripe = new Stripe(process.env.STRIPE_SECRET_KEY, {
+        apiVersion: '2024-06-20',
+      });
+
+      // Retrieve the checkout session
+      const session = await stripe.checkout.sessions.retrieve(sessionId);
+      
+      if (session.payment_status !== 'paid') {
+        return res.json({ success: false, message: 'Payment not completed' });
+      }
+
+      // Get customer and subscription details
+      const customer = await stripe.customers.retrieve(session.customer as string);
+      const subscription = await stripe.subscriptions.retrieve(session.subscription as string);
+
+      // Create or update user account
+      if (customer && customer.email) {
+        const userId = `stripe_${customer.id}`;
+        
+        // Create user account
+        const userData = {
+          id: userId,
+          email: customer.email,
+          firstName: (customer as any).name?.split(' ')[0] || '',
+          lastName: (customer as any).name?.split(' ').slice(1).join(' ') || '',
+          stripeCustomerId: customer.id,
+          stripeSubscriptionId: subscription.id,
+          subscriptionStatus: 'active',
+          userRole: 'user',
+          createdAt: new Date(),
+          updatedAt: new Date()
+        };
+
+        await storage.createUser(userData);
+        
+        res.json({ 
+          success: true, 
+          message: 'Account created successfully',
+          redirectUrl: '/dashboard'
+        });
+      } else {
+        res.status(400).json({ message: 'Customer email not found' });
+      }
+    } catch (error) {
+      console.error("Error verifying checkout session:", error);
+      res.status(500).json({ 
+        message: error instanceof Error ? error.message : "Failed to verify session" 
+      });
+    }
+  });
+
   // Get subscription status
   app.get('/api/subscription/status', isAuthenticated, async (req: any, res) => {
     try {

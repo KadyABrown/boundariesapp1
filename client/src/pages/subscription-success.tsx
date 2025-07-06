@@ -2,24 +2,51 @@ import { useEffect, useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { CheckCircle, Loader2, Shield } from "lucide-react";
-import { useQuery } from "@tanstack/react-query";
+import { apiRequest } from "@/lib/queryClient";
 
 export default function SubscriptionSuccessPage() {
   const [isChecking, setIsChecking] = useState(true);
-
-  // Check subscription status
-  const { data: subscriptionStatus, isLoading } = useQuery({
-    queryKey: ['/api/subscription/status'],
-    enabled: isChecking,
-  });
+  const [subscriptionStatus, setSubscriptionStatus] = useState<any>(null);
+  const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {
-    // Stop checking after a few seconds to avoid infinite loading
-    const timer = setTimeout(() => {
-      setIsChecking(false);
-    }, 5000);
+    const verifyPayment = async () => {
+      try {
+        // Get session ID from URL
+        const urlParams = new URLSearchParams(window.location.search);
+        const sessionId = urlParams.get('session_id');
+        
+        if (!sessionId) {
+          setError('No session ID found');
+          setIsChecking(false);
+          return;
+        }
 
-    return () => clearTimeout(timer);
+        // Verify the payment and create user account
+        const response = await apiRequest('POST', '/api/subscription/verify-session', {
+          sessionId: sessionId
+        });
+        
+        const result = await response.json();
+        
+        if (result.success) {
+          setSubscriptionStatus({ status: 'active' });
+          // Redirect to dashboard after a brief delay
+          setTimeout(() => {
+            window.location.href = '/dashboard';
+          }, 3000);
+        } else {
+          setError(result.message || 'Payment verification failed');
+        }
+      } catch (err) {
+        console.error('Payment verification error:', err);
+        setError('Failed to verify payment');
+      } finally {
+        setIsChecking(false);
+      }
+    };
+
+    verifyPayment();
   }, []);
 
   if (isLoading || isChecking) {
