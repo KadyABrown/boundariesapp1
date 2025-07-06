@@ -1,7 +1,9 @@
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
-import { Heart, Brain, Calendar, BarChart3, User, Edit2, MapPin, Trash2, Plus, Cloud, Sun, CloudRain, Sparkles, Target, CheckCircle } from "lucide-react";
+import { Heart, Brain, Calendar, BarChart3, User, Edit2, MapPin, Trash2, Plus } from "lucide-react";
+import EmotionalWeather from "@/components/emotional-weather";
+import BoundaryBuddy from "@/components/boundary-buddy";
 
 export default function Demo() {
   // Demo data - pre-populated relationship profiles
@@ -334,126 +336,16 @@ export default function Demo() {
 
         {/* Emotional Weather Report */}
         <div className="mt-16 mb-12">
-          <h2 className="text-2xl font-bold text-gray-900 mb-6 text-center">Today's Emotional Weather</h2>
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-            <Card className="bg-gradient-to-br from-blue-50 to-indigo-100">
-              <CardHeader>
-                <CardTitle className="flex items-center gap-2">
-                  <Sun className="w-5 h-5 text-yellow-500 animate-pulse" />
-                  Overall Mood: Partly Sunny
-                </CardTitle>
-              </CardHeader>
-              <CardContent>
-                <div className="space-y-3">
-                  <div className="flex items-center justify-between">
-                    <span className="text-sm">Energy Level</span>
-                    <div className="flex items-center gap-1">
-                      <div className="w-20 bg-gray-200 rounded-full h-2">
-                        <div className="bg-green-500 h-2 rounded-full animate-pulse" style={{width: '75%'}}></div>
-                      </div>
-                      <span className="text-sm font-medium">7/10</span>
-                    </div>
-                  </div>
-                  <div className="flex items-center justify-between">
-                    <span className="text-sm">Boundary Confidence</span>
-                    <div className="flex items-center gap-1">
-                      <div className="w-20 bg-gray-200 rounded-full h-2">
-                        <div className="bg-blue-500 h-2 rounded-full animate-pulse" style={{width: '85%'}}></div>
-                      </div>
-                      <span className="text-sm font-medium">8.5/10</span>
-                    </div>
-                  </div>
-                  <div className="mt-3 p-3 bg-white/50 rounded-lg">
-                    <p className="text-sm text-gray-700">
-                      ☀️ Feeling confident after yesterday's successful boundary conversation with Alex
-                    </p>
-                  </div>
-                </div>
-              </CardContent>
-            </Card>
-
-            <Card className="bg-gradient-to-br from-green-50 to-emerald-100">
-              <CardHeader>
-                <CardTitle className="flex items-center gap-2">
-                  <Cloud className="w-5 h-5 text-gray-500" />
-                  Relationship Climate
-                </CardTitle>
-              </CardHeader>
-              <CardContent>
-                <div className="space-y-3">
-                  <div className="flex items-center justify-between">
-                    <span className="text-sm">Communication Flow</span>
-                    <Badge className="bg-green-100 text-green-800">Clear Skies</Badge>
-                  </div>
-                  <div className="flex items-center justify-between">
-                    <span className="text-sm">Stress Levels</span>
-                    <Badge className="bg-yellow-100 text-yellow-800">Light Breeze</Badge>
-                  </div>
-                  <div className="flex items-center justify-between">
-                    <span className="text-sm">Support System</span>
-                    <Badge className="bg-blue-100 text-blue-800">Stable</Badge>
-                  </div>
-                  <div className="mt-3 p-3 bg-white/50 rounded-lg">
-                    <p className="text-sm text-gray-700">
-                      🌤️ Forecast: Good conditions for difficult conversations this week
-                    </p>
-                  </div>
-                </div>
-              </CardContent>
-            </Card>
-          </div>
+          <h2 className="text-2xl font-bold text-gray-900 mb-6 text-center">Emotional Weather Report</h2>
+          <EmotionalWeather relationships={demoProfiles} />
         </div>
 
         {/* Boundary Buddy */}
         <div className="mt-16 mb-12">
           <h2 className="text-2xl font-bold text-gray-900 mb-6 text-center">Your Boundary Buddy</h2>
-          <Card className="max-w-2xl mx-auto bg-gradient-to-br from-purple-50 to-pink-100">
-            <CardHeader>
-              <CardTitle className="flex items-center gap-2">
-                <Sparkles className="w-5 h-5 text-purple-500 animate-bounce" />
-                Daily Boundary Check-in
-              </CardTitle>
-            </CardHeader>
-            <CardContent>
-              <div className="space-y-4">
-                <div className="p-4 bg-white/70 rounded-lg border-l-4 border-purple-400">
-                  <h4 className="font-medium text-purple-900 mb-2">Today's Insight</h4>
-                  <p className="text-purple-800 text-sm mb-3">
-                    You've been doing great at setting boundaries this week! I noticed you successfully 
-                    redirected the conversation when Jordan brought up work during your lunch date.
-                  </p>
-                  <div className="flex items-center gap-2 text-sm text-purple-700">
-                    <CheckCircle className="w-4 h-4" />
-                    <span>Boundary skill: Gentle redirection ✨</span>
-                  </div>
-                </div>
-                
-                <div className="p-4 bg-white/70 rounded-lg border-l-4 border-blue-400">
-                  <h4 className="font-medium text-blue-900 mb-2">Gentle Reminder</h4>
-                  <p className="text-blue-800 text-sm mb-3">
-                    Remember to check in with yourself before your coffee date with Alex tomorrow. 
-                    You mentioned feeling a bit overwhelmed lately.
-                  </p>
-                  <div className="flex items-center gap-2 text-sm text-blue-700">
-                    <Target className="w-4 h-4" />
-                    <span>Suggested: Take 5 deep breaths beforehand</span>
-                  </div>
-                </div>
-
-                <div className="p-4 bg-white/70 rounded-lg border-l-4 border-green-400">
-                  <h4 className="font-medium text-green-900 mb-2">Progress Celebration</h4>
-                  <p className="text-green-800 text-sm mb-3">
-                    You're on a 3-day streak of checking in with your feelings! 
-                    This self-awareness is helping you communicate more clearly.
-                  </p>
-                  <div className="flex items-center gap-2 text-sm text-green-700">
-                    <Heart className="w-4 h-4 animate-pulse" />
-                    <span>Keep up the amazing work! 💚</span>
-                  </div>
-                </div>
-              </div>
-            </CardContent>
-          </Card>
+          <div className="flex justify-center">
+            <BoundaryBuddy context="general" position="inline" />
+          </div>
         </div>
 
         {/* Call to Action */}
