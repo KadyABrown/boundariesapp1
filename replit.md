@@ -4,6 +4,9 @@
 
 BoundarySpace is a comprehensive relationship health tracking application that automatically analyzes relationship patterns through detailed interaction tracking and personal baseline assessment. The core function is to help users understand how their relationships impact their physical health, emotional well-being, and personal boundaries by comparing real interaction data against their established personal needs and values.
 
+**Decision: Building from Scratch**
+July 6, 2025 - After encountering persistent legacy issues with the existing codebase (authentication failures, database connection issues, conflicting dependencies), the decision was made to build a completely new project from scratch to avoid these exact problems and ensure a clean, working foundation.
+
 **Core App Function:**
 1. **Personal Baseline Assessment** - Users define their communication style, emotional needs, boundary requirements, and core values
 2. **Comprehensive Interaction Tracking (CIT)** - Detailed logging of relationship interactions with pre/post measurements of energy, anxiety, self-worth, and physical symptoms
