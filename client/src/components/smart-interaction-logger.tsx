@@ -126,17 +126,14 @@ export default function SmartInteractionLogger({
     };
 
     // Communication Alignment Score (0-100)
-    if (data.communicationStyleUsed && baseline.communicationStyleRanking) {
-      const preferredStyles = [
-        { style: "direct", weight: 10 },
-        { style: "gentle", weight: 8 },
-        { style: "collaborative", weight: 6 },
-        { style: "assertive", weight: 4 }
-      ];
+    if (data.communicationStyleUsed && baseline.communicationStyleRanking && baseline.communicationStyleRanking.length > 0) {
+      // Find position of used style in user's ranking (0-based index)
+      const stylePosition = baseline.communicationStyleRanking.indexOf(data.communicationStyleUsed);
       
-      const usedStyle = preferredStyles.find(s => s.style === data.communicationStyleUsed);
-      if (usedStyle) {
-        scores.communicationAlignmentScore = (usedStyle.weight / 10) * 100;
+      if (stylePosition !== -1) {
+        // Automatically assign weights: 1st = 10, 2nd = 8, 3rd = 6, 4th = 4
+        const weight = 10 - (stylePosition * 2);
+        scores.communicationAlignmentScore = Math.max(0, (weight / 10) * 100);
       }
     }
 

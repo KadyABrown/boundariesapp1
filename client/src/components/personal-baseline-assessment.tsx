@@ -24,11 +24,18 @@ export default function PersonalBaselineAssessment({
 }: PersonalBaselineAssessmentProps) {
   const { toast } = useToast();
   const [currentStep, setCurrentStep] = useState(1);
+  
+  // Initialize communication styles in default order
+  const [communicationStyles, setCommunicationStyles] = useState([
+    { value: "direct", label: "Direct and straightforward" },
+    { value: "gentle", label: "Gentle and diplomatic" },
+    { value: "collaborative", label: "Collaborative and discussion-focused" },
+    { value: "assertive", label: "Assertive but respectful" }
+  ]);
   const [baselineData, setBaselineData] = useState({
     // Communication Preferences
     communicationStyle: existingBaseline?.communicationStyle || '',
     communicationStyleRanking: existingBaseline?.communicationStyleRanking || [],
-    communicationDislikes: existingBaseline?.communicationDislikes || [],
     conflictResolutionStyle: existingBaseline?.conflictResolutionStyle || '',
     listeningNeeds: existingBaseline?.listeningNeeds || [],
     feedbackPreference: existingBaseline?.feedbackPreference || '',
@@ -129,55 +136,56 @@ export default function PersonalBaselineAssessment({
             <div className="space-y-6">
               {/* Communication Style Ranking */}
               <div>
-                <Label className="text-base font-medium">Rank your communication style preferences (1 = most important):</Label>
+                <Label className="text-base font-medium">Rank your communication preferences from most to least preferred:</Label>
+                <p className="text-sm text-gray-600 mt-1 mb-3">Drag to reorder. The system will automatically assign weights based on your ranking.</p>
                 <div className="mt-3 space-y-2">
-                  {[
-                    { value: "direct", label: "Direct and straightforward", weight: 10 },
-                    { value: "gentle", label: "Gentle and diplomatic", weight: 8 },
-                    { value: "collaborative", label: "Collaborative and discussion-focused", weight: 6 },
-                    { value: "assertive", label: "Assertive but respectful", weight: 4 }
-                  ].map((style, index) => (
-                    <div key={style.value} className="flex items-center gap-3 p-3 border rounded-lg">
-                      <span className="font-medium text-lg w-8">{index + 1}.</span>
-                      <Label className="flex-1">{style.label}</Label>
-                      <div className="text-sm text-gray-500">Weight: {style.weight}</div>
+                  {communicationStyles.map((style, index) => (
+                    <div 
+                      key={style.value} 
+                      className="flex items-center gap-3 p-3 border rounded-lg bg-white cursor-move hover:bg-gray-50 transition-colors"
+                      draggable
+                      onDragStart={(e) => {
+                        e.dataTransfer.setData('text/plain', index.toString());
+                        e.currentTarget.classList.add('opacity-50');
+                      }}
+                      onDragEnd={(e) => {
+                        e.currentTarget.classList.remove('opacity-50');
+                      }}
+                      onDragOver={(e) => {
+                        e.preventDefault();
+                      }}
+                      onDrop={(e) => {
+                        e.preventDefault();
+                        const draggedIndex = parseInt(e.dataTransfer.getData('text/plain'));
+                        const targetIndex = index;
+                        
+                        if (draggedIndex !== targetIndex) {
+                          const newStyles = [...communicationStyles];
+                          const draggedItem = newStyles[draggedIndex];
+                          newStyles.splice(draggedIndex, 1);
+                          newStyles.splice(targetIndex, 0, draggedItem);
+                          setCommunicationStyles(newStyles);
+                          
+                          // Update baselineData with new ranking
+                          const ranking = newStyles.map(s => s.value);
+                          updateData('communicationStyleRanking', ranking);
+                        }
+                      }}
+                    >
+                      <div className="flex items-center gap-2">
+                        <div className="w-6 h-6 bg-blue-100 rounded-full flex items-center justify-center text-sm font-medium text-blue-600">
+                          {index + 1}
+                        </div>
+                        <span className="text-xs text-gray-500">≡</span>
+                      </div>
+                      <Label className="flex-1 cursor-move">{style.label}</Label>
+                      <div className="text-sm text-gray-500">
+                        Auto-weight: {10 - (index * 2)}
+                      </div>
                     </div>
                   ))}
                 </div>
-                <p className="text-sm text-gray-600 mt-2">This ranking will be used to automatically score how well others communicate with you.</p>
-              </div>
-
-              {/* Communication Dislikes */}
-              <div>
-                <Label className="text-base font-medium">Communication styles I strongly dislike:</Label>
-                <div className="mt-2 space-y-2">
-                  {[
-                    "Passive-aggressive comments",
-                    "Interrupting or talking over me",
-                    "Dismissive tone or language",
-                    "Raised voice or yelling",
-                    "Silent treatment",
-                    "Sarcasm during serious conversations",
-                    "Being rushed to respond",
-                    "Public criticism or correction"
-                  ].map((dislike) => (
-                    <div key={dislike} className="flex items-center space-x-2">
-                      <Checkbox
-                        id={dislike}
-                        checked={baselineData.communicationDislikes.includes(dislike)}
-                        onCheckedChange={(checked) => {
-                          if (checked) {
-                            addToArray('communicationDislikes', dislike);
-                          } else {
-                            const index = baselineData.communicationDislikes.indexOf(dislike);
-                            if (index > -1) removeFromArray('communicationDislikes', index);
-                          }
-                        }}
-                      />
-                      <Label htmlFor={dislike} className="text-sm">{dislike}</Label>
-                    </div>
-                  ))}
-                </div>
+                <p className="text-sm text-gray-600 mt-2">This ranking helps the system automatically score how well others communicate with your preferences.</p>
               </div>
 
               <div>
@@ -309,7 +317,7 @@ export default function PersonalBaselineAssessment({
                 <div className="mt-2 grid grid-cols-2 gap-2">
                   {[
                     'Being dismissed or ignored',
-                    'Raised voices or yelling',
+                    'Raised voices or yelling', 
                     'Being interrupted',
                     'Feeling criticized',
                     'Being rushed or pressured',
@@ -319,7 +327,11 @@ export default function PersonalBaselineAssessment({
                     'Feeling misunderstood',
                     'Being lied to',
                     'Having decisions made for me',
-                    'Being compared to others'
+                    'Being compared to others',
+                    'Passive-aggressive comments',
+                    'Dismissive tone or language',
+                    'Silent treatment',
+                    'Sarcasm during serious conversations'
                   ].map(trigger => (
                     <div key={trigger} className="flex items-center space-x-2">
                       <Checkbox
