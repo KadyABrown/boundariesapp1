@@ -4,6 +4,7 @@ import { storage } from "./storage";
 import { setupAuth, isAuthenticated } from "./replitAuth";
 import { db } from "./db";
 import { flagExamples } from "@shared/schema";
+import Stripe from 'stripe';
 import fs from 'fs';
 import path from 'path';
 import {
@@ -1729,14 +1730,20 @@ export async function registerRoutes(app: Express): Promise<Server> {
   // Create checkout session for subscription (no authentication required)
   app.post('/api/subscription/checkout', async (req: any, res) => {
     try {
+      console.log("=== STRIPE CHECKOUT DEBUG ===");
+      console.log("STRIPE_SECRET_KEY exists:", !!process.env.STRIPE_SECRET_KEY);
+      console.log("VITE_STRIPE_PUBLIC_KEY exists:", !!process.env.VITE_STRIPE_PUBLIC_KEY);
+      console.log("All environment keys:", Object.keys(process.env).filter(k => k.includes('STRIPE')));
+      
       if (!process.env.STRIPE_SECRET_KEY) {
-        throw new Error('Stripe integration not configured. Please contact support.');
+        throw new Error('Missing STRIPE_SECRET_KEY. Please add this secret to your Replit environment.');
       }
 
-      const Stripe = require('stripe');
       const stripe = new Stripe(process.env.STRIPE_SECRET_KEY, {
         apiVersion: '2023-10-16',
       });
+
+      console.log("Creating Stripe checkout session...");
 
       // Create a Stripe Checkout Session for subscription
       const session = await stripe.checkout.sessions.create({
@@ -1763,9 +1770,10 @@ export async function registerRoutes(app: Express): Promise<Server> {
         allow_promotion_codes: true,
       });
 
+      console.log("Stripe session created successfully:", session.id);
       res.json({ checkoutUrl: session.url });
     } catch (error) {
-      console.error("Error creating checkout:", error);
+      console.error("Error creating Stripe checkout:", error);
       res.status(500).json({ 
         message: error instanceof Error ? error.message : "Failed to create checkout session" 
       });
