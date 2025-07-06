@@ -143,7 +143,7 @@ export default function FAQPage() {
             Still Have Questions?
           </h2>
           <p className="text-xl text-gray-600 mb-8">
-            The best way to understand BoundarySpace is to try it yourself. Start with the free baseline assessment and explore the features hands-on.
+            The best way to understand BoundarySpace is to try it yourself. Start with the baseline assessment and explore the features hands-on.
           </p>
           <Button 
             size="lg" 
@@ -153,7 +153,7 @@ export default function FAQPage() {
             Try BoundarySpace Now
           </Button>
           <p className="text-sm text-gray-500 mt-4">
-            Free to use • No commitment required
+            Start your journey today
           </p>
         </div>
       </section>

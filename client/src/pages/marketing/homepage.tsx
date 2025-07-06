@@ -45,7 +45,7 @@ export default function MarketingHomepage() {
               className="bg-purple-600 hover:bg-purple-700 text-lg px-8 py-3"
               onClick={() => window.location.href = "/api/login"}
             >
-              Start Free Assessment <ArrowRight className="ml-2 h-5 w-5" />
+              Start Assessment <ArrowRight className="ml-2 h-5 w-5" />
             </Button>
             <Button 
               size="lg" 
