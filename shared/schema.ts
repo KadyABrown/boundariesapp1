@@ -260,7 +260,6 @@ export const personalBaselines = pgTable("personal_baselines", {
   // Communication Preferences
   communicationStyle: varchar("communication_style"), // direct, gentle, collaborative, assertive
   communicationStyleRanking: text("communication_style_ranking").array(), // Ranked preferences with weights
-  communicationDislikes: text("communication_dislikes").array(), // Things they strongly dislike
   conflictResolution: varchar("conflict_resolution"), // discuss-immediately, need-time-to-process, avoid-conflict, address-when-calm
   feedbackPreference: varchar("feedback_preference"), // frequent-check-ins, only-when-needed, scheduled-discussions, in-the-moment
   listeningNeeds: text("listening_needs").array(),
