@@ -50,6 +50,7 @@ function Router() {
           <Route path="/pricing" component={PricingPage} />
           <Route path="/demo" component={DemoPage} />
           <Route path="/faq" component={FAQPage} />
+          <Route path="/subscription/success" component={SubscriptionSuccessPage} />
           <Route component={NotFound} />
         </>
       ) : (
@@ -65,7 +66,6 @@ function Router() {
           <Route path="/insights" component={Insights} />
           <Route path="/flag-examples" component={FlagExamples} />
           <Route path="/admin" component={AdminPage} />
-          <Route path="/subscription/success" component={SubscriptionSuccessPage} />
           <Route component={NotFound} />
         </>
       )}

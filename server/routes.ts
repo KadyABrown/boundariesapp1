@@ -1924,13 +1924,16 @@ export async function registerRoutes(app: Express): Promise<Server> {
         const email = (customer as any).email;
         const userId = `stripe_${customer.id}`;
         
-        // Create basic user account - they can update details later
+        // Create user account with Stripe subscription details
         const userData = {
           id: userId,
           email: email,
           firstName: null,
           lastName: null,
           profileImageUrl: null,
+          stripeCustomerId: customer.id,
+          stripeSubscriptionId: subscription.id,
+          subscriptionStatus: 'active'
         };
 
         // Create/update user account
