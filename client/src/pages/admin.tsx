@@ -29,7 +29,7 @@ import {
 } from "lucide-react";
 import { useState, useEffect } from "react";
 
-export default function AdminPage() {
+function AdminPage() {
   const { user, isAuthenticated, isLoading } = useAuth();
   const { toast } = useToast();
   const queryClient = useQueryClient();
@@ -572,3 +572,5 @@ export default function AdminPage() {
     </div>
   );
 }
+
+export default AdminPage;
