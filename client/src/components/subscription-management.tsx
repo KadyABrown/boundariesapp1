@@ -97,6 +97,30 @@ export function SubscriptionManagement() {
     },
   });
 
+  const handleCreateCheckout = async () => {
+    try {
+      const response = await apiRequest("GET", "/api/checkout");
+      const data = await response.json();
+      
+      if (data.url) {
+        // Redirect to Stripe checkout
+        window.location.href = data.url;
+      } else {
+        toast({
+          title: "Error",
+          description: "Unable to create checkout session",
+          variant: "destructive",
+        });
+      }
+    } catch (error) {
+      toast({
+        title: "Error",
+        description: "Failed to start checkout process",
+        variant: "destructive",
+      });
+    }
+  };
+
   const handleRefreshStatus = () => {
     setIsLoading(true);
     queryClient.invalidateQueries({ queryKey: ['/api/subscription/status'] })
@@ -183,7 +207,7 @@ export function SubscriptionManagement() {
             <p className="text-muted-foreground mb-6">
               {subscription.message || "You don't have an active subscription."}
             </p>
-            <Button onClick={() => window.location.href = '/api/checkout'}>
+            <Button onClick={() => handleCreateCheckout()}>
               Subscribe Now
             </Button>
           </div>
