@@ -38,6 +38,12 @@ export default function BaselinePage() {
     enabled: isAuthenticated && Array.isArray(relationships) && relationships.length > 0,
   });
 
+  // Fetch current baseline data
+  const { data: currentBaseline, isLoading: baselineLoading } = useQuery({
+    queryKey: ["/api/baseline"],
+    enabled: isAuthenticated,
+  });
+
   // Fetch baseline versions for historical tracking
   const { data: baselineVersions = [] } = useQuery({
     queryKey: ["/api/baseline/versions"],
@@ -170,11 +176,18 @@ export default function BaselinePage() {
         </div>
 
         {/* Baseline Assessment */}
-        <PersonalBaselineAssessment
-          existingBaseline={userBaseline || undefined}
-          onComplete={handleSaveBaseline}
-          onCancel={() => window.location.href = '/dashboard'}
-        />
+        {baselineLoading ? (
+          <div className="flex items-center justify-center py-12">
+            <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary"></div>
+            <span className="ml-3">Loading baseline data...</span>
+          </div>
+        ) : (
+          <PersonalBaselineAssessment
+            existingBaseline={currentBaseline || undefined}
+            onComplete={handleSaveBaseline}
+            onCancel={() => window.location.href = '/dashboard'}
+          />
+        )}
       </div>
     </div>
   );
