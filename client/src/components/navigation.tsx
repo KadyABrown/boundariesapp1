@@ -20,7 +20,14 @@ export default function Navigation() {
     { name: "Friends", href: "/friends", icon: Users, current: location === "/friends" },
     { name: "Flag Examples", href: "/flag-examples", icon: Flag, current: location === "/flag-examples" },
     { name: "Insights", href: "/insights", icon: BarChart3, current: location === "/insights" },
+    { name: "Feedback", href: "/feedback", icon: Bell, current: location === "/feedback" },
   ];
+
+  // Add admin navigation for admin users
+  const isAdmin = user?.email === "hello@roxzmedia.com";
+  if (isAdmin) {
+    navigation.push({ name: "Admin", href: "/admin", icon: Settings, current: location === "/admin" });
+  }
 
   const handleNavigation = (href: string) => {
     setLocation(href);

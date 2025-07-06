@@ -15,6 +15,7 @@ import {
   personalBaselines,
   boundaryGoals,
   goalCheckIns,
+  feedback,
   type User,
   type UpsertUser,
   type Boundary,
@@ -47,6 +48,8 @@ import {
   type InsertBoundaryGoal,
   type GoalCheckIn,
   type InsertGoalCheckIn,
+  type Feedback,
+  type InsertFeedback,
 } from "@shared/schema";
 import { db } from "./db";
 import { eq, desc, and, gte, lte, sql, count, or, like } from "drizzle-orm";
@@ -169,6 +172,11 @@ export interface IStorage {
     respectEntries: number;
     progressPercentage: number;
   }>;
+
+  // Feedback operations
+  getFeedback(): Promise<Feedback[]>;
+  createFeedback(feedback: InsertFeedback & { userId: string; submittedBy: string }): Promise<Feedback>;
+  updateFeedbackStatus(id: number, updates: { status?: string; devNotes?: string }): Promise<Feedback>;
 }
 
 export class DatabaseStorage implements IStorage {
@@ -1155,6 +1163,28 @@ export class DatabaseStorage implements IStorage {
     await db.delete(friendships).where(or(eq(friendships.userId, userId), eq(friendships.friendId, userId)));
     await db.delete(baselineAssessments).where(eq(baselineAssessments.userId, userId));
     await db.delete(users).where(eq(users.id, userId));
+  }
+
+  // Feedback operations
+  async getFeedback(): Promise<Feedback[]> {
+    return await db.select().from(feedback).orderBy(desc(feedback.createdAt));
+  }
+
+  async createFeedback(feedbackData: InsertFeedback & { userId: string; submittedBy: string }): Promise<Feedback> {
+    const [newFeedback] = await db.insert(feedback).values(feedbackData).returning();
+    return newFeedback;
+  }
+
+  async updateFeedbackStatus(id: number, updates: { status?: string; devNotes?: string }): Promise<Feedback> {
+    const [updatedFeedback] = await db
+      .update(feedback)
+      .set({ 
+        ...updates,
+        updatedAt: new Date()
+      })
+      .where(eq(feedback.id, id))
+      .returning();
+    return updatedFeedback;
   }
 }
 

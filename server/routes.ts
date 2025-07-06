@@ -19,6 +19,7 @@ import {
   insertFriendCircleSchema,
   insertComprehensiveInteractionSchema,
   insertPersonalBaselineSchema,
+  insertFeedbackSchema,
 } from "@shared/schema";
 import { z } from "zod";
 
@@ -1674,6 +1675,58 @@ export async function registerRoutes(app: Express): Promise<Server> {
     } catch (error) {
       console.error("Error deleting user:", error);
       res.status(500).json({ message: "Failed to delete user" });
+    }
+  });
+
+  // Feedback routes
+  app.get('/api/feedback', isAuthenticated, async (req: any, res) => {
+    try {
+      const feedback = await storage.getFeedback();
+      res.json(feedback);
+    } catch (error) {
+      console.error("Error fetching feedback:", error);
+      res.status(500).json({ message: "Failed to fetch feedback" });
+    }
+  });
+
+  app.post('/api/feedback', isAuthenticated, async (req: any, res) => {
+    try {
+      const validatedData = insertFeedbackSchema.parse(req.body);
+      const user = req.user;
+      
+      const feedbackData = {
+        ...validatedData,
+        userId: user.id,
+        submittedBy: user.username || user.email || 'Anonymous',
+      };
+
+      const feedback = await storage.createFeedback(feedbackData);
+      res.json(feedback);
+    } catch (error) {
+      console.error("Error creating feedback:", error);
+      if (error instanceof z.ZodError) {
+        res.status(400).json({ message: "Invalid feedback data", errors: error.errors });
+      } else {
+        res.status(500).json({ message: "Failed to create feedback" });
+      }
+    }
+  });
+
+  // Admin route to update feedback status
+  app.patch('/api/admin/feedback/:id', isAuthenticated, async (req: any, res) => {
+    try {
+      if (req.user.email !== "hello@roxzmedia.com") {
+        return res.status(403).json({ message: "Access denied" });
+      }
+
+      const feedbackId = parseInt(req.params.id);
+      const { status, devNotes } = req.body;
+      
+      const feedback = await storage.updateFeedbackStatus(feedbackId, { status, devNotes });
+      res.json(feedback);
+    } catch (error) {
+      console.error("Error updating feedback:", error);
+      res.status(500).json({ message: "Failed to update feedback" });
     }
   });
 
