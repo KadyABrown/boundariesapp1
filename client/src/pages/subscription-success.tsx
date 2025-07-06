@@ -21,7 +21,7 @@ export default function SubscriptionSuccess() {
             Welcome to BoundarySpace!
           </CardTitle>
           <CardDescription className="text-lg mt-2">
-            Your subscription is now active. Let's start building healthier relationships together.
+            Your subscription is now active! We've created your account - just log in to start building healthier relationships.
           </CardDescription>
         </CardHeader>
 
@@ -71,8 +71,8 @@ export default function SubscriptionSuccess() {
           </div>
 
           <div className="flex justify-center">
-            <Button className="w-full sm:w-auto" size="lg" onClick={() => window.location.href = '/'}>
-              Go to Dashboard
+            <Button className="w-full sm:w-auto" size="lg" onClick={() => window.location.href = '/api/login'}>
+              Log In to Your Account
               <ArrowRight className="w-4 h-4 ml-2" />
             </Button>
           </div>
