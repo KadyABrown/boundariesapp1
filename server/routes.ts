@@ -1729,15 +1729,41 @@ export async function registerRoutes(app: Express): Promise<Server> {
   // Create checkout session for subscription (no authentication required)
   app.post('/api/subscription/checkout', async (req: any, res) => {
     try {
-      // For unauthenticated users, we'll collect email during Shopify checkout
-      const { email } = req.body;
-      const userEmail = email || 'customer@boundaryspace.app'; // Shopify will collect the real email
-      const tempUserId = 'guest-' + Date.now(); // Temporary ID for guest checkout
+      if (!process.env.STRIPE_SECRET_KEY) {
+        throw new Error('Stripe integration not configured. Please contact support.');
+      }
 
-      const returnUrl = `${req.protocol}://${req.get('host')}/subscription/success`;
-      const checkoutUrl = await shopifyService.createSubscriptionCheckout(tempUserId, userEmail, returnUrl);
-      
-      res.json({ checkoutUrl });
+      const Stripe = require('stripe');
+      const stripe = new Stripe(process.env.STRIPE_SECRET_KEY, {
+        apiVersion: '2023-10-16',
+      });
+
+      // Create a Stripe Checkout Session for subscription
+      const session = await stripe.checkout.sessions.create({
+        mode: 'subscription',
+        payment_method_types: ['card'],
+        line_items: [
+          {
+            price_data: {
+              currency: 'usd',
+              product_data: {
+                name: 'BoundarySpace Pro',
+                description: 'Monthly subscription to BoundarySpace relationship tracking app',
+              },
+              unit_amount: 1299, // $12.99 in cents
+              recurring: {
+                interval: 'month',
+              },
+            },
+            quantity: 1,
+          },
+        ],
+        success_url: `${req.protocol}://${req.get('host')}/subscription/success?session_id={CHECKOUT_SESSION_ID}`,
+        cancel_url: `${req.protocol}://${req.get('host')}/pricing`,
+        allow_promotion_codes: true,
+      });
+
+      res.json({ checkoutUrl: session.url });
     } catch (error) {
       console.error("Error creating checkout:", error);
       res.status(500).json({ 
