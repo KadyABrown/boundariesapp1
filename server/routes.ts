@@ -1761,7 +1761,9 @@ export async function registerRoutes(app: Express): Promise<Server> {
   app.get('/api/admin/users', isAuthenticated, isAdmin, async (req: any, res) => {
     try {
       // Get all users with their relationship counts and activity
+      console.log("Fetching users for admin dashboard...");
       const users = await storage.getAllUsersForAdmin();
+      console.log(`Found ${users.length} users:`, users.map(u => ({ id: u.id, email: u.email })));
       res.json(users);
     } catch (error) {
       console.error("Error fetching users for admin:", error);
