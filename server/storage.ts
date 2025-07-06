@@ -1128,6 +1128,34 @@ export class DatabaseStorage implements IStorage {
       progressPercentage,
     };
   }
+
+  async getAllUsers() {
+    return await db.select().from(users);
+  }
+
+  async getAdminStats() {
+    const totalUsers = await db.select({ count: count() }).from(users);
+    const premiumUsers = await db.select({ count: count() }).from(users).where(eq(users.subscriptionStatus, 'active'));
+    
+    return {
+      totalUsers: totalUsers[0]?.count || 0,
+      premiumUsers: premiumUsers[0]?.count || 0,
+      monthlyRevenue: 0, // Calculate based on premium users * $12.99
+      growthRate: 0
+    };
+  }
+
+  async deleteUser(userId: string) {
+    // Delete user data in correct order due to foreign key constraints
+    await db.delete(boundaryEntries).where(eq(boundaryEntries.userId, userId));
+    await db.delete(boundaries).where(eq(boundaries.userId, userId));
+    await db.delete(relationshipFlags).where(eq(relationshipFlags.userId, userId));
+    await db.delete(emotionalCheckins).where(eq(emotionalCheckins.userId, userId));
+    await db.delete(relationships).where(eq(relationships.userId, userId));
+    await db.delete(friendships).where(or(eq(friendships.userId, userId), eq(friendships.friendId, userId)));
+    await db.delete(baselineAssessments).where(eq(baselineAssessments.userId, userId));
+    await db.delete(users).where(eq(users.id, userId));
+  }
 }
 
 export const storage = new DatabaseStorage();
