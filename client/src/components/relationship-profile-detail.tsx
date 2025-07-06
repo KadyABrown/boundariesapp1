@@ -11,6 +11,7 @@ import ComprehensiveInteractionTracker from "./comprehensive-interaction-tracker
 import { apiRequest, queryClient } from "@/lib/queryClient";
 import { useToast } from "@/hooks/use-toast";
 
+
 // Simple analysis component to show CIT data insights
 function InteractionAnalysis({ relationshipId }: { relationshipId: number }) {
   const { data: interactions, isLoading } = useQuery({
@@ -437,12 +438,11 @@ export default function RelationshipProfileDetail({ relationship, onClose }: Rel
                                     <div className="flex-1">
                                       <div className="flex items-center gap-2">
                                         <Badge 
-                                          style={{
-                                            backgroundColor: isGreen ? '#dcfce7' : '#fef2f2',
-                                            color: isGreen ? '#166534' : '#991b1b',
-                                            borderColor: isGreen ? '#bbf7d0' : '#fecaca'
-                                          }}
-                                          className="border"
+                                          className={`border ${
+                                            isGreen 
+                                              ? "bg-green-100 text-green-800 border-green-200" 
+                                              : "bg-red-100 text-red-800 border-red-200"
+                                          }`}
                                         >
                                           {flag.flag_type} flag
                                         </Badge>
