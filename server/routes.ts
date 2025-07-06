@@ -1773,11 +1773,24 @@ export async function registerRoutes(app: Express): Promise<Server> {
         name: firstName && lastName ? `${firstName} ${lastName}` : firstName || 'Customer',
       });
 
+      // Create a price for $12.99/month
+      const price = await stripe.prices.create({
+        unit_amount: 1299, // $12.99 in cents
+        currency: 'usd',
+        recurring: {
+          interval: 'month',
+        },
+        product_data: {
+          name: 'BoundarySpace Pro',
+          description: 'Monthly subscription to BoundarySpace relationship tracking app',
+        },
+      });
+
       // Create subscription
       const subscription = await stripe.subscriptions.create({
         customer: customer.id,
         items: [{
-          price: 'price_1QZ1dSDhBZktB5VznyAa9fNE', // $12.99/month price ID
+          price: price.id,
         }],
         payment_behavior: 'default_incomplete',
         expand: ['latest_invoice.payment_intent'],
