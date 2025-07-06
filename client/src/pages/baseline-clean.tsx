@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { useMutation, useQuery } from '@tanstack/react-query';
+import { apiRequest } from '@/lib/queryClient';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Label } from '@/components/ui/label';
@@ -47,23 +48,13 @@ export default function BaselinePageClean() {
 
   // Check if user has existing baseline
   const { data: existingBaseline, isLoading } = useQuery({
-    queryKey: ['/api/baseline'],
-    queryFn: async () => {
-      const response = await fetch('/api/baseline');
-      if (!response.ok) return null;
-      return response.json();
-    }
+    queryKey: ['/api/baseline']
   });
 
   // Save baseline mutation
   const saveBaseline = useMutation({
     mutationFn: async (data: BaselineData) => {
-      const response = await fetch('/api/baseline', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(data)
-      });
-      if (!response.ok) throw new Error('Failed to save baseline');
+      const response = await apiRequest('POST', '/api/baseline', data);
       return response.json();
     },
     onSuccess: () => {
