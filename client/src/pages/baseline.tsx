@@ -50,6 +50,16 @@ export default function BaselinePage() {
     enabled: isAuthenticated,
   });
 
+  // Debug logging
+  useEffect(() => {
+    console.log('Baseline page debug:', {
+      isAuthenticated,
+      isLoading,
+      currentBaseline,
+      baselineLoading
+    });
+  }, [isAuthenticated, isLoading, currentBaseline, baselineLoading]);
+
   // Redirect to home if not authenticated
   useEffect(() => {
     if (!isLoading && !isAuthenticated) {
