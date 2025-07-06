@@ -45,7 +45,7 @@ export default function MarketingHomepage() {
               className="bg-purple-600 hover:bg-purple-700 text-lg px-8 py-3"
               onClick={() => window.location.href = "/api/login"}
             >
-              Start Assessment <ArrowRight className="ml-2 h-5 w-5" />
+              Try BoundarySpace <ArrowRight className="ml-2 h-5 w-5" />
             </Button>
             <Button 
               size="lg" 
@@ -165,10 +165,10 @@ export default function MarketingHomepage() {
             className="bg-purple-600 hover:bg-purple-700 text-lg px-12 py-4"
             onClick={() => window.location.href = "/api/login"}
           >
-            Start Your Free Assessment
+            Try Demo
           </Button>
           <p className="text-sm text-gray-500 mt-4">
-            No credit card required • Free forever
+            $12.99/month subscription • Cancel anytime
           </p>
         </div>
       </section>

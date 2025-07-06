@@ -192,7 +192,7 @@ export default function PricingPage() {
             className="bg-white text-purple-600 hover:bg-gray-100 text-lg px-12 py-4"
             onClick={() => window.location.href = "/api/login"}
           >
-            Begin Your Free Assessment
+Try Demo
           </Button>
         </div>
       </section>

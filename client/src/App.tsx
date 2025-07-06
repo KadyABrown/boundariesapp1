@@ -49,7 +49,7 @@ function Router() {
           <Route path="/pricing" component={PricingPage} />
           <Route path="/demo" component={DemoPage} />
           <Route path="/faq" component={FAQPage} />
-          <Route component={MarketingHomepage} />
+          <Route component={NotFound} />
         </>
       ) : (
         // App interface for authenticated users
