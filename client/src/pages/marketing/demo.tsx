@@ -1,303 +1,327 @@
-import { Button } from "@/components/ui/button";
+import { useState } from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { Shield, Play, Eye, BarChart3, Users, Heart } from "lucide-react";
+import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
+import { Textarea } from "@/components/ui/textarea";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import { Slider } from "@/components/ui/slider";
+import { Shield, Plus, CheckCircle, Calendar, TrendingUp } from "lucide-react";
+
+const MarketingNavigation = () => {
+  return (
+    <nav className="sticky top-0 z-50 w-full border-b bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60">
+      <div className="container flex h-14 items-center">
+        <div className="mr-4 flex">
+          <a href="/" className="mr-6 flex items-center space-x-2">
+            <Shield className="h-6 w-6 text-purple-600" />
+            <span className="font-bold text-lg">BoundarySpace</span>
+          </a>
+          <nav className="flex items-center space-x-6 text-sm font-medium">
+            <a href="/" className="transition-colors hover:text-foreground/80 text-foreground/60">
+              Home
+            </a>
+            <a href="/pricing" className="transition-colors hover:text-foreground/80 text-foreground/60">
+              Pricing
+            </a>
+            <a href="/demo" className="transition-colors hover:text-foreground/80 text-foreground">
+              Demo
+            </a>
+            <a href="/faq" className="transition-colors hover:text-foreground/80 text-foreground/60">
+              FAQ
+            </a>
+          </nav>
+        </div>
+        <div className="flex flex-1 items-center justify-between space-x-2 md:justify-end">
+          <Button
+            onClick={() => window.location.href = "/api/login"}
+            className="bg-purple-600 hover:bg-purple-700"
+          >
+            Try BoundarySpace
+          </Button>
+        </div>
+      </div>
+    </nav>
+  );
+};
 
 export default function DemoPage() {
+  const [title, setTitle] = useState("");
+  const [category, setCategory] = useState("");
+  const [description, setDescription] = useState("");
+  const [importance, setImportance] = useState([5]);
+  const [isCreated, setIsCreated] = useState(false);
+  const [showActivity, setShowActivity] = useState(false);
+
+  const handleCreateBoundary = () => {
+    if (title && category) {
+      setIsCreated(true);
+      setTimeout(() => setShowActivity(true), 1000);
+    }
+  };
+
+  const resetDemo = () => {
+    setTitle("");
+    setCategory("");
+    setDescription("");
+    setImportance([5]);
+    setIsCreated(false);
+    setShowActivity(false);
+  };
+
   return (
     <div className="min-h-screen bg-gradient-to-br from-purple-50 via-white to-blue-50">
-      {/* Navigation */}
-      <nav className="border-b bg-white/80 backdrop-blur-sm sticky top-0 z-50">
-        <div className="container mx-auto px-4 py-4">
-          <div className="flex items-center justify-between">
-            <div className="flex items-center gap-2 cursor-pointer" onClick={() => window.location.href = "/"}>
-              <Shield className="h-8 w-8 text-purple-600" />
-              <span className="text-2xl font-bold text-gray-900">BoundarySpace</span>
-            </div>
-            <div className="hidden md:flex items-center gap-6">
-              <a href="/" className="text-gray-600 hover:text-purple-600 transition-colors">Home</a>
-              <a href="/pricing" className="text-gray-600 hover:text-purple-600 transition-colors">Pricing</a>
-              <a href="/faq" className="text-gray-600 hover:text-purple-600 transition-colors">FAQ</a>
-              <Button 
-                onClick={() => window.location.href = "/api/login"}
-                className="bg-purple-600 hover:bg-purple-700"
-              >
-                Get Started
-              </Button>
-            </div>
-          </div>
-        </div>
-      </nav>
-
-      {/* Demo Header */}
-      <section className="py-20 px-4">
-        <div className="container mx-auto text-center max-w-4xl">
-          <h1 className="text-5xl md:text-6xl font-bold text-gray-900 mb-6">
-            See BoundarySpace 
-            <span className="text-purple-600"> In Action</span>
-          </h1>
-          <p className="text-xl text-gray-600 mb-12 max-w-2xl mx-auto">
-            Explore how BoundarySpace helps you understand relationship patterns and make informed decisions about your personal connections.
-          </p>
-          
-          <div className="bg-white rounded-2xl shadow-2xl p-8 max-w-4xl mx-auto">
-            <div className="aspect-video bg-gradient-to-br from-purple-100 to-blue-100 rounded-xl flex items-center justify-center mb-6">
-              <div className="text-center">
-                <Play className="h-20 w-20 text-purple-600 mx-auto mb-4" />
-                <h3 className="text-2xl font-bold text-gray-900 mb-2">Interactive Demo</h3>
-                <p className="text-gray-600">Watch a 3-minute walkthrough of key features</p>
-                <Button 
-                  size="lg" 
-                  className="bg-purple-600 hover:bg-purple-700 mt-4"
-                  onClick={() => window.location.href = "/api/login"}
-                >
-                  Start Interactive Demo
-                </Button>
-              </div>
-            </div>
-            <p className="text-gray-500 text-center">
-              Click above to experience BoundarySpace with sample data
+      <MarketingNavigation />
+      
+      <main>
+        {/* Hero Section */}
+        <section className="py-16 px-4">
+          <div className="container mx-auto text-center">
+            <h1 className="text-4xl font-bold tracking-tight mb-6">
+              Interactive Boundary Demo
+            </h1>
+            <p className="text-xl text-gray-600 mb-12 max-w-3xl mx-auto">
+              Try creating a personal boundary and see how BoundarySpace helps you track and maintain healthy relationships through intelligent insights.
             </p>
           </div>
-        </div>
-      </section>
+        </section>
 
-      {/* Feature Previews */}
-      <section className="py-20 px-4 bg-white">
-        <div className="container mx-auto max-w-6xl">
-          <h2 className="text-4xl font-bold text-gray-900 mb-16 text-center">
-            Key Features Preview
-          </h2>
-
-          <div className="space-y-20">
-            {/* Baseline Assessment Preview */}
-            <div className="grid md:grid-cols-2 gap-12 items-center">
-              <div>
-                <div className="flex items-center gap-3 mb-6">
-                  <Heart className="h-8 w-8 text-purple-600" />
-                  <h3 className="text-3xl font-bold text-gray-900">Personal Baseline Assessment</h3>
-                </div>
-                <p className="text-lg text-gray-600 mb-6">
-                  Start with a comprehensive quiz that maps your communication style, emotional needs, 
-                  and boundary requirements. This becomes your personal foundation for evaluating all relationships.
-                </p>
-                <ul className="space-y-3 text-gray-600">
-                  <li className="flex items-center gap-3">
-                    <div className="w-2 h-2 bg-purple-600 rounded-full"></div>
-                    25+ multiple choice questions
-                  </li>
-                  <li className="flex items-center gap-3">
-                    <div className="w-2 h-2 bg-purple-600 rounded-full"></div>
-                    Covers communication, emotional, and boundary preferences
-                  </li>
-                  <li className="flex items-center gap-3">
-                    <div className="w-2 h-2 bg-purple-600 rounded-full"></div>
-                    Creates your unique relationship compatibility profile
-                  </li>
-                </ul>
-              </div>
+        {/* Interactive Demo */}
+        <section className="py-16 px-4">
+          <div className="container mx-auto max-w-4xl">
+            <div className="grid md:grid-cols-2 gap-8">
+              
+              {/* Boundary Creation Form */}
               <Card className="shadow-lg">
                 <CardHeader>
                   <CardTitle className="flex items-center gap-2">
-                    <Eye className="h-5 w-5" />
-                    Sample Question
+                    <Plus className="h-5 w-5" />
+                    Create Your Boundary
                   </CardTitle>
                 </CardHeader>
-                <CardContent>
-                  <div className="space-y-4">
-                    <h4 className="font-semibold">When someone gives you feedback, you prefer:</h4>
-                    <div className="space-y-2">
-                      <div className="p-3 bg-purple-50 rounded border border-purple-200">
-                        <span className="text-purple-800">→ Direct and specific guidance</span>
-                      </div>
-                      <div className="p-3 bg-gray-50 rounded border">
-                        Gentle suggestions with examples
-                      </div>
-                      <div className="p-3 bg-gray-50 rounded border">
-                        Questions that help me self-reflect
-                      </div>
-                      <div className="p-3 bg-gray-50 rounded border">
-                        Written feedback I can process privately
-                      </div>
-                    </div>
+                <CardContent className="space-y-6">
+                  <div className="space-y-2">
+                    <Label htmlFor="title">Boundary Title</Label>
+                    <Input
+                      id="title"
+                      placeholder="e.g., No work calls after 8 PM"
+                      value={title}
+                      onChange={(e) => setTitle(e.target.value)}
+                      disabled={isCreated}
+                    />
                   </div>
-                </CardContent>
-              </Card>
-            </div>
 
-            {/* Interaction Tracking Preview */}
-            <div className="grid md:grid-cols-2 gap-12 items-center">
-              <Card className="shadow-lg order-2 md:order-1">
-                <CardHeader>
-                  <CardTitle className="flex items-center gap-2">
-                    <BarChart3 className="h-5 w-5" />
-                    Energy Impact Tracking
-                  </CardTitle>
-                </CardHeader>
-                <CardContent>
-                  <div className="space-y-4">
-                    <div className="flex justify-between items-center">
-                      <span>Before Interaction</span>
-                      <div className="flex items-center gap-2">
-                        <div className="w-4 h-4 bg-yellow-400 rounded-full"></div>
-                        <span className="font-semibold">6/10</span>
-                      </div>
-                    </div>
-                    <div className="flex justify-between items-center">
-                      <span>After Interaction</span>
-                      <div className="flex items-center gap-2">
-                        <div className="w-4 h-4 bg-red-400 rounded-full"></div>
-                        <span className="font-semibold">3/10</span>
-                      </div>
-                    </div>
-                    <div className="pt-4 border-t">
-                      <div className="text-sm text-red-600 font-semibold">
-                        -3 Energy Impact
-                      </div>
-                      <div className="text-xs text-gray-500 mt-1">
-                        Consistent pattern detected over 5 interactions
-                      </div>
-                    </div>
+                  <div className="space-y-2">
+                    <Label htmlFor="category">Category</Label>
+                    <Select value={category} onValueChange={setCategory} disabled={isCreated}>
+                      <SelectTrigger>
+                        <SelectValue placeholder="Choose a category" />
+                      </SelectTrigger>
+                      <SelectContent>
+                        <SelectItem value="work-life">Work-Life Balance</SelectItem>
+                        <SelectItem value="social-media">Social Media</SelectItem>
+                        <SelectItem value="personal-space">Personal Space</SelectItem>
+                        <SelectItem value="communication">Communication</SelectItem>
+                        <SelectItem value="emotional">Emotional</SelectItem>
+                        <SelectItem value="financial">Financial</SelectItem>
+                      </SelectContent>
+                    </Select>
                   </div>
+
+                  <div className="space-y-2">
+                    <Label>Importance Level: {importance[0]}/10</Label>
+                    <Slider
+                      value={importance}
+                      onValueChange={setImportance}
+                      max={10}
+                      min={1}
+                      step={1}
+                      className="w-full"
+                      disabled={isCreated}
+                    />
+                  </div>
+
+                  <div className="space-y-2">
+                    <Label htmlFor="description">Description (Optional)</Label>
+                    <Textarea
+                      id="description"
+                      placeholder="Why is this boundary important to you?"
+                      value={description}
+                      onChange={(e) => setDescription(e.target.value)}
+                      disabled={isCreated}
+                    />
+                  </div>
+
+                  {!isCreated ? (
+                    <Button 
+                      onClick={handleCreateBoundary}
+                      className="w-full bg-purple-600 hover:bg-purple-700"
+                      disabled={!title || !category}
+                    >
+                      Create Boundary
+                    </Button>
+                  ) : (
+                    <div className="space-y-4">
+                      <div className="flex items-center gap-2 text-green-600">
+                        <CheckCircle className="h-5 w-5" />
+                        <span className="font-semibold">Boundary Created Successfully!</span>
+                      </div>
+                      <Button 
+                        onClick={resetDemo}
+                        variant="outline"
+                        className="w-full"
+                      >
+                        Try Another Boundary
+                      </Button>
+                    </div>
+                  )}
                 </CardContent>
               </Card>
-              <div className="order-1 md:order-2">
-                <div className="flex items-center gap-3 mb-6">
-                  <BarChart3 className="h-8 w-8 text-blue-600" />
-                  <h3 className="text-3xl font-bold text-gray-900">Comprehensive Interaction Tracking</h3>
-                </div>
-                <p className="text-lg text-gray-600 mb-6">
-                  Log detailed interactions with before/after measurements of energy, anxiety, and self-worth. 
-                  The app automatically identifies patterns and their impact on your well-being.
-                </p>
-                <ul className="space-y-3 text-gray-600">
-                  <li className="flex items-center gap-3">
-                    <div className="w-2 h-2 bg-blue-600 rounded-full"></div>
-                    Pre and post interaction measurements
-                  </li>
-                  <li className="flex items-center gap-3">
-                    <div className="w-2 h-2 bg-blue-600 rounded-full"></div>
-                    Automatic pattern recognition
-                  </li>
-                  <li className="flex items-center gap-3">
-                    <div className="w-2 h-2 bg-blue-600 rounded-full"></div>
-                    Physical symptom tracking
-                  </li>
-                </ul>
+
+              {/* Live Preview */}
+              <div className="space-y-6">
+                {/* Boundary List Preview */}
+                <Card className="shadow-lg">
+                  <CardHeader>
+                    <CardTitle className="flex items-center gap-2">
+                      <Shield className="h-5 w-5" />
+                      Your Boundaries
+                    </CardTitle>
+                  </CardHeader>
+                  <CardContent>
+                    {isCreated ? (
+                      <div className="space-y-4">
+                        <div className="p-4 border rounded-lg bg-purple-50 border-purple-200">
+                          <div className="flex justify-between items-start mb-2">
+                            <h4 className="font-semibold text-purple-800">{title}</h4>
+                            <span className="text-sm bg-purple-100 text-purple-700 px-2 py-1 rounded">
+                              {importance[0]}/10
+                            </span>
+                          </div>
+                          <p className="text-sm text-purple-600 mb-2">
+                            {category.replace('-', ' ').replace(/\b\w/g, l => l.toUpperCase())}
+                          </p>
+                          {description && (
+                            <p className="text-sm text-gray-600">{description}</p>
+                          )}
+                          <div className="flex items-center gap-2 mt-3 text-xs text-green-600">
+                            <div className="w-2 h-2 bg-green-500 rounded-full"></div>
+                            Active
+                          </div>
+                        </div>
+                        
+                        {/* Sample existing boundaries */}
+                        <div className="p-4 border rounded-lg opacity-60">
+                          <div className="flex justify-between items-start mb-2">
+                            <h4 className="font-semibold">Limit social media to 30 min/day</h4>
+                            <span className="text-sm bg-gray-100 px-2 py-1 rounded">8/10</span>
+                          </div>
+                          <p className="text-sm text-gray-600 mb-2">Social Media</p>
+                          <div className="flex items-center gap-2 text-xs text-green-600">
+                            <div className="w-2 h-2 bg-green-500 rounded-full"></div>
+                            Active
+                          </div>
+                        </div>
+                      </div>
+                    ) : (
+                      <div className="text-center text-gray-500 py-8">
+                        <Shield className="h-12 w-12 mx-auto mb-4 opacity-50" />
+                        <p>Create your first boundary to see it appear here</p>
+                      </div>
+                    )}
+                  </CardContent>
+                </Card>
+
+                {/* Activity Feed Preview */}
+                {showActivity && (
+                  <Card className="shadow-lg animate-fade-in">
+                    <CardHeader>
+                      <CardTitle className="flex items-center gap-2">
+                        <Calendar className="h-5 w-5" />
+                        Recent Activity
+                      </CardTitle>
+                    </CardHeader>
+                    <CardContent>
+                      <div className="space-y-3">
+                        <div className="flex items-center gap-3 p-3 bg-green-50 rounded border border-green-200">
+                          <CheckCircle className="h-5 w-5 text-green-600" />
+                          <div>
+                            <p className="font-medium text-green-800">Boundary Respected</p>
+                            <p className="text-sm text-green-600">{title} • Just now</p>
+                          </div>
+                        </div>
+                        <div className="flex items-center gap-3 p-3 bg-blue-50 rounded border border-blue-200">
+                          <TrendingUp className="h-5 w-5 text-blue-600" />
+                          <div>
+                            <p className="font-medium text-blue-800">Progress Update</p>
+                            <p className="text-sm text-blue-600">Boundary respect rate: 85% this week</p>
+                          </div>
+                        </div>
+                      </div>
+                    </CardContent>
+                  </Card>
+                )}
               </div>
             </div>
+          </div>
+        </section>
 
-            {/* Analytics Preview */}
-            <div className="grid md:grid-cols-2 gap-12 items-center">
-              <div>
-                <div className="flex items-center gap-3 mb-6">
-                  <Users className="h-8 w-8 text-green-600" />
-                  <h3 className="text-3xl font-bold text-gray-900">Relationship Analytics</h3>
+        {/* Features Overview */}
+        <section className="py-16 px-4 bg-white/50">
+          <div className="container mx-auto max-w-4xl text-center">
+            <h2 className="text-3xl font-bold mb-8">This is Just the Beginning</h2>
+            <div className="grid md:grid-cols-3 gap-8">
+              <div className="p-6">
+                <div className="w-12 h-12 bg-purple-100 rounded-lg flex items-center justify-center mx-auto mb-4">
+                  <Shield className="h-6 w-6 text-purple-600" />
                 </div>
-                <p className="text-lg text-gray-600 mb-6">
-                  Get intelligent insights comparing all your relationships. See which connections energize you 
-                  and which ones consistently drain your emotional resources.
+                <h3 className="font-semibold mb-2">Intelligent Tracking</h3>
+                <p className="text-sm text-gray-600">
+                  Monitor how relationships affect your energy, anxiety, and well-being with detailed analytics.
                 </p>
-                <ul className="space-y-3 text-gray-600">
-                  <li className="flex items-center gap-3">
-                    <div className="w-2 h-2 bg-green-600 rounded-full"></div>
-                    Cross-relationship health comparison
-                  </li>
-                  <li className="flex items-center gap-3">
-                    <div className="w-2 h-2 bg-green-600 rounded-full"></div>
-                    Boundary violation rate analysis
-                  </li>
-                  <li className="flex items-center gap-3">
-                    <div className="w-2 h-2 bg-green-600 rounded-full"></div>
-                    Compatibility scoring based on your baseline
-                  </li>
-                </ul>
               </div>
-              <Card className="shadow-lg">
-                <CardHeader>
-                  <CardTitle className="flex items-center gap-2">
-                    <Users className="h-5 w-5" />
-                    Relationship Health Scores
-                  </CardTitle>
-                </CardHeader>
-                <CardContent>
-                  <div className="space-y-4">
-                    <div className="flex justify-between items-center p-3 bg-green-50 rounded">
-                      <span className="font-medium">Sarah (Best Friend)</span>
-                      <div className="flex items-center gap-2">
-                        <div className="w-12 h-2 bg-green-200 rounded-full">
-                          <div className="w-10/12 h-full bg-green-600 rounded-full"></div>
-                        </div>
-                        <span className="font-semibold text-green-700">92%</span>
-                      </div>
-                    </div>
-                    <div className="flex justify-between items-center p-3 bg-yellow-50 rounded">
-                      <span className="font-medium">Alex (Colleague)</span>
-                      <div className="flex items-center gap-2">
-                        <div className="w-12 h-2 bg-yellow-200 rounded-full">
-                          <div className="w-6/12 h-full bg-yellow-500 rounded-full"></div>
-                        </div>
-                        <span className="font-semibold text-yellow-700">68%</span>
-                      </div>
-                    </div>
-                    <div className="flex justify-between items-center p-3 bg-red-50 rounded">
-                      <span className="font-medium">Jordan (Dating)</span>
-                      <div className="flex items-center gap-2">
-                        <div className="w-12 h-2 bg-red-200 rounded-full">
-                          <div className="w-3/12 h-full bg-red-600 rounded-full"></div>
-                        </div>
-                        <span className="font-semibold text-red-700">34%</span>
-                      </div>
-                    </div>
-                  </div>
-                </CardContent>
-              </Card>
+              <div className="p-6">
+                <div className="w-12 h-12 bg-blue-100 rounded-lg flex items-center justify-center mx-auto mb-4">
+                  <TrendingUp className="h-6 w-6 text-blue-600" />
+                </div>
+                <h3 className="font-semibold mb-2">Pattern Recognition</h3>
+                <p className="text-sm text-gray-600">
+                  Discover hidden patterns and get personalized insights based on your interaction data.
+                </p>
+              </div>
+              <div className="p-6">
+                <div className="w-12 h-12 bg-green-100 rounded-lg flex items-center justify-center mx-auto mb-4">
+                  <CheckCircle className="h-6 w-6 text-green-600" />
+                </div>
+                <h3 className="font-semibold mb-2">Actionable Guidance</h3>
+                <p className="text-sm text-gray-600">
+                  Get specific recommendations for improving relationship health and maintaining boundaries.
+                </p>
+              </div>
             </div>
           </div>
-        </div>
-      </section>
+        </section>
 
-      {/* CTA Section */}
-      <section className="py-20 px-4 bg-gradient-to-r from-purple-600 to-blue-600 text-white">
-        <div className="container mx-auto text-center max-w-3xl">
-          <h2 className="text-4xl font-bold mb-4">
-            Ready to Try BoundarySpace?
-          </h2>
-          <p className="text-xl text-purple-100 mb-8">
-            Start with your personal baseline assessment and begin tracking your first relationship interactions.
-          </p>
-          <Button 
-            size="lg" 
-            className="bg-white text-purple-600 hover:bg-gray-100 text-lg px-12 py-4"
-            onClick={() => window.location.href = "/api/login"}
-          >
-            Begin Your Assessment
-          </Button>
-          <p className="text-sm text-purple-200 mt-4">
-            No signup required • Start immediately • Completely free
-          </p>
-        </div>
-      </section>
-
-      {/* Footer */}
-      <footer className="bg-gray-900 text-white py-12 px-4">
-        <div className="container mx-auto max-w-4xl text-center">
-          <div className="flex items-center justify-center gap-2 mb-6">
-            <Shield className="h-6 w-6 text-purple-400" />
-            <span className="text-xl font-bold">BoundarySpace</span>
+        {/* CTA Section */}
+        <section className="py-16 px-4 bg-gradient-to-r from-purple-600 to-blue-600 text-white">
+          <div className="container mx-auto text-center">
+            <h2 className="text-3xl font-bold mb-6">Ready to Transform Your Relationships?</h2>
+            <p className="text-xl mb-8 opacity-90 max-w-2xl mx-auto">
+              Start your journey toward healthier boundaries and more fulfilling relationships with personalized insights and intelligent tracking.
+            </p>
+            <Button 
+              size="lg" 
+              className="bg-white text-purple-600 hover:bg-gray-100 px-8 py-3 text-lg"
+              onClick={() => window.location.href = "/api/login"}
+            >
+              Try BoundarySpace
+            </Button>
+            <p className="text-sm opacity-75 mt-4">
+              $12.99/month subscription • Cancel anytime
+            </p>
           </div>
-          <p className="text-gray-400 mb-6">
-            Empowering healthier relationships through data-driven insights.
-          </p>
-          <div className="flex justify-center gap-8 text-sm text-gray-400">
-            <a href="/" className="hover:text-white transition-colors">Home</a>
-            <a href="/pricing" className="hover:text-white transition-colors">Pricing</a>
-            <a href="/faq" className="hover:text-white transition-colors">FAQ</a>
-          </div>
-          <div className="mt-8 pt-8 border-t border-gray-800 text-gray-500 text-sm">
-            © 2025 BoundarySpace. All rights reserved.
-          </div>
-        </div>
-      </footer>
+        </section>
+      </main>
     </div>
   );
 }
