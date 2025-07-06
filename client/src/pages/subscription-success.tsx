@@ -71,7 +71,7 @@ export default function SubscriptionSuccess() {
           </div>
 
           <div className="flex justify-center">
-            <Button className="w-full sm:w-auto" size="lg" onClick={() => window.location.href = '/dashboard'}>
+            <Button className="w-full sm:w-auto" size="lg" onClick={() => window.location.href = '/'}>
               Go to Dashboard
               <ArrowRight className="w-4 h-4 ml-2" />
             </Button>
