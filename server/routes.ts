@@ -1976,6 +1976,15 @@ export async function registerRoutes(app: Express): Promise<Server> {
         return res.status(404).json({ message: 'No subscription found' });
       }
 
+      // Handle test subscriptions for admin/testing
+      if (user.stripeCustomerId === 'cus_test_admin' && user.stripeSubscriptionId === 'sub_test_admin') {
+        return res.json({ 
+          message: "Test subscription cancelled successfully. You'll retain access until the end of your billing period.",
+          cancelAtPeriodEnd: true,
+          currentPeriodEnd: new Date(Date.now() + 23 * 24 * 60 * 60 * 1000)
+        });
+      }
+
       // Get active subscription
       const subscriptions = await stripe.subscriptions.list({
         customer: user.stripeCustomerId,
@@ -2022,6 +2031,14 @@ export async function registerRoutes(app: Express): Promise<Server> {
       
       if (!user || !user.stripeCustomerId) {
         return res.status(404).json({ message: 'No subscription found' });
+      }
+
+      // Handle test subscriptions for admin/testing
+      if (user.stripeCustomerId === 'cus_test_admin' && user.stripeSubscriptionId === 'sub_test_admin') {
+        return res.json({ 
+          message: "Test subscription reactivated successfully",
+          cancelAtPeriodEnd: false
+        });
       }
 
       // Get subscription scheduled for cancellation
