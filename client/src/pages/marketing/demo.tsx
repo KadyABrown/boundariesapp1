@@ -5,9 +5,12 @@ import { Label } from "@/components/ui/label";
 import { Slider } from "@/components/ui/slider";
 import { Badge } from "@/components/ui/badge";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { Shield, Heart, TrendingDown, TrendingUp, Clock, Brain, User, AlertTriangle, CheckCircle } from "lucide-react";
+import { Sheet, SheetContent, SheetTrigger } from "@/components/ui/sheet";
+import { Shield, Heart, TrendingDown, TrendingUp, Clock, Brain, User, AlertTriangle, CheckCircle, Menu } from "lucide-react";
 
 const MarketingNavigation = () => {
+  const [isOpen, setIsOpen] = useState(false);
+
   return (
     <nav className="sticky top-0 z-50 w-full border-b bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60">
       <div className="container flex h-14 items-center">
@@ -16,7 +19,7 @@ const MarketingNavigation = () => {
             <Shield className="h-6 w-6 text-purple-600" />
             <span className="font-bold text-lg">BoundarySpace</span>
           </a>
-          <nav className="flex items-center space-x-6 text-sm font-medium">
+          <nav className="hidden md:flex items-center space-x-6 text-sm font-medium">
             <a href="/" className="transition-colors hover:text-foreground/80 text-foreground/60">
               Home
             </a>
@@ -32,12 +35,64 @@ const MarketingNavigation = () => {
           </nav>
         </div>
         <div className="flex flex-1 items-center justify-between space-x-2 md:justify-end">
-          <Button
-            onClick={() => window.location.href = "/api/login"}
-            className="bg-purple-600 hover:bg-purple-700"
-          >
-            Try BoundarySpace
-          </Button>
+          <div className="hidden md:block">
+            <Button
+              onClick={() => window.location.href = "/api/login"}
+              className="bg-purple-600 hover:bg-purple-700"
+            >
+              Try BoundarySpace
+            </Button>
+          </div>
+          
+          {/* Mobile menu */}
+          <Sheet open={isOpen} onOpenChange={setIsOpen}>
+            <SheetTrigger asChild className="md:hidden">
+              <Button variant="ghost" size="icon">
+                <Menu className="h-5 w-5" />
+              </Button>
+            </SheetTrigger>
+            <SheetContent side="right" className="w-[300px] sm:w-[400px]">
+              <nav className="flex flex-col gap-6 mt-6">
+                <a 
+                  href="/" 
+                  className="text-lg font-medium transition-colors hover:text-purple-600"
+                  onClick={() => setIsOpen(false)}
+                >
+                  Home
+                </a>
+                <a 
+                  href="/pricing" 
+                  className="text-lg font-medium transition-colors hover:text-purple-600"
+                  onClick={() => setIsOpen(false)}
+                >
+                  Pricing
+                </a>
+                <a 
+                  href="/demo" 
+                  className="text-lg font-medium transition-colors hover:text-purple-600 text-purple-600"
+                  onClick={() => setIsOpen(false)}
+                >
+                  Demo
+                </a>
+                <a 
+                  href="/faq" 
+                  className="text-lg font-medium transition-colors hover:text-purple-600"
+                  onClick={() => setIsOpen(false)}
+                >
+                  FAQ
+                </a>
+                <Button
+                  onClick={() => {
+                    setIsOpen(false);
+                    window.location.href = "/api/login";
+                  }}
+                  className="bg-purple-600 hover:bg-purple-700 mt-4"
+                >
+                  Try BoundarySpace
+                </Button>
+              </nav>
+            </SheetContent>
+          </Sheet>
         </div>
       </div>
     </nav>

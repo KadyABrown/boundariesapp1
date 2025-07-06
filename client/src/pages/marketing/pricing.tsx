@@ -1,8 +1,12 @@
+import { useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { Shield, Check } from "lucide-react";
+import { Sheet, SheetContent, SheetTrigger } from "@/components/ui/sheet";
+import { Shield, Check, Menu } from "lucide-react";
 
 export default function PricingPage() {
+  const [isOpen, setIsOpen] = useState(false);
+
   return (
     <div className="min-h-screen bg-gradient-to-br from-purple-50 via-white to-blue-50">
       {/* Navigation */}
@@ -24,6 +28,56 @@ export default function PricingPage() {
                 Get Started
               </Button>
             </div>
+            
+            {/* Mobile menu */}
+            <Sheet open={isOpen} onOpenChange={setIsOpen}>
+              <SheetTrigger asChild className="md:hidden">
+                <Button variant="ghost" size="icon">
+                  <Menu className="h-5 w-5" />
+                </Button>
+              </SheetTrigger>
+              <SheetContent side="right" className="w-[300px] sm:w-[400px]">
+                <nav className="flex flex-col gap-6 mt-6">
+                  <a 
+                    href="/" 
+                    className="text-lg font-medium transition-colors hover:text-purple-600"
+                    onClick={() => setIsOpen(false)}
+                  >
+                    Home
+                  </a>
+                  <a 
+                    href="/pricing" 
+                    className="text-lg font-medium transition-colors hover:text-purple-600 text-purple-600"
+                    onClick={() => setIsOpen(false)}
+                  >
+                    Pricing
+                  </a>
+                  <a 
+                    href="/demo" 
+                    className="text-lg font-medium transition-colors hover:text-purple-600"
+                    onClick={() => setIsOpen(false)}
+                  >
+                    Demo
+                  </a>
+                  <a 
+                    href="/faq" 
+                    className="text-lg font-medium transition-colors hover:text-purple-600"
+                    onClick={() => setIsOpen(false)}
+                  >
+                    FAQ
+                  </a>
+                  <Button
+                    onClick={() => {
+                      setIsOpen(false);
+                      window.location.href = "/api/login";
+                    }}
+                    className="bg-purple-600 hover:bg-purple-700 mt-4"
+                  >
+                    Get Started
+                  </Button>
+                </nav>
+              </SheetContent>
+            </Sheet>
           </div>
         </div>
       </nav>
