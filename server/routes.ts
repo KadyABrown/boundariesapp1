@@ -1861,6 +1861,8 @@ export async function registerRoutes(app: Express): Promise<Server> {
       const session = await stripe.checkout.sessions.create({
         mode: 'subscription',
         payment_method_types: ['card'],
+        billing_address_collection: 'required',
+        customer_creation: 'always',
         line_items: [
           {
             price_data: {
@@ -1932,20 +1934,34 @@ export async function registerRoutes(app: Express): Promise<Server> {
       console.log("Retrieving customer and subscription...");
       const customer = await stripe.customers.retrieve(session.customer as string);
       const subscription = await stripe.subscriptions.retrieve(session.subscription as string);
-      console.log("Customer retrieved:", { id: customer.id, email: (customer as any).email });
+      console.log("Customer retrieved:", { 
+        id: customer.id, 
+        email: (customer as any).email,
+        name: (customer as any).name 
+      });
       console.log("Subscription retrieved:", { id: subscription.id, status: subscription.status });
 
       // Create or update user account
       if (customer && (customer as any).email) {
         const email = (customer as any).email;
+        const customerName = (customer as any).name;
         const userId = `stripe_${customer.id}`;
+        
+        // Parse name if available
+        let firstName = null;
+        let lastName = null;
+        if (customerName && typeof customerName === 'string') {
+          const nameParts = customerName.trim().split(' ');
+          firstName = nameParts[0] || null;
+          lastName = nameParts.length > 1 ? nameParts.slice(1).join(' ') : null;
+        }
         
         // Create user account with Stripe subscription details
         const userData = {
           id: userId,
           email: email,
-          firstName: null,
-          lastName: null,
+          firstName: firstName,
+          lastName: lastName,
           profileImageUrl: null,
           stripeCustomerId: customer.id,
           stripeSubscriptionId: subscription.id,
@@ -1977,15 +1993,30 @@ export async function registerRoutes(app: Express): Promise<Server> {
         const finalUser = await storage.getUser(userId);
         console.log("Final user state:", finalUser);
         
-        // Create session for the new user
+        // Create session for the new user using Passport.js structure
         console.log("Creating session for new user...");
-        req.session.userId = userId;
-        req.session.user = finalUser;
+        const passportUser = {
+          claims: {
+            sub: userId,
+            email: finalUser.email,
+            name: finalUser.firstName && finalUser.lastName ? 
+              `${finalUser.firstName} ${finalUser.lastName}` : 
+              finalUser.email,
+            picture: finalUser.profileImageUrl
+          },
+          expires_at: Math.floor(Date.now() / 1000) + (24 * 60 * 60), // 24 hours from now
+          userinfo: {
+            sub: userId,
+            email: finalUser.email,
+            name: finalUser.firstName && finalUser.lastName ? 
+              `${finalUser.firstName} ${finalUser.lastName}` : 
+              finalUser.email
+          }
+        };
         
-        // Save session
-        req.session.save((err: any) => {
+        req.login(passportUser, (err: any) => {
           if (err) {
-            console.error("Error saving session:", err);
+            console.error("Error creating login session:", err);
             return res.status(500).json({ message: 'Session creation failed' });
           }
           
