@@ -184,7 +184,7 @@ export function SubscriptionManagement() {
               {subscription.message || "You don't have an active subscription."}
             </p>
             <Button onClick={() => window.location.href = '/pricing'}>
-              View Pricing Plans
+              Subscribe Now
             </Button>
           </div>
         </CardContent>
