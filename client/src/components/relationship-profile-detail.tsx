@@ -82,17 +82,17 @@ export default function RelationshipProfileDetail({ relationship, onClose }: Rel
   const [showSettingsDialog, setShowSettingsDialog] = useState(false);
   
   const { data: flags, isLoading: flagsLoading } = useQuery({
-    queryKey: ['/api/relationships', relationship.id, 'flags'],
+    queryKey: [`/api/relationships/${relationship.id}/flags`],
     refetchOnWindowFocus: false,
   });
 
   const { data: checkIns, isLoading: checkInsLoading } = useQuery({
-    queryKey: ['/api/relationships', relationship.id, 'check-ins'],
+    queryKey: [`/api/relationships/${relationship.id}/check-ins`],
     refetchOnWindowFocus: false,
   });
 
   const { data: stats, isLoading: statsLoading } = useQuery({
-    queryKey: ['/api/relationships', relationship.id, 'stats'],
+    queryKey: [`/api/relationships/${relationship.id}/stats`],
     refetchOnWindowFocus: false,
   });
 
@@ -424,12 +424,12 @@ export default function RelationshipProfileDetail({ relationship, onClose }: Rel
                                 <div className="flex items-start justify-between">
                                   <div className="flex-1">
                                     <div className="flex items-center gap-2">
-                                      <Badge variant={flag.flagType === 'green' ? 'default' : 'destructive'}>
-                                        {flag.flagType} flag
+                                      <Badge variant={flag.flag_type === 'green' ? 'default' : 'destructive'}>
+                                        {flag.flag_type} flag
                                       </Badge>
-                                      <span className="text-sm text-gray-500">{flag.category}</span>
+                                      <span className="text-sm text-gray-500">{flag.flag_category}</span>
                                     </div>
-                                    <p className="text-sm font-medium mt-1">{flag.behavior}</p>
+                                    <p className="text-sm font-medium mt-1">{flag.flag_name}</p>
                                     {flag.notes && (
                                       <p className="text-xs text-gray-600 mt-1">{flag.notes}</p>
                                     )}

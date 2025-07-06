@@ -321,6 +321,7 @@ Identifies when boundary violations and relationship issues are most likely to o
 - July 1, 2025. Implemented interactive relationship activity timeline visualization with chronological event tracking, expandable details, filtering capabilities, animated transitions, and dual view modes (timeline/list) - successfully tested and working
 - July 1, 2025. Implemented comprehensive gamification system with achievement notifications, sound effects, daily challenges, boundary quotes, and streak recovery features
 - July 1, 2025. Added advanced relationship analysis features: comprehensive interaction tracker (5-step wizard), mood/energy/physical symptoms tracking, recovery time analysis, trigger pattern identification, communication silence tracking, personal baseline assessment, cross-relationship comparison, and time-based pattern analysis
+- July 6, 2025. Fixed critical API query path issues in relationship profile detail component - corrected flags and check-ins data fetching, fixed property mapping for behavioral flags display, and restored working health score calculations with real test data (8 green flags, 3 red flags showing 73% health score for Bet profile)
 
 ## User Preferences
 
