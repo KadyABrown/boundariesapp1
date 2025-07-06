@@ -23,11 +23,14 @@ export default function SubscriptionSuccessPage() {
         }
 
         // Verify the payment and create user account
+        console.log('Starting payment verification with session ID:', sessionId);
         const response = await apiRequest('POST', '/api/subscription/verify-session', {
           sessionId: sessionId
         });
         
+        console.log('Verify session response status:', response.status);
         const result = await response.json();
+        console.log('Verify session result:', result);
         
         if (result.success) {
           setSubscriptionStatus({ status: 'active' });

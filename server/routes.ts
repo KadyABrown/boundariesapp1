@@ -1882,6 +1882,8 @@ export async function registerRoutes(app: Express): Promise<Server> {
       const { sessionId } = req.body;
       console.log("=== VERIFY SESSION DEBUG ===");
       console.log("Session ID received:", sessionId);
+      console.log("Request body:", req.body);
+      console.log("Full request headers:", req.headers);
       
       if (!sessionId) {
         return res.status(400).json({ message: 'Session ID required' });
