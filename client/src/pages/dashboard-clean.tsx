@@ -101,7 +101,12 @@ export default function DashboardPageClean() {
                     <h4 className="font-semibold text-neutral-800">Complete Baseline Assessment</h4>
                     <p className="text-sm text-neutral-600">Define your communication style and emotional needs</p>
                   </div>
-                  <Button className="bg-primary hover:bg-primary/90">Start</Button>
+                  <Button 
+                    className="bg-primary hover:bg-primary/90"
+                    onClick={() => window.location.href = '/baseline'}
+                  >
+                    Start
+                  </Button>
                 </div>
                 
                 <div className="flex items-center justify-between p-4 bg-neutral-100 rounded-lg opacity-60">

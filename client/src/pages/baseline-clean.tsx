@@ -4,38 +4,43 @@ import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Label } from '@/components/ui/label';
 import { RadioGroup, RadioGroupItem } from '@/components/ui/radio-group';
-import { Input } from '@/components/ui/input';
-import { Textarea } from '@/components/ui/textarea';
+import { Checkbox } from '@/components/ui/checkbox';
 import { useToast } from '@/hooks/use-toast';
-import { ArrowRight, Save, CheckCircle } from 'lucide-react';
+import { ArrowRight, ArrowLeft, Save, CheckCircle, Heart, Shield } from 'lucide-react';
 
 interface BaselineData {
   communicationStyle: string;
   conflictResolution: string;
+  feedbackPreference: string;
   emotionalSupport: string;
-  personalSpaceNeeds: string;
   emotionalProcessingTime: number;
+  validationNeeds: string;
+  personalSpaceNeeds: string;
   responseTimeExpectation: number;
+  aloneTimeFrequency: string;
   triggers: string[];
+  dealBreakerBehaviors: string[];
   nonNegotiableBoundaries: string[];
   notes: string;
 }
 
+const TOTAL_STEPS = 6;
+
 export default function BaselinePageClean() {
   const { toast } = useToast();
   const [currentStep, setCurrentStep] = useState(1);
-  const [isSaving, setIsSaving] = useState(false);
-  const [newTrigger, setNewTrigger] = useState('');
-  const [newBoundary, setNewBoundary] = useState('');
-
   const [formData, setFormData] = useState<BaselineData>({
     communicationStyle: '',
     conflictResolution: '',
+    feedbackPreference: '',
     emotionalSupport: '',
-    personalSpaceNeeds: '',
     emotionalProcessingTime: 0,
+    validationNeeds: '',
+    personalSpaceNeeds: '',
     responseTimeExpectation: 0,
+    aloneTimeFrequency: '',
     triggers: [],
+    dealBreakerBehaviors: [],
     nonNegotiableBoundaries: [],
     notes: ''
   });
@@ -58,423 +63,534 @@ export default function BaselinePageClean() {
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(data)
       });
-      
-      if (!response.ok) {
-        const error = await response.json();
-        throw new Error(error.message || 'Failed to save baseline');
-      }
-      
+      if (!response.ok) throw new Error('Failed to save baseline');
       return response.json();
     },
     onSuccess: () => {
       toast({
         title: "Baseline Saved!",
-        description: "Your personal baseline has been successfully saved."
+        description: "Your personal baseline has been saved successfully.",
       });
-      setCurrentStep(5); // Show success step
+      // Redirect to dashboard
+      window.location.href = '/';
     },
-    onError: (error: Error) => {
+    onError: (error) => {
       toast({
-        title: "Save Failed",
-        description: error.message,
-        variant: "destructive"
+        title: "Error",
+        description: "Failed to save baseline. Please try again.",
+        variant: "destructive",
       });
     }
   });
 
-  const updateField = (field: string, value: any) => {
+  const updateFormData = (field: string, value: any) => {
     setFormData(prev => ({ ...prev, [field]: value }));
   };
 
-  const addToArray = (field: 'triggers' | 'nonNegotiableBoundaries', value: string) => {
-    if (value.trim()) {
-      setFormData(prev => ({
-        ...prev,
-        [field]: [...prev[field], value.trim()]
-      }));
-    }
-  };
-
-  const removeFromArray = (field: 'triggers' | 'nonNegotiableBoundaries', index: number) => {
+  const toggleArrayItem = (field: string, item: string) => {
     setFormData(prev => ({
       ...prev,
-      [field]: prev[field].filter((_, i) => i !== index)
+      [field]: prev[field as keyof BaselineData].includes(item)
+        ? (prev[field as keyof BaselineData] as string[]).filter(i => i !== item)
+        : [...(prev[field as keyof BaselineData] as string[]), item]
     }));
   };
 
-  const handleSave = async () => {
-    setIsSaving(true);
-    try {
-      await saveBaseline.mutateAsync(formData);
-    } finally {
-      setIsSaving(false);
+  const handleNext = () => {
+    if (currentStep < TOTAL_STEPS) {
+      setCurrentStep(currentStep + 1);
     }
+  };
+
+  const handlePrevious = () => {
+    if (currentStep > 1) {
+      setCurrentStep(currentStep - 1);
+    }
+  };
+
+  const handleSubmit = () => {
+    saveBaseline.mutate(formData);
   };
 
   if (isLoading) {
     return (
-      <div className="flex items-center justify-center min-h-[400px]">
-        <div>Loading...</div>
+      <div className="min-h-screen bg-gradient-to-br from-primary/5 to-purple-50 flex items-center justify-center">
+        <div className="text-center">
+          <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary mx-auto mb-4"></div>
+          <p className="text-neutral-600">Loading your baseline...</p>
+        </div>
       </div>
     );
   }
-
-  if (existingBaseline && currentStep !== 5) {
-    return (
-      <div className="max-w-2xl mx-auto">
-        <Card>
-          <CardHeader>
-            <CardTitle className="flex items-center gap-2">
-              <CheckCircle className="h-5 w-5 text-green-600" />
-              Baseline Assessment Complete
-            </CardTitle>
-          </CardHeader>
-          <CardContent>
-            <div className="space-y-4">
-              <p className="text-gray-600">
-                You've already completed your personal baseline assessment. This assessment helps the app analyze your relationships and boundaries.
-              </p>
-              
-              <div className="bg-neutral-50 p-4 rounded-lg space-y-2">
-                <p><strong>Communication Style:</strong> {existingBaseline.communicationStyle}</p>
-                <p><strong>Conflict Resolution:</strong> {existingBaseline.conflictResolution}</p>
-                <p><strong>Emotional Support:</strong> {existingBaseline.emotionalSupport}</p>
-                <p><strong>Personal Space:</strong> {existingBaseline.personalSpaceNeeds}</p>
-              </div>
-
-              <Button onClick={() => setCurrentStep(1)} variant="outline">
-                Update Assessment
-              </Button>
-            </div>
-          </CardContent>
-        </Card>
-      </div>
-    );
-  }
-
-  const renderStep1 = () => (
-    <Card>
-      <CardHeader>
-        <CardTitle>Communication Preferences</CardTitle>
-        <p className="text-gray-600">How do you prefer to communicate and handle conflict?</p>
-      </CardHeader>
-      <CardContent className="space-y-6">
-        <div>
-          <Label className="text-base font-medium">I prefer to communicate:</Label>
-          <RadioGroup value={formData.communicationStyle} onValueChange={(value) => updateField('communicationStyle', value)} className="mt-2">
-            <div className="flex items-center space-x-2">
-              <RadioGroupItem value="direct" id="direct" />
-              <Label htmlFor="direct">Direct and straightforward</Label>
-            </div>
-            <div className="flex items-center space-x-2">
-              <RadioGroupItem value="gentle" id="gentle" />
-              <Label htmlFor="gentle">Gentle and considerate</Label>
-            </div>
-            <div className="flex items-center space-x-2">
-              <RadioGroupItem value="collaborative" id="collaborative" />
-              <Label htmlFor="collaborative">Collaborative discussion</Label>
-            </div>
-            <div className="flex items-center space-x-2">
-              <RadioGroupItem value="assertive" id="assertive" />
-              <Label htmlFor="assertive">Assertive and clear</Label>
-            </div>
-          </RadioGroup>
-        </div>
-
-        <div>
-          <Label className="text-base font-medium">When there's conflict, I prefer to:</Label>
-          <RadioGroup value={formData.conflictResolution} onValueChange={(value) => updateField('conflictResolution', value)} className="mt-2">
-            <div className="flex items-center space-x-2">
-              <RadioGroupItem value="address-immediately" id="address-immediately" />
-              <Label htmlFor="address-immediately">Address it right away</Label>
-            </div>
-            <div className="flex items-center space-x-2">
-              <RadioGroupItem value="need-time-to-process" id="need-time-to-process" />
-              <Label htmlFor="need-time-to-process">Need time to process first</Label>
-            </div>
-            <div className="flex items-center space-x-2">
-              <RadioGroupItem value="avoid-conflict" id="avoid-conflict" />
-              <Label htmlFor="avoid-conflict">Prefer to avoid conflict</Label>
-            </div>
-            <div className="flex items-center space-x-2">
-              <RadioGroupItem value="address-when-calm" id="address-when-calm" />
-              <Label htmlFor="address-when-calm">Address when everyone is calm</Label>
-            </div>
-          </RadioGroup>
-        </div>
-      </CardContent>
-    </Card>
-  );
-
-  const renderStep2 = () => (
-    <Card>
-      <CardHeader>
-        <CardTitle>Emotional Needs</CardTitle>
-        <p className="text-gray-600">What do you need to feel emotionally supported?</p>
-      </CardHeader>
-      <CardContent className="space-y-6">
-        <div>
-          <Label className="text-base font-medium">I need this level of emotional support:</Label>
-          <RadioGroup value={formData.emotionalSupport} onValueChange={(value) => updateField('emotionalSupport', value)} className="mt-2">
-            <div className="flex items-center space-x-2">
-              <RadioGroupItem value="high" id="high" />
-              <Label htmlFor="high">High - frequent check-ins and support</Label>
-            </div>
-            <div className="flex items-center space-x-2">
-              <RadioGroupItem value="medium" id="medium" />
-              <Label htmlFor="medium">Medium - regular but not constant</Label>
-            </div>
-            <div className="flex items-center space-x-2">
-              <RadioGroupItem value="low" id="low" />
-              <Label htmlFor="low">Low - occasional support is enough</Label>
-            </div>
-          </RadioGroup>
-        </div>
-
-        <div>
-          <Label htmlFor="processing-time" className="text-base font-medium">
-            Hours I need to process emotions
-          </Label>
-          <Input
-            id="processing-time"
-            type="number"
-            value={formData.emotionalProcessingTime}
-            onChange={(e) => updateField('emotionalProcessingTime', parseInt(e.target.value) || 0)}
-            placeholder="How many hours do you need?"
-            className="mt-2"
-          />
-        </div>
-      </CardContent>
-    </Card>
-  );
-
-  const renderStep3 = () => (
-    <Card>
-      <CardHeader>
-        <CardTitle>Boundaries & Personal Space</CardTitle>
-        <p className="text-gray-600">Help us understand your space and response time needs.</p>
-      </CardHeader>
-      <CardContent className="space-y-6">
-        <div>
-          <Label className="text-base font-medium">My personal space needs are:</Label>
-          <RadioGroup value={formData.personalSpaceNeeds} onValueChange={(value) => updateField('personalSpaceNeeds', value)} className="mt-2">
-            <div className="flex items-center space-x-2">
-              <RadioGroupItem value="high" id="space-high" />
-              <Label htmlFor="space-high">High - I need lots of alone time</Label>
-            </div>
-            <div className="flex items-center space-x-2">
-              <RadioGroupItem value="medium" id="space-medium" />
-              <Label htmlFor="space-medium">Medium - some alone time needed</Label>
-            </div>
-            <div className="flex items-center space-x-2">
-              <RadioGroupItem value="low" id="space-low" />
-              <Label htmlFor="space-low">Low - comfortable with little alone time</Label>
-            </div>
-          </RadioGroup>
-        </div>
-
-        <div>
-          <Label htmlFor="response-time" className="text-base font-medium">
-            Hours before I expect a response
-          </Label>
-          <Input
-            id="response-time"
-            type="number"
-            value={formData.responseTimeExpectation}
-            onChange={(e) => updateField('responseTimeExpectation', parseInt(e.target.value) || 0)}
-            placeholder="How many hours is reasonable?"
-            className="mt-2"
-          />
-        </div>
-      </CardContent>
-    </Card>
-  );
-
-  const renderStep4 = () => (
-    <Card>
-      <CardHeader>
-        <CardTitle>Triggers & Boundaries</CardTitle>
-        <p className="text-gray-600">What are your personal triggers and non-negotiable boundaries?</p>
-      </CardHeader>
-      <CardContent className="space-y-6">
-        <div>
-          <Label className="text-base font-medium">Personal Triggers</Label>
-          <div className="flex gap-2 mt-2">
-            <Input
-              value={newTrigger}
-              onChange={(e) => setNewTrigger(e.target.value)}
-              placeholder="Add a trigger..."
-              onKeyPress={(e) => {
-                if (e.key === 'Enter') {
-                  addToArray('triggers', newTrigger);
-                  setNewTrigger('');
-                }
-              }}
-            />
-            <Button 
-              onClick={() => {
-                addToArray('triggers', newTrigger);
-                setNewTrigger('');
-              }}
-              variant="outline"
-            >
-              Add
-            </Button>
-          </div>
-          <div className="flex flex-wrap gap-2 mt-2">
-            {formData.triggers.map((trigger, index) => (
-              <span key={index} className="bg-primary/10 text-primary px-3 py-1 rounded-full text-sm flex items-center gap-2">
-                {trigger}
-                <button onClick={() => removeFromArray('triggers', index)} className="hover:text-destructive">×</button>
-              </span>
-            ))}
-          </div>
-        </div>
-
-        <div>
-          <Label className="text-base font-medium">Non-Negotiable Boundaries</Label>
-          <div className="flex gap-2 mt-2">
-            <Input
-              value={newBoundary}
-              onChange={(e) => setNewBoundary(e.target.value)}
-              placeholder="Add a boundary..."
-              onKeyPress={(e) => {
-                if (e.key === 'Enter') {
-                  addToArray('nonNegotiableBoundaries', newBoundary);
-                  setNewBoundary('');
-                }
-              }}
-            />
-            <Button 
-              onClick={() => {
-                addToArray('nonNegotiableBoundaries', newBoundary);
-                setNewBoundary('');
-              }}
-              variant="outline"
-            >
-              Add
-            </Button>
-          </div>
-          <div className="flex flex-wrap gap-2 mt-2">
-            {formData.nonNegotiableBoundaries.map((boundary, index) => (
-              <span key={index} className="bg-secondary/10 text-secondary px-3 py-1 rounded-full text-sm flex items-center gap-2">
-                {boundary}
-                <button onClick={() => removeFromArray('nonNegotiableBoundaries', index)} className="hover:text-destructive">×</button>
-              </span>
-            ))}
-          </div>
-        </div>
-
-        <div>
-          <Label htmlFor="notes" className="text-base font-medium">Additional Notes (Optional)</Label>
-          <Textarea
-            id="notes"
-            value={formData.notes}
-            onChange={(e) => updateField('notes', e.target.value)}
-            placeholder="Any additional context about your needs..."
-            className="mt-2"
-          />
-        </div>
-      </CardContent>
-    </Card>
-  );
-
-  const renderSuccess = () => (
-    <Card>
-      <CardHeader>
-        <CardTitle className="flex items-center gap-2 text-green-600">
-          <CheckCircle className="h-6 w-6" />
-          Baseline Assessment Complete!
-        </CardTitle>
-      </CardHeader>
-      <CardContent>
-        <div className="space-y-4">
-          <p className="text-gray-600">
-            Your personal baseline has been saved successfully. This will now be used to analyze your relationships and track boundary respect.
-          </p>
-          
-          <div className="bg-green-50 p-4 rounded-lg">
-            <h4 className="font-medium text-green-800 mb-2">What happens next:</h4>
-            <ul className="text-green-700 space-y-1 text-sm">
-              <li>• Boundary goals have been automatically created from your assessment</li>
-              <li>• Start tracking relationships and interactions</li>
-              <li>• The app will calculate compatibility scores based on your baseline</li>
-              <li>• View boundary violation rates in the Boundaries tab</li>
-            </ul>
-          </div>
-
-          <div className="flex gap-3">
-            <Button onClick={() => window.location.href = '/relationships'}>
-              Start Tracking Relationships
-            </Button>
-            <Button variant="outline" onClick={() => window.location.href = '/boundaries'}>
-              View Boundary Goals
-            </Button>
-          </div>
-        </div>
-      </CardContent>
-    </Card>
-  );
-
-  const canProceed = () => {
-    switch (currentStep) {
-      case 1:
-        return formData.communicationStyle && formData.conflictResolution;
-      case 2:
-        return formData.emotionalSupport;
-      case 3:
-        return formData.personalSpaceNeeds;
-      case 4:
-        return true; // Optional step
-      default:
-        return false;
-    }
-  };
 
   return (
-    <div className="max-w-2xl mx-auto">
-      <div className="mb-6">
-        <h1 className="text-3xl font-bold mb-2">Personal Baseline Assessment</h1>
-        <p className="text-gray-600">
-          This assessment creates your personal foundation for relationship analysis. Step {currentStep} of 4.
-        </p>
-      </div>
+    <div className="min-h-screen bg-gradient-to-br from-primary/5 to-purple-50">
+      <div className="container mx-auto px-4 py-8 max-w-4xl">
+        {/* Header */}
+        <div className="bg-white/80 backdrop-blur-sm rounded-xl p-8 mb-8 border-0 shadow-lg">
+          <div className="flex items-center gap-4 mb-6">
+            <div className="w-12 h-12 bg-primary rounded-2xl flex items-center justify-center">
+              <Heart className="w-6 h-6 text-white" />
+            </div>
+            <div>
+              <h1 className="text-3xl font-bold text-neutral-800">Personal Baseline Assessment</h1>
+              <p className="text-lg text-neutral-600">
+                Help us understand your communication style and emotional needs
+              </p>
+            </div>
+          </div>
+          
+          {/* Progress Bar */}
+          <div className="relative">
+            <div className="w-full bg-neutral-200 rounded-full h-2">
+              <div 
+                className="bg-primary h-2 rounded-full transition-all duration-300"
+                style={{ width: `${(currentStep / TOTAL_STEPS) * 100}%` }}
+              ></div>
+            </div>
+            <p className="text-sm text-neutral-600 mt-2">Step {currentStep} of {TOTAL_STEPS}</p>
+          </div>
+        </div>
 
-      {currentStep === 1 && renderStep1()}
-      {currentStep === 2 && renderStep2()}
-      {currentStep === 3 && renderStep3()}
-      {currentStep === 4 && renderStep4()}
-      {currentStep === 5 && renderSuccess()}
+        {/* Question Cards */}
+        <Card className="border-0 shadow-lg bg-white/80 backdrop-blur-sm mb-8">
+          <CardContent className="p-8">
+            
+            {/* Step 1: Communication Style */}
+            {currentStep === 1 && (
+              <div className="space-y-6">
+                <div className="text-center mb-8">
+                  <div className="w-16 h-16 bg-blue-100 rounded-2xl flex items-center justify-center mx-auto mb-4">
+                    <Shield className="w-8 h-8 text-blue-600" />
+                  </div>
+                  <h2 className="text-2xl font-bold text-neutral-800 mb-2">Communication Preferences</h2>
+                  <p className="text-neutral-600">How do you prefer to communicate and handle feedback?</p>
+                </div>
 
-      {currentStep < 5 && (
-        <div className="flex justify-between mt-8">
-          <Button
-            variant="outline"
-            onClick={() => currentStep > 1 ? setCurrentStep(currentStep - 1) : window.history.back()}
-            disabled={isSaving}
+                <div className="space-y-6">
+                  <div>
+                    <Label className="text-lg font-semibold text-neutral-800 mb-4 block">
+                      What's your preferred communication style?
+                    </Label>
+                    <RadioGroup 
+                      value={formData.communicationStyle} 
+                      onValueChange={(value) => updateFormData('communicationStyle', value)}
+                      className="space-y-3"
+                    >
+                      <div className="flex items-center space-x-3 p-4 rounded-lg border border-neutral-200 hover:bg-neutral-50">
+                        <RadioGroupItem value="direct" id="direct" />
+                        <Label htmlFor="direct" className="flex-1 cursor-pointer">
+                          <span className="font-medium">Direct</span> - I appreciate clear, straightforward communication
+                        </Label>
+                      </div>
+                      <div className="flex items-center space-x-3 p-4 rounded-lg border border-neutral-200 hover:bg-neutral-50">
+                        <RadioGroupItem value="gentle" id="gentle" />
+                        <Label htmlFor="gentle" className="flex-1 cursor-pointer">
+                          <span className="font-medium">Gentle</span> - I prefer soft, considerate approaches
+                        </Label>
+                      </div>
+                      <div className="flex items-center space-x-3 p-4 rounded-lg border border-neutral-200 hover:bg-neutral-50">
+                        <RadioGroupItem value="collaborative" id="collaborative" />
+                        <Label htmlFor="collaborative" className="flex-1 cursor-pointer">
+                          <span className="font-medium">Collaborative</span> - I like working together to find solutions
+                        </Label>
+                      </div>
+                      <div className="flex items-center space-x-3 p-4 rounded-lg border border-neutral-200 hover:bg-neutral-50">
+                        <RadioGroupItem value="assertive" id="assertive" />
+                        <Label htmlFor="assertive" className="flex-1 cursor-pointer">
+                          <span className="font-medium">Assertive</span> - I'm comfortable with confident, firm communication
+                        </Label>
+                      </div>
+                    </RadioGroup>
+                  </div>
+
+                  <div>
+                    <Label className="text-lg font-semibold text-neutral-800 mb-4 block">
+                      How do you handle conflict?
+                    </Label>
+                    <RadioGroup 
+                      value={formData.conflictResolution} 
+                      onValueChange={(value) => updateFormData('conflictResolution', value)}
+                      className="space-y-3"
+                    >
+                      <div className="flex items-center space-x-3 p-4 rounded-lg border border-neutral-200 hover:bg-neutral-50">
+                        <RadioGroupItem value="address-immediately" id="address-immediately" />
+                        <Label htmlFor="address-immediately" className="flex-1 cursor-pointer">
+                          <span className="font-medium">Address immediately</span> - I prefer to resolve issues right away
+                        </Label>
+                      </div>
+                      <div className="flex items-center space-x-3 p-4 rounded-lg border border-neutral-200 hover:bg-neutral-50">
+                        <RadioGroupItem value="need-time-to-process" id="need-time-to-process" />
+                        <Label htmlFor="need-time-to-process" className="flex-1 cursor-pointer">
+                          <span className="font-medium">Need time to process</span> - I need space before addressing conflicts
+                        </Label>
+                      </div>
+                      <div className="flex items-center space-x-3 p-4 rounded-lg border border-neutral-200 hover:bg-neutral-50">
+                        <RadioGroupItem value="address-when-calm" id="address-when-calm" />
+                        <Label htmlFor="address-when-calm" className="flex-1 cursor-pointer">
+                          <span className="font-medium">Address when calm</span> - I prefer to wait until emotions settle
+                        </Label>
+                      </div>
+                      <div className="flex items-center space-x-3 p-4 rounded-lg border border-neutral-200 hover:bg-neutral-50">
+                        <RadioGroupItem value="avoid-conflict" id="avoid-conflict" />
+                        <Label htmlFor="avoid-conflict" className="flex-1 cursor-pointer">
+                          <span className="font-medium">Avoid conflict</span> - I tend to avoid confrontational situations
+                        </Label>
+                      </div>
+                    </RadioGroup>
+                  </div>
+                </div>
+              </div>
+            )}
+
+            {/* Step 2: Emotional Needs */}
+            {currentStep === 2 && (
+              <div className="space-y-6">
+                <div className="text-center mb-8">
+                  <div className="w-16 h-16 bg-rose-100 rounded-2xl flex items-center justify-center mx-auto mb-4">
+                    <Heart className="w-8 h-8 text-rose-600" />
+                  </div>
+                  <h2 className="text-2xl font-bold text-neutral-800 mb-2">Emotional Needs</h2>
+                  <p className="text-neutral-600">Help us understand your emotional support preferences</p>
+                </div>
+
+                <div className="space-y-6">
+                  <div>
+                    <Label className="text-lg font-semibold text-neutral-800 mb-4 block">
+                      How much emotional support do you typically need?
+                    </Label>
+                    <RadioGroup 
+                      value={formData.emotionalSupport} 
+                      onValueChange={(value) => updateFormData('emotionalSupport', value)}
+                      className="space-y-3"
+                    >
+                      <div className="flex items-center space-x-3 p-4 rounded-lg border border-neutral-200 hover:bg-neutral-50">
+                        <RadioGroupItem value="high" id="high-support" />
+                        <Label htmlFor="high-support" className="flex-1 cursor-pointer">
+                          <span className="font-medium">High</span> - I need frequent emotional check-ins and support
+                        </Label>
+                      </div>
+                      <div className="flex items-center space-x-3 p-4 rounded-lg border border-neutral-200 hover:bg-neutral-50">
+                        <RadioGroupItem value="medium" id="medium-support" />
+                        <Label htmlFor="medium-support" className="flex-1 cursor-pointer">
+                          <span className="font-medium">Medium</span> - I appreciate regular emotional connection
+                        </Label>
+                      </div>
+                      <div className="flex items-center space-x-3 p-4 rounded-lg border border-neutral-200 hover:bg-neutral-50">
+                        <RadioGroupItem value="low" id="low-support" />
+                        <Label htmlFor="low-support" className="flex-1 cursor-pointer">
+                          <span className="font-medium">Low</span> - I'm comfortable with minimal emotional support
+                        </Label>
+                      </div>
+                    </RadioGroup>
+                  </div>
+
+                  <div>
+                    <Label className="text-lg font-semibold text-neutral-800 mb-4 block">
+                      How much time do you typically need to process emotional situations?
+                    </Label>
+                    <RadioGroup 
+                      value={formData.emotionalProcessingTime.toString()} 
+                      onValueChange={(value) => updateFormData('emotionalProcessingTime', parseInt(value))}
+                      className="space-y-3"
+                    >
+                      <div className="flex items-center space-x-3 p-4 rounded-lg border border-neutral-200 hover:bg-neutral-50">
+                        <RadioGroupItem value="1" id="1-hour" />
+                        <Label htmlFor="1-hour" className="flex-1 cursor-pointer">
+                          <span className="font-medium">1 hour</span> - I process emotions quickly
+                        </Label>
+                      </div>
+                      <div className="flex items-center space-x-3 p-4 rounded-lg border border-neutral-200 hover:bg-neutral-50">
+                        <RadioGroupItem value="4" id="4-hours" />
+                        <Label htmlFor="4-hours" className="flex-1 cursor-pointer">
+                          <span className="font-medium">4 hours</span> - I need a few hours to process
+                        </Label>
+                      </div>
+                      <div className="flex items-center space-x-3 p-4 rounded-lg border border-neutral-200 hover:bg-neutral-50">
+                        <RadioGroupItem value="12" id="12-hours" />
+                        <Label htmlFor="12-hours" className="flex-1 cursor-pointer">
+                          <span className="font-medium">12 hours</span> - I need half a day or more
+                        </Label>
+                      </div>
+                      <div className="flex items-center space-x-3 p-4 rounded-lg border border-neutral-200 hover:bg-neutral-50">
+                        <RadioGroupItem value="24" id="24-hours" />
+                        <Label htmlFor="24-hours" className="flex-1 cursor-pointer">
+                          <span className="font-medium">24+ hours</span> - I need a full day or more to process
+                        </Label>
+                      </div>
+                    </RadioGroup>
+                  </div>
+                </div>
+              </div>
+            )}
+
+            {/* Step 3: Personal Space & Time */}
+            {currentStep === 3 && (
+              <div className="space-y-6">
+                <div className="text-center mb-8">
+                  <div className="w-16 h-16 bg-purple-100 rounded-2xl flex items-center justify-center mx-auto mb-4">
+                    <Shield className="w-8 h-8 text-purple-600" />
+                  </div>
+                  <h2 className="text-2xl font-bold text-neutral-800 mb-2">Personal Space & Time</h2>
+                  <p className="text-neutral-600">Let us know about your space and time preferences</p>
+                </div>
+
+                <div className="space-y-6">
+                  <div>
+                    <Label className="text-lg font-semibold text-neutral-800 mb-4 block">
+                      How much personal space do you need?
+                    </Label>
+                    <RadioGroup 
+                      value={formData.personalSpaceNeeds} 
+                      onValueChange={(value) => updateFormData('personalSpaceNeeds', value)}
+                      className="space-y-3"
+                    >
+                      <div className="flex items-center space-x-3 p-4 rounded-lg border border-neutral-200 hover:bg-neutral-50">
+                        <RadioGroupItem value="high" id="high-space" />
+                        <Label htmlFor="high-space" className="flex-1 cursor-pointer">
+                          <span className="font-medium">High</span> - I need lots of alone time and personal space
+                        </Label>
+                      </div>
+                      <div className="flex items-center space-x-3 p-4 rounded-lg border border-neutral-200 hover:bg-neutral-50">
+                        <RadioGroupItem value="medium" id="medium-space" />
+                        <Label htmlFor="medium-space" className="flex-1 cursor-pointer">
+                          <span className="font-medium">Medium</span> - I appreciate regular personal time
+                        </Label>
+                      </div>
+                      <div className="flex items-center space-x-3 p-4 rounded-lg border border-neutral-200 hover:bg-neutral-50">
+                        <RadioGroupItem value="low" id="low-space" />
+                        <Label htmlFor="low-space" className="flex-1 cursor-pointer">
+                          <span className="font-medium">Low</span> - I'm comfortable with minimal personal space
+                        </Label>
+                      </div>
+                    </RadioGroup>
+                  </div>
+
+                  <div>
+                    <Label className="text-lg font-semibold text-neutral-800 mb-4 block">
+                      How quickly do you expect responses to messages?
+                    </Label>
+                    <RadioGroup 
+                      value={formData.responseTimeExpectation.toString()} 
+                      onValueChange={(value) => updateFormData('responseTimeExpectation', parseInt(value))}
+                      className="space-y-3"
+                    >
+                      <div className="flex items-center space-x-3 p-4 rounded-lg border border-neutral-200 hover:bg-neutral-50">
+                        <RadioGroupItem value="1" id="1-hour-response" />
+                        <Label htmlFor="1-hour-response" className="flex-1 cursor-pointer">
+                          <span className="font-medium">Within 1 hour</span> - I prefer quick responses
+                        </Label>
+                      </div>
+                      <div className="flex items-center space-x-3 p-4 rounded-lg border border-neutral-200 hover:bg-neutral-50">
+                        <RadioGroupItem value="4" id="4-hour-response" />
+                        <Label htmlFor="4-hour-response" className="flex-1 cursor-pointer">
+                          <span className="font-medium">Within 4 hours</span> - Same day responses work for me
+                        </Label>
+                      </div>
+                      <div className="flex items-center space-x-3 p-4 rounded-lg border border-neutral-200 hover:bg-neutral-50">
+                        <RadioGroupItem value="24" id="24-hour-response" />
+                        <Label htmlFor="24-hour-response" className="flex-1 cursor-pointer">
+                          <span className="font-medium">Within 24 hours</span> - I'm patient with responses
+                        </Label>
+                      </div>
+                      <div className="flex items-center space-x-3 p-4 rounded-lg border border-neutral-200 hover:bg-neutral-50">
+                        <RadioGroupItem value="72" id="72-hour-response" />
+                        <Label htmlFor="72-hour-response" className="flex-1 cursor-pointer">
+                          <span className="font-medium">Within 3 days</span> - I don't mind waiting for responses
+                        </Label>
+                      </div>
+                    </RadioGroup>
+                  </div>
+                </div>
+              </div>
+            )}
+
+            {/* Step 4: Common Triggers */}
+            {currentStep === 4 && (
+              <div className="space-y-6">
+                <div className="text-center mb-8">
+                  <div className="w-16 h-16 bg-amber-100 rounded-2xl flex items-center justify-center mx-auto mb-4">
+                    <Shield className="w-8 h-8 text-amber-600" />
+                  </div>
+                  <h2 className="text-2xl font-bold text-neutral-800 mb-2">Personal Triggers</h2>
+                  <p className="text-neutral-600">Select behaviors or situations that typically upset you</p>
+                </div>
+
+                <div>
+                  <Label className="text-lg font-semibold text-neutral-800 mb-4 block">
+                    Which of these are common triggers for you? (Select all that apply)
+                  </Label>
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
+                    {[
+                      'Being interrupted while speaking',
+                      'Having my decisions questioned',
+                      'Unexpected changes to plans',
+                      'Passive-aggressive behavior',
+                      'Being ignored or dismissed',
+                      'Overly critical comments',
+                      'Boundary pushing or testing',
+                      'Guilt trips or manipulation',
+                      'Being talked over in groups',
+                      'Unsolicited advice',
+                      'Being rushed or pressured',
+                      'Having my privacy invaded'
+                    ].map((trigger) => (
+                      <div key={trigger} className="flex items-center space-x-3 p-4 rounded-lg border border-neutral-200 hover:bg-neutral-50">
+                        <Checkbox 
+                          id={trigger}
+                          checked={formData.triggers.includes(trigger)}
+                          onCheckedChange={() => toggleArrayItem('triggers', trigger)}
+                        />
+                        <Label htmlFor={trigger} className="flex-1 cursor-pointer text-sm">
+                          {trigger}
+                        </Label>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+              </div>
+            )}
+
+            {/* Step 5: Deal Breakers */}
+            {currentStep === 5 && (
+              <div className="space-y-6">
+                <div className="text-center mb-8">
+                  <div className="w-16 h-16 bg-red-100 rounded-2xl flex items-center justify-center mx-auto mb-4">
+                    <Shield className="w-8 h-8 text-red-600" />
+                  </div>
+                  <h2 className="text-2xl font-bold text-neutral-800 mb-2">Deal Breaker Behaviors</h2>
+                  <p className="text-neutral-600">Select behaviors that are absolute red flags for you</p>
+                </div>
+
+                <div>
+                  <Label className="text-lg font-semibold text-neutral-800 mb-4 block">
+                    Which behaviors are deal breakers in relationships? (Select all that apply)
+                  </Label>
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
+                    {[
+                      'Dishonesty or lying',
+                      'Emotional manipulation',
+                      'Disrespecting boundaries repeatedly',
+                      'Verbal abuse or insults',
+                      'Controlling behavior',
+                      'Infidelity or cheating',
+                      'Substance abuse issues',
+                      'Physical aggression',
+                      'Financial dishonesty',
+                      'Refusing to communicate',
+                      'Extreme jealousy',
+                      'Disrespecting family/friends'
+                    ].map((behavior) => (
+                      <div key={behavior} className="flex items-center space-x-3 p-4 rounded-lg border border-neutral-200 hover:bg-neutral-50">
+                        <Checkbox 
+                          id={behavior}
+                          checked={formData.dealBreakerBehaviors.includes(behavior)}
+                          onCheckedChange={() => toggleArrayItem('dealBreakerBehaviors', behavior)}
+                        />
+                        <Label htmlFor={behavior} className="flex-1 cursor-pointer text-sm">
+                          {behavior}
+                        </Label>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+              </div>
+            )}
+
+            {/* Step 6: Non-Negotiable Boundaries */}
+            {currentStep === 6 && (
+              <div className="space-y-6">
+                <div className="text-center mb-8">
+                  <div className="w-16 h-16 bg-green-100 rounded-2xl flex items-center justify-center mx-auto mb-4">
+                    <CheckCircle className="w-8 h-8 text-green-600" />
+                  </div>
+                  <h2 className="text-2xl font-bold text-neutral-800 mb-2">Non-Negotiable Boundaries</h2>
+                  <p className="text-neutral-600">Select the boundaries that are most important to you</p>
+                </div>
+
+                <div>
+                  <Label className="text-lg font-semibold text-neutral-800 mb-4 block">
+                    Which boundaries are non-negotiable for you? (Select all that apply)
+                  </Label>
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
+                    {[
+                      'Respect for my time and schedule',
+                      'Privacy of personal information',
+                      'Financial independence/transparency',
+                      'Physical space and belongings',
+                      'Communication during work hours',
+                      'Respect for my family/friends',
+                      'Personal values and beliefs',
+                      'Health and wellness routines',
+                      'Social media privacy',
+                      'Decision-making autonomy',
+                      'Emotional boundaries',
+                      'Professional/career respect'
+                    ].map((boundary) => (
+                      <div key={boundary} className="flex items-center space-x-3 p-4 rounded-lg border border-neutral-200 hover:bg-neutral-50">
+                        <Checkbox 
+                          id={boundary}
+                          checked={formData.nonNegotiableBoundaries.includes(boundary)}
+                          onCheckedChange={() => toggleArrayItem('nonNegotiableBoundaries', boundary)}
+                        />
+                        <Label htmlFor={boundary} className="flex-1 cursor-pointer text-sm">
+                          {boundary}
+                        </Label>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+              </div>
+            )}
+
+          </CardContent>
+        </Card>
+
+        {/* Navigation Buttons */}
+        <div className="flex justify-between items-center">
+          <Button 
+            variant="outline" 
+            onClick={handlePrevious}
+            disabled={currentStep === 1}
+            className="flex items-center gap-2"
           >
-            {currentStep === 1 ? 'Back' : 'Previous'}
+            <ArrowLeft className="w-4 h-4" />
+            Previous
           </Button>
 
-          {currentStep < 4 ? (
-            <Button
-              onClick={() => setCurrentStep(currentStep + 1)}
-              disabled={!canProceed() || isSaving}
+          <div className="text-sm text-neutral-600">
+            {currentStep} of {TOTAL_STEPS}
+          </div>
+
+          {currentStep < TOTAL_STEPS ? (
+            <Button 
+              onClick={handleNext}
+              className="flex items-center gap-2 bg-primary hover:bg-primary/90"
             >
               Next
-              <ArrowRight className="h-4 w-4 ml-2" />
+              <ArrowRight className="w-4 h-4" />
             </Button>
           ) : (
-            <Button
-              onClick={handleSave}
-              disabled={isSaving}
+            <Button 
+              onClick={handleSubmit}
+              disabled={saveBaseline.isPending}
+              className="flex items-center gap-2 bg-green-600 hover:bg-green-700"
             >
-              <Save className="h-4 w-4 mr-2" />
-              {isSaving ? 'Saving...' : 'Save Baseline'}
+              {saveBaseline.isPending ? (
+                <>
+                  <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-white"></div>
+                  Saving...
+                </>
+              ) : (
+                <>
+                  <Save className="w-4 h-4" />
+                  Complete Assessment
+                </>
+              )}
             </Button>
           )}
         </div>
-      )}
+      </div>
     </div>
   );
 }
