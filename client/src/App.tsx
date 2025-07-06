@@ -22,7 +22,7 @@ import Profile from "@/pages/profile";
 import Friends from "@/pages/friends";
 import Insights from "@/pages/insights";
 import FlagExamples from "@/pages/flag-examples";
-import BaselinePage from "@/pages/baseline-clean";
+import BaselinePage from "@/pages/baseline";
 import AdminPage from "@/pages/admin";
 
 import NotFound from "@/pages/not-found";
