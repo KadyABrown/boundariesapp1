@@ -320,25 +320,7 @@ export default function Dashboard() {
           </div>
         </div>
 
-        {/* Bottom Actions */}
-        <Card className="mt-12">
-          <CardContent className="p-6">
-            <div className="text-center">
-              <h3 className="text-lg font-semibold text-neutral-800 mb-2">Need Support?</h3>
-              <p className="text-neutral-600 mb-4">Access resources and guidance for healthy boundary setting</p>
-              <div className="flex flex-col sm:flex-row gap-3 justify-center">
-                <Button className="bg-secondary hover:bg-secondary/90">
-                  <BookOpen className="w-4 h-4 mr-2" />
-                  Browse Resources
-                </Button>
-                <Button variant="outline" onClick={() => window.location.href = '/api/export/csv'}>
-                  <Plus className="w-4 h-4 mr-2" />
-                  Export My Data
-                </Button>
-              </div>
-            </div>
-          </CardContent>
-        </Card>
+
       </div>
 
       {/* Floating Boundary Buddy */}

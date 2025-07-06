@@ -34,7 +34,7 @@ function Router() {
           <Route path="/friends" component={Friends} />
           <Route path="/profile" component={Profile} />
           <Route path="/insights" component={Insights} />
-          <Route path="/flag-examples" component={FlagExamples} />
+
 
         </>
       )}
