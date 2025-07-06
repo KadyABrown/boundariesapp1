@@ -332,6 +332,23 @@ Identifies when boundary violations and relationship issues are most likely to o
 - July 5, 2025. Built comprehensive admin dashboard for tracking users, subscriptions, and revenue. Includes user management table, signup analytics, payment status monitoring, and search functionality. Implemented secure admin access control and comprehensive business metrics for subscription management.
 - July 5, 2025. Enhanced admin dashboard with account type indicators. Added Account Type column showing "Admin" badges with crown icons for administrators and "User" badges for regular users. Prepared for future "Provider" account type for therapist and coach users.
 
+## Future User Role System Planning
+
+The application will need a tiered permission system to support multiple user types and admin levels:
+
+### Planned User Types:
+1. **Admin** - Full system access (currently implemented)
+2. **Provider** - Therapists and coaches with specialized interfaces
+3. **User** - Regular app users (currently implemented)
+
+### Planned Admin Permission Levels:
+1. **Super Admin** - Full system access, user management, business metrics
+2. **Developer Admin** - Code deployment, technical settings, limited user data
+3. **Marketing Admin** - Analytics, user engagement metrics, limited personal data access
+4. **Support Admin** - User support tools, limited system access
+
+This tiered approach will allow controlled backend access for partners while maintaining data security and appropriate access boundaries.
+
 ## User Preferences
 
 Preferred communication style: Simple, everyday language.
