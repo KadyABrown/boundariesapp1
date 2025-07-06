@@ -88,6 +88,7 @@ export default function RelationshipProfileDetail({ relationship, onClose }: Rel
     behavior: '',
     notes: ''
   });
+  const [editingFlagId, setEditingFlagId] = useState<number | null>(null);
   
   const { data: flags, isLoading: flagsLoading } = useQuery({
     queryKey: [`/api/relationships/${relationship.id}/flags`],
@@ -448,6 +449,50 @@ export default function RelationshipProfileDetail({ relationship, onClose }: Rel
                                       <p className="text-xs text-gray-600 mt-1">{flag.notes}</p>
                                     )}
                                   </div>
+                                  <div className="flex gap-1 ml-2">
+                                    <Button
+                                      size="sm"
+                                      variant="ghost"
+                                      onClick={() => {
+                                        // Pre-fill form with flag data for editing
+                                        setFlagFormData({
+                                          flagType: flag.flag_type,
+                                          category: flag.flag_category,
+                                          behavior: flag.flag_name,
+                                          notes: flag.notes || ''
+                                        });
+                                        setEditingFlagId(flag.id);
+                                        setShowFlagDialog(true);
+                                      }}
+                                      className="h-8 w-8 p-0"
+                                    >
+                                      <Edit2 className="w-3 h-3" />
+                                    </Button>
+                                    <Button
+                                      size="sm"
+                                      variant="ghost"
+                                      onClick={async () => {
+                                        try {
+                                          await apiRequest("DELETE", `/api/relationships/${relationship.id}/flags/${flag.id}`);
+                                          queryClient.invalidateQueries({ queryKey: [`/api/relationships/${relationship.id}/flags`] });
+                                          queryClient.invalidateQueries({ queryKey: [`/api/relationships/${relationship.id}/stats`] });
+                                          toast({
+                                            title: "Flag Deleted",
+                                            description: "The behavioral flag has been removed.",
+                                          });
+                                        } catch (error) {
+                                          toast({
+                                            title: "Error",
+                                            description: "Failed to delete flag. Please try again.",
+                                            variant: "destructive",
+                                          });
+                                        }
+                                      }}
+                                      className="h-8 w-8 p-0 text-red-600 hover:text-red-800"
+                                    >
+                                      <X className="w-3 h-3" />
+                                    </Button>
+                                  </div>
                                 </div>
                               </div>
                             ))}
@@ -563,7 +608,9 @@ export default function RelationshipProfileDetail({ relationship, onClose }: Rel
       {showFlagDialog && (
         <div className="fixed inset-0 bg-black bg-opacity-50 z-50 flex items-center justify-center p-4">
           <div className="bg-white rounded-lg p-6 w-full max-w-md">
-            <h3 className="text-lg font-semibold mb-4">Add Behavioral Flag</h3>
+            <h3 className="text-lg font-semibold mb-4">
+              {editingFlagId ? 'Edit Behavioral Flag' : 'Add Behavioral Flag'}
+            </h3>
             <div className="space-y-4">
               <div>
                 <label className="text-sm font-medium text-gray-700">Flag Type</label>
@@ -619,6 +666,7 @@ export default function RelationshipProfileDetail({ relationship, onClose }: Rel
                     behavior: '',
                     notes: ''
                   });
+                  setEditingFlagId(null);
                   setShowFlagDialog(false);
                 }} 
                 variant="outline" 
@@ -632,7 +680,7 @@ export default function RelationshipProfileDetail({ relationship, onClose }: Rel
                     if (!flagFormData.behavior.trim()) {
                       toast({
                         title: "Missing Information",
-                        description: "Please describe the behavior before adding the flag.",
+                        description: "Please describe the behavior before saving.",
                         variant: "destructive",
                       });
                       return;
@@ -647,7 +695,21 @@ export default function RelationshipProfileDetail({ relationship, onClose }: Rel
                       notes: flagFormData.notes || null
                     };
 
-                    await apiRequest("POST", `/api/relationships/${relationship.id}/flags`, flagData);
+                    if (editingFlagId) {
+                      // Update existing flag
+                      await apiRequest("PUT", `/api/relationships/${relationship.id}/flags/${editingFlagId}`, flagData);
+                      toast({
+                        title: "Flag Updated",
+                        description: "Behavioral flag has been updated successfully.",
+                      });
+                    } else {
+                      // Create new flag
+                      await apiRequest("POST", `/api/relationships/${relationship.id}/flags`, flagData);
+                      toast({
+                        title: "Flag Added",
+                        description: "Behavioral flag has been recorded successfully.",
+                      });
+                    }
                     
                     // Reset form
                     setFlagFormData({
@@ -656,22 +718,17 @@ export default function RelationshipProfileDetail({ relationship, onClose }: Rel
                       behavior: '',
                       notes: ''
                     });
-                    
+                    setEditingFlagId(null);
                     setShowFlagDialog(false);
                     
                     // Invalidate queries to refresh data
                     queryClient.invalidateQueries({ queryKey: [`/api/relationships/${relationship.id}/flags`] });
                     queryClient.invalidateQueries({ queryKey: [`/api/relationships/${relationship.id}/stats`] });
-                    
-                    toast({
-                      title: "Flag Added",
-                      description: "Behavioral flag has been recorded successfully.",
-                    });
                   } catch (error) {
-                    console.error("Error adding flag:", error);
+                    console.error("Error saving flag:", error);
                     toast({
                       title: "Error",
-                      description: "Failed to add flag. Please try again.",
+                      description: `Failed to ${editingFlagId ? 'update' : 'add'} flag. Please try again.`,
                       variant: "destructive",
                     });
                   }
@@ -679,7 +736,7 @@ export default function RelationshipProfileDetail({ relationship, onClose }: Rel
                 className="flex-1"
                 disabled={!flagFormData.behavior.trim()}
               >
-                Add Flag
+                {editingFlagId ? 'Update Flag' : 'Add Flag'}
               </Button>
             </div>
           </div>
