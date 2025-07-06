@@ -14,6 +14,8 @@ export default function Demo() {
       relationshipType: "Dating",
       relationshipStatus: "Interested",
       flags: { green: 8, red: 3 },
+      greenFlags: 8,
+      redFlags: 3,
       customTags: ["Communicative", "Ambitious"],
       howMet: "Dating app",
       healthScore: 73
@@ -24,6 +26,8 @@ export default function Demo() {
       relationshipType: "Friend",
       relationshipStatus: "Close Friend",
       flags: { green: 12, red: 1 },
+      greenFlags: 12,
+      redFlags: 1,
       customTags: ["Supportive", "Reliable"],
       howMet: "Work",
       healthScore: 92
@@ -34,6 +38,8 @@ export default function Demo() {
       relationshipType: "Dating",
       relationshipStatus: "Over",
       flags: { green: 4, red: 9 },
+      greenFlags: 4,
+      redFlags: 9,
       customTags: ["Inconsistent", "Charming"],
       howMet: "Through friends",
       healthScore: 31
@@ -86,15 +92,9 @@ export default function Demo() {
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
         {/* Demo Header with App-like Navigation */}
         <div className="mb-8">
-          <div className="flex items-center justify-between mb-6">
-            <div>
-              <h1 className="text-3xl font-bold text-gray-900">Relationships</h1>
-              <p className="text-gray-600">Track and understand your relationship patterns</p>
-            </div>
-            <Button onClick={() => alert('Demo mode - sign up to create real profiles!')}>
-              <Plus className="w-4 h-4 mr-2" />
-              New Relationship
-            </Button>
+          <div className="mb-6">
+            <h1 className="text-3xl font-bold text-gray-900">Relationships</h1>
+            <p className="text-gray-600">Track and understand your relationship patterns</p>
           </div>
           
           {/* Demo Notice */}
@@ -144,6 +144,54 @@ export default function Demo() {
             </div>
           </CardContent>
         </Card>
+
+        {/* Relationship Insights & Analytics - Moved Above Relationships */}
+        <div className="mt-8 mb-12">
+          <h2 className="text-2xl font-bold text-gray-900 mb-6 text-center">Relationship Insights & Analytics</h2>
+          <Card>
+            <CardHeader>
+              <CardTitle>Weekly Relationship Health Summary</CardTitle>
+            </CardHeader>
+            <CardContent>
+              <div className="grid grid-cols-1 md:grid-cols-4 gap-6">
+                <div className="text-center">
+                  <div className="text-3xl font-bold text-blue-600">
+                    {Math.round(demoProfiles.reduce((sum, p) => sum + p.healthScore, 0) / demoProfiles.length)}%
+                  </div>
+                  <div className="text-sm text-gray-600">Average Health Score</div>
+                </div>
+                <div className="text-center">
+                  <div className="text-3xl font-bold text-green-600">
+                    {demoProfiles.reduce((sum, p) => sum + p.flags.green, 0)}
+                  </div>
+                  <div className="text-sm text-gray-600">Green Flags Logged</div>
+                </div>
+                <div className="text-center">
+                  <div className="text-3xl font-bold text-red-600">
+                    {demoProfiles.reduce((sum, p) => sum + p.flags.red, 0)}
+                  </div>
+                  <div className="text-sm text-gray-600">Red Flags Noted</div>
+                </div>
+                <div className="text-center">
+                  <div className="text-3xl font-bold text-purple-600">
+                    {demoProfiles.filter(p => p.relationshipStatus !== 'Over').length}
+                  </div>
+                  <div className="text-sm text-gray-600">Active Relationships</div>
+                </div>
+              </div>
+              
+              <div className="mt-6 p-4 bg-blue-50 rounded-lg">
+                <h4 className="font-medium text-blue-900 mb-2">This Week's Insight</h4>
+                <p className="text-blue-800 text-sm">
+                  Your relationships show strong boundary respect overall. Jordan ({demoProfiles.find(p => p.name === 'Jordan')?.healthScore}% health) 
+                  demonstrates excellent communication patterns, while Sam could benefit from clearer expectations.
+                </p>
+              </div>
+            </CardContent>
+          </Card>
+        </div>
+
+        <h2 className="text-2xl font-bold text-gray-900 mb-6 text-center">Relationships Summary</h2>
 
         {/* Relationship Cards Grid - Exact App Layout */}
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
@@ -296,43 +344,7 @@ export default function Demo() {
           </div>
         </div>
 
-        {/* Analytics Preview */}
-        <div className="mt-16 mb-12">
-          <h2 className="text-2xl font-bold text-gray-900 mb-6 text-center">Relationship Insights & Analytics</h2>
-          <Card>
-            <CardHeader>
-              <CardTitle>Weekly Relationship Health Summary</CardTitle>
-            </CardHeader>
-            <CardContent>
-              <div className="grid grid-cols-1 md:grid-cols-4 gap-6">
-                <div className="text-center">
-                  <div className="text-3xl font-bold text-blue-600">78%</div>
-                  <div className="text-sm text-gray-600">Average Health Score</div>
-                </div>
-                <div className="text-center">
-                  <div className="text-3xl font-bold text-green-600">23</div>
-                  <div className="text-sm text-gray-600">Green Flags Logged</div>
-                </div>
-                <div className="text-center">
-                  <div className="text-3xl font-bold text-red-600">8</div>
-                  <div className="text-sm text-gray-600">Red Flags Noted</div>
-                </div>
-                <div className="text-center">
-                  <div className="text-3xl font-bold text-purple-600">12</div>
-                  <div className="text-sm text-gray-600">Check-ins Completed</div>
-                </div>
-              </div>
-              
-              <div className="mt-6 p-4 bg-blue-50 rounded-lg">
-                <h4 className="font-medium text-blue-900 mb-2">This Week's Insight</h4>
-                <p className="text-blue-800 text-sm">
-                  Your boundary respect rate improved 15% this week. Relationships with clear communication 
-                  patterns show higher satisfaction scores. Consider discussing expectations with Alex.
-                </p>
-              </div>
-            </CardContent>
-          </Card>
-        </div>
+
 
         {/* Emotional Weather Report */}
         <div className="mt-16 mb-12">
