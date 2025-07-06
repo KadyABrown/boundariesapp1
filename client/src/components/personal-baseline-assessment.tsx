@@ -41,12 +41,12 @@ export default function PersonalBaselineAssessment({
     feedbackPreference: existingBaseline?.feedbackPreference || '',
     
     // Emotional Needs
-    emotionalSupportLevel: existingBaseline?.emotionalSupportLevel || '',
+    emotionalSupport: existingBaseline?.emotionalSupport || '',
     emotionalValidationNeeds: existingBaseline?.emotionalValidationNeeds || '',
     validationStyle: existingBaseline?.validationStyle || [],
     affectionStyle: existingBaseline?.affectionStyle || [],
     validationNeeds: existingBaseline?.validationNeeds || '',
-    processingTimeNeeds: existingBaseline?.processingTimeNeeds || '',
+    emotionalProcessingTime: existingBaseline?.emotionalProcessingTime || 0,
     triggers: existingBaseline?.triggers || [],
     comfortingSources: existingBaseline?.comfortingSources || [],
     
@@ -228,8 +228,8 @@ export default function PersonalBaselineAssessment({
               <div>
                 <Label className="text-base font-medium">I need this level of emotional support:</Label>
                 <RadioGroup 
-                  value={baselineData.emotionalSupportLevel} 
-                  onValueChange={(value) => updateData('emotionalSupportLevel', value)}
+                  value={baselineData.emotionalSupport} 
+                  onValueChange={(value) => updateData('emotionalSupport', value)}
                   className="mt-2"
                 >
                   <div className="flex items-center space-x-2">
@@ -534,7 +534,7 @@ export default function PersonalBaselineAssessment({
                   <CardTitle className="text-lg">Emotional Needs</CardTitle>
                 </CardHeader>
                 <CardContent>
-                  <p><strong>Support Level:</strong> {baselineData.emotionalSupportLevel}</p>
+                  <p><strong>Support Level:</strong> {baselineData.emotionalSupport}</p>
                   {baselineData.triggers.length > 0 && (
                     <div>
                       <strong>Triggers:</strong> {baselineData.triggers.join(', ')}

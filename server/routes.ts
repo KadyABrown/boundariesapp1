@@ -1478,6 +1478,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
       res.json(baseline);
     } catch (error) {
       if (error instanceof z.ZodError) {
+        console.error("Baseline validation error:", error.errors);
         res.status(400).json({ message: "Invalid baseline data", errors: error.errors });
       } else {
         console.error("Error saving baseline:", error);
