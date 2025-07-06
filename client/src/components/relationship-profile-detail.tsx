@@ -97,10 +97,10 @@ export default function RelationshipProfileDetail({ relationship, onClose }: Rel
   });
 
   const getHealthScore = () => {
-    if (!stats) return 0;
-    const totalFlags = stats.greenFlags + stats.redFlags;
-    if (totalFlags === 0) return 0;
-    return Math.round((stats.greenFlags / totalFlags) * 100);
+    if (!stats) return 50; // Default to neutral score when no data
+    const totalFlags = (stats as any).greenFlags + (stats as any).redFlags;
+    if (totalFlags === 0) return 50; // Default to neutral when no flags
+    return Math.round(((stats as any).greenFlags / totalFlags) * 100);
   };
 
   const getHealthColor = (score: number) => {
@@ -173,9 +173,17 @@ export default function RelationshipProfileDetail({ relationship, onClose }: Rel
                       <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
                         <div className="text-center p-4 bg-white rounded-lg shadow-sm">
                           <div className={`text-3xl font-bold ${getHealthColor(getHealthScore())}`}>
-                            {getHealthScore()}%
+                            {statsLoading ? "..." : `${getHealthScore()}%`}
                           </div>
                           <div className="text-sm text-gray-600 mt-1">Health Score</div>
+                          {!statsLoading && (
+                            <div className="text-xs text-gray-500 mt-1">
+                              {((stats as any)?.greenFlags || 0) + ((stats as any)?.redFlags || 0) === 0 
+                                ? "Add flags to calculate"
+                                : `Based on ${((stats as any)?.greenFlags || 0) + ((stats as any)?.redFlags || 0)} flags`
+                              }
+                            </div>
+                          )}
                         </div>
                         <div className="text-center p-4 bg-white rounded-lg shadow-sm">
                           <div className="text-3xl font-bold text-green-600">
