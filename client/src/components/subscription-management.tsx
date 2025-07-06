@@ -99,12 +99,12 @@ export function SubscriptionManagement() {
 
   const handleCreateCheckout = async () => {
     try {
-      const response = await apiRequest("GET", "/api/checkout");
+      const response = await apiRequest("POST", "/api/subscription/checkout");
       const data = await response.json();
       
-      if (data.url) {
+      if (data.checkoutUrl) {
         // Redirect to Stripe checkout
-        window.location.href = data.url;
+        window.location.href = data.checkoutUrl;
       } else {
         toast({
           title: "Error",
