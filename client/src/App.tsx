@@ -10,6 +10,7 @@ import MarketingHomepage from "@/pages/marketing/homepage";
 import PricingPage from "@/pages/marketing/pricing";
 import DemoPage from "@/pages/marketing/demo";
 import FAQPage from "@/pages/marketing/faq";
+import SubscriptionSuccessPage from "@/pages/subscription-success";
 
 // App pages (for authenticated users)
 import Landing from "@/pages/landing";
@@ -64,6 +65,7 @@ function Router() {
           <Route path="/insights" component={Insights} />
           <Route path="/flag-examples" component={FlagExamples} />
           <Route path="/admin" component={AdminPage} />
+          <Route path="/subscription/success" component={SubscriptionSuccessPage} />
           <Route component={NotFound} />
         </>
       )}

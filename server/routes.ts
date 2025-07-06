@@ -1722,6 +1722,100 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
+  // Shopify subscription routes
+  const ShopifyService = (await import('./shopify.js')).ShopifyService;
+  const shopifyService = ShopifyService.getInstance();
+
+  // Create checkout session for subscription
+  app.post('/api/subscription/checkout', isAuthenticated, async (req: any, res) => {
+    try {
+      const userId = req.user.claims.sub;
+      const user = await storage.getUser(userId);
+      
+      if (!user?.email) {
+        return res.status(400).json({ message: "User email not found" });
+      }
+
+      const returnUrl = `${req.protocol}://${req.get('host')}/subscription/success`;
+      const checkoutUrl = await shopifyService.createSubscriptionCheckout(userId, user.email, returnUrl);
+      
+      res.json({ checkoutUrl });
+    } catch (error) {
+      console.error("Error creating checkout:", error);
+      res.status(500).json({ message: "Failed to create checkout session" });
+    }
+  });
+
+  // Get subscription status
+  app.get('/api/subscription/status', isAuthenticated, async (req: any, res) => {
+    try {
+      const userId = req.user.claims.sub;
+      const subscriptionDetails = await shopifyService.getSubscriptionDetails(userId);
+      res.json(subscriptionDetails);
+    } catch (error) {
+      console.error("Error fetching subscription status:", error);
+      res.status(500).json({ message: "Failed to fetch subscription status" });
+    }
+  });
+
+  // Cancel subscription
+  app.post('/api/subscription/cancel', isAuthenticated, async (req: any, res) => {
+    try {
+      const userId = req.user.claims.sub;
+      const success = await shopifyService.cancelSubscription(userId);
+      
+      if (success) {
+        res.json({ message: "Subscription cancelled successfully" });
+      } else {
+        res.status(500).json({ message: "Failed to cancel subscription" });
+      }
+    } catch (error) {
+      console.error("Error cancelling subscription:", error);
+      res.status(500).json({ message: "Failed to cancel subscription" });
+    }
+  });
+
+  // Shopify webhook endpoint (public, no auth required)
+  app.post('/api/webhooks/shopify', async (req, res) => {
+    try {
+      await shopifyService.handleWebhook(req, res);
+    } catch (error) {
+      console.error("Error handling Shopify webhook:", error);
+      res.status(500).json({ message: "Webhook processing failed" });
+    }
+  });
+
+  // Get or create Shopify customer
+  app.post('/api/subscription/customer', isAuthenticated, async (req: any, res) => {
+    try {
+      const userId = req.user.claims.sub;
+      const user = await storage.getUser(userId);
+      
+      if (!user) {
+        return res.status(404).json({ message: "User not found" });
+      }
+
+      const customer = await shopifyService.createOrGetCustomer({
+        email: user.email!,
+        firstName: user.firstName || undefined,
+        lastName: user.lastName || undefined,
+        phone: user.phoneNumber || undefined
+      });
+
+      // Update user with Shopify customer ID
+      if (customer.id && !user.shopifyCustomerId) {
+        await storage.updateUser(userId, {
+          shopifyCustomerId: customer.id.toString()
+        });
+      }
+
+      res.json(customer);
+    } catch (error) {
+      console.error("Error creating/getting customer:", error);
+      res.status(500).json({ message: "Failed to manage customer" });
+    }
+  });
+
   const httpServer = createServer(app);
   return httpServer;
 }
