@@ -13,18 +13,15 @@ export default function DemoPage() {
               <Shield className="h-8 w-8 text-purple-600" />
               <span className="text-2xl font-bold text-gray-900">BoundarySpace</span>
             </div>
-            <div className="flex items-center gap-4">
-              <Button 
-                variant="ghost"
-                onClick={() => window.location.href = "/"}
-              >
-                ← Back to Home
-              </Button>
+            <div className="hidden md:flex items-center gap-6">
+              <a href="/" className="text-gray-600 hover:text-purple-600 transition-colors">Home</a>
+              <a href="/pricing" className="text-gray-600 hover:text-purple-600 transition-colors">Pricing</a>
+              <a href="/faq" className="text-gray-600 hover:text-purple-600 transition-colors">FAQ</a>
               <Button 
                 onClick={() => window.location.href = "/api/login"}
                 className="bg-purple-600 hover:bg-purple-700"
               >
-                Try It Now
+                Get Started
               </Button>
             </div>
           </div>

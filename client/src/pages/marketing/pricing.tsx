@@ -13,13 +13,10 @@ export default function PricingPage() {
               <Shield className="h-8 w-8 text-purple-600" />
               <span className="text-2xl font-bold text-gray-900">BoundarySpace</span>
             </div>
-            <div className="flex items-center gap-4">
-              <Button 
-                variant="ghost"
-                onClick={() => window.location.href = "/"}
-              >
-                ← Back to Home
-              </Button>
+            <div className="hidden md:flex items-center gap-6">
+              <a href="/" className="text-gray-600 hover:text-purple-600 transition-colors">Home</a>
+              <a href="/demo" className="text-gray-600 hover:text-purple-600 transition-colors">Demo</a>
+              <a href="/faq" className="text-gray-600 hover:text-purple-600 transition-colors">FAQ</a>
               <Button 
                 onClick={() => window.location.href = "/api/login"}
                 className="bg-purple-600 hover:bg-purple-700"
@@ -95,10 +92,10 @@ export default function PricingPage() {
                   className="bg-purple-600 hover:bg-purple-700 text-lg px-12 py-4 w-full"
                   onClick={() => window.location.href = "/api/login"}
                 >
-                  Start Your Free Assessment
+                  Subscribe Now
                 </Button>
                 <p className="text-sm text-gray-500 mt-4">
-                  No credit card required • No time limits • No hidden costs
+                  Credit card required • Cancel anytime • No hidden fees
                 </p>
               </div>
             </CardContent>
@@ -106,39 +103,36 @@ export default function PricingPage() {
         </div>
       </section>
 
-      {/* Why Free Section */}
+      {/* Value Proposition Section */}
       <section className="py-20 px-4 bg-white">
         <div className="container mx-auto max-w-4xl text-center">
-          <h2 className="text-4xl font-bold text-gray-900 mb-8">Why is BoundarySpace Free?</h2>
+          <h2 className="text-4xl font-bold text-gray-900 mb-8">Why Choose BoundarySpace?</h2>
           <div className="grid md:grid-cols-3 gap-8 text-left">
             <div className="text-center">
               <div className="w-16 h-16 bg-purple-100 rounded-full flex items-center justify-center mx-auto mb-6">
                 <Check className="h-8 w-8 text-purple-600" />
               </div>
-              <h3 className="text-xl font-semibold mb-4">Our Mission</h3>
+              <h3 className="text-xl font-semibold mb-4">Professional-Grade Tools</h3>
               <p className="text-gray-600">
-                We believe everyone deserves access to tools that help build healthier relationships, 
-                regardless of their financial situation.
+                Advanced relationship analytics and pattern recognition that delivers meaningful insights about your relationships and personal growth.
               </p>
             </div>
             <div className="text-center">
               <div className="w-16 h-16 bg-blue-100 rounded-full flex items-center justify-center mx-auto mb-6">
                 <Check className="h-8 w-8 text-blue-600" />
               </div>
-              <h3 className="text-xl font-semibold mb-4">Community First</h3>
+              <h3 className="text-xl font-semibold mb-4">Privacy-First Design</h3>
               <p className="text-gray-600">
-                BoundarySpace is supported by a community of users who value relationship health 
-                and emotional well-being above profit.
+                Your relationship data is secure and private. We never share your personal information or sell your data to third parties.
               </p>
             </div>
             <div className="text-center">
               <div className="w-16 h-16 bg-green-100 rounded-full flex items-center justify-center mx-auto mb-6">
                 <Check className="h-8 w-8 text-green-600" />
               </div>
-              <h3 className="text-xl font-semibold mb-4">Sustainable Growth</h3>
+              <h3 className="text-xl font-semibold mb-4">Continuous Development</h3>
               <p className="text-gray-600">
-                We focus on creating value for our users first. Revenue models may be explored 
-                in the future, but never at the expense of accessibility.
+                Regular updates and new features based on user feedback. Your subscription supports ongoing platform improvements.
               </p>
             </div>
           </div>
