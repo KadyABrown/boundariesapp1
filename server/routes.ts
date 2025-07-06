@@ -2232,6 +2232,8 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
+
+
   // Test endpoint to manually create a Stripe user for debugging
   app.post('/api/test/create-stripe-user', async (req: any, res) => {
     try {
