@@ -328,3 +328,11 @@ Identifies when boundary violations and relationship issues are most likely to o
 ## User Preferences
 
 Preferred communication style: Simple, everyday language.
+
+## Future Enhancements for Main User App
+
+From demo page feedback (July 6, 2025):
+- **Custom Tags**: Add descriptive tags like "Communicative", "Ambitious" to relationship cards for quick personality insights
+- **Status Type Display**: Implement clear relationship status badges on main relationship cards  
+- **Flag Count Summaries**: Show green/red flag counts directly on relationship cards for quick health overview
+- **Note**: Don't implement these yet - focus on fixing existing functionality first (EmotionalWeather data structure)
