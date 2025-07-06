@@ -428,77 +428,84 @@ export default function RelationshipProfileDetail({ relationship, onClose }: Rel
                           </div>
                         ) : flags && flags.length > 0 ? (
                           <div className="space-y-3">
-                            {flags.map((flag: any) => (
-                              <div key={flag.id} className="border rounded-lg p-3">
-                                <div className="flex items-start justify-between">
-                                  <div className="flex-1">
-                                    <div className="flex items-center gap-2">
-                                      <Badge 
-                                        className={
-                                          flag.flag_type === 'green' 
-                                            ? 'bg-green-100 text-green-800 border-green-200' 
-                                            : 'bg-red-100 text-red-800 border-red-200'
-                                        }
-                                      >
-                                        {flag.flag_type} flag
-                                      </Badge>
-                                      <span className="text-sm text-gray-500">{flag.flag_category}</span>
+                            {flags.map((flag: any) => {
+                              console.log('Flag data:', flag); // Debug log
+                              const isGreen = flag.flag_type === 'green';
+                              return (
+                                <div key={flag.id} className="border rounded-lg p-3">
+                                  <div className="flex items-start justify-between">
+                                    <div className="flex-1">
+                                      <div className="flex items-center gap-2">
+                                        <Badge 
+                                          style={{
+                                            backgroundColor: isGreen ? '#dcfce7' : '#fef2f2',
+                                            color: isGreen ? '#166534' : '#991b1b',
+                                            borderColor: isGreen ? '#bbf7d0' : '#fecaca'
+                                          }}
+                                          className="border"
+                                        >
+                                          {flag.flag_type} flag
+                                        </Badge>
+                                        <span className="text-sm text-gray-500">{flag.flag_category}</span>
+                                      </div>
+                                      <p className="text-sm font-medium mt-1">{flag.flag_name}</p>
+                                      {flag.notes && (
+                                        <p className="text-xs text-gray-600 mt-1">{flag.notes}</p>
+                                      )}
                                     </div>
-                                    <p className="text-sm font-medium mt-1">{flag.flag_name}</p>
-                                    {flag.notes && (
-                                      <p className="text-xs text-gray-600 mt-1">{flag.notes}</p>
-                                    )}
-                                  </div>
-                                  <div className="flex gap-1 ml-2">
-                                    <Button
-                                      size="sm"
-                                      variant="ghost"
-                                      onClick={() => {
-                                        // Pre-fill form with flag data for editing
-                                        setFlagFormData({
-                                          flagType: flag.flag_type,
-                                          category: flag.flag_category,
-                                          behavior: flag.flag_name,
-                                          notes: flag.notes || ''
-                                        });
-                                        setEditingFlagId(flag.id);
-                                        setShowFlagDialog(true);
-                                      }}
-                                      className="h-8 w-8 p-0"
-                                    >
-                                      <Edit2 className="w-3 h-3" />
-                                    </Button>
-                                    <Button
-                                      size="sm"
-                                      variant="ghost"
-                                      onClick={async () => {
-                                        try {
-                                          await apiRequest("DELETE", `/api/relationships/${relationship.id}/flags/${flag.id}`);
-                                          queryClient.invalidateQueries({ queryKey: [`/api/relationships/${relationship.id}/flags`] });
-                                          queryClient.invalidateQueries({ queryKey: [`/api/relationships/${relationship.id}/stats`] });
-                                          toast({
-                                            title: "Flag Deleted",
-                                            description: "The behavioral flag has been removed.",
+                                    <div className="flex gap-1 ml-2">
+                                      <Button
+                                        size="sm"
+                                        variant="ghost"
+                                        onClick={() => {
+                                          // Pre-fill form with flag data for editing
+                                          setFlagFormData({
+                                            flagType: flag.flag_type,
+                                            category: flag.flag_category,
+                                            behavior: flag.flag_name,
+                                            notes: flag.notes || ''
                                           });
-                                        } catch (error) {
-                                          toast({
-                                            title: "Error",
-                                            description: "Failed to delete flag. Please try again.",
-                                            variant: "destructive",
-                                          });
-                                        }
-                                      }}
-                                      className="h-8 w-8 p-0 text-red-600 hover:text-red-800"
-                                    >
-                                      <X className="w-3 h-3" />
-                                    </Button>
+                                          setEditingFlagId(flag.id);
+                                          setShowFlagDialog(true);
+                                        }}
+                                        className="h-8 w-8 p-0"
+                                      >
+                                        <Edit2 className="w-3 h-3" />
+                                      </Button>
+                                      <Button
+                                        size="sm"
+                                        variant="ghost"
+                                        onClick={async () => {
+                                          try {
+                                            await apiRequest("DELETE", `/api/relationships/${relationship.id}/flags/${flag.id}`);
+                                            queryClient.invalidateQueries({ queryKey: [`/api/relationships/${relationship.id}/flags`] });
+                                            queryClient.invalidateQueries({ queryKey: [`/api/relationships/${relationship.id}/stats`] });
+                                            toast({
+                                              title: "Flag Deleted",
+                                              description: "The behavioral flag has been removed.",
+                                            });
+                                          } catch (error) {
+                                            toast({
+                                              title: "Error",
+                                              description: "Failed to delete flag. Please try again.",
+                                              variant: "destructive",
+                                            });
+                                          }
+                                        }}
+                                        className="h-8 w-8 p-0 text-red-600 hover:text-red-800"
+                                      >
+                                        <X className="w-3 h-3" />
+                                      </Button>
+                                    </div>
                                   </div>
                                 </div>
-                              </div>
-                            ))}
+                              );
+                            })}
                           </div>
                         ) : (
-                          <p className="text-gray-500 text-center py-4">No flags recorded yet</p>
+                          <div className="text-center py-8 text-gray-500">
+                            No flags recorded yet
+                          </div>
                         )}
                       </CardContent>
                     </Card>
