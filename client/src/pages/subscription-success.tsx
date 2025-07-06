@@ -31,9 +31,9 @@ export default function SubscriptionSuccessPage() {
         
         if (result.success) {
           setSubscriptionStatus({ status: 'active' });
-          // Redirect to dashboard after a brief delay
+          // Redirect to profile to complete setup after a brief delay
           setTimeout(() => {
-            window.location.href = '/dashboard';
+            window.location.href = '/profile?onboarding=true';
           }, 3000);
         } else {
           setError(result.message || 'Payment verification failed');
@@ -49,7 +49,7 @@ export default function SubscriptionSuccessPage() {
     verifyPayment();
   }, []);
 
-  if (isLoading || isChecking) {
+  if (isChecking) {
     return (
       <div className="min-h-screen bg-gradient-to-br from-green-50 via-white to-blue-50 flex items-center justify-center">
         <Card className="w-full max-w-md mx-4">
@@ -107,8 +107,28 @@ export default function SubscriptionSuccessPage() {
               {isActive ? (
                 <>
                   <p className="text-xl text-gray-600 mb-8">
-                    Your subscription is now active! You have full access to all relationship tracking and analysis features.
+                    Your subscription is now active! Let's get your account set up.
                   </p>
+
+                  <div className="bg-blue-50 rounded-lg p-6 mb-8">
+                    <h3 className="text-lg font-semibold text-blue-800 mb-4">
+                      Ready to start? Here's what's next:
+                    </h3>
+                    <div className="text-left space-y-3">
+                      <div className="flex items-center gap-3">
+                        <div className="bg-blue-600 text-white rounded-full w-6 h-6 flex items-center justify-center text-sm font-medium">1</div>
+                        <span className="text-blue-700">Complete your profile (name, username, preferences)</span>
+                      </div>
+                      <div className="flex items-center gap-3">
+                        <div className="bg-blue-600 text-white rounded-full w-6 h-6 flex items-center justify-center text-sm font-medium">2</div>
+                        <span className="text-blue-700">Take your personal baseline assessment</span>
+                      </div>
+                      <div className="flex items-center gap-3">
+                        <div className="bg-blue-600 text-white rounded-full w-6 h-6 flex items-center justify-center text-sm font-medium">3</div>
+                        <span className="text-blue-700">Start tracking your first relationship</span>
+                      </div>
+                    </div>
+                  </div>
 
                   <div className="bg-green-50 rounded-lg p-6 mb-8">
                     <h3 className="text-lg font-semibold text-green-800 mb-4">
@@ -146,12 +166,15 @@ export default function SubscriptionSuccessPage() {
                     <Button 
                       size="lg" 
                       className="bg-purple-600 hover:bg-purple-700 text-lg px-8 py-3 w-full"
-                      onClick={() => window.location.href = "/dashboard"}
+                      onClick={() => window.location.href = "/profile?onboarding=true"}
                     >
-                      Start Your Journey
+                      Complete Setup Now
                     </Button>
+                    <p className="text-sm text-blue-600">
+                      Taking you to your profile setup automatically in a few seconds...
+                    </p>
                     <p className="text-sm text-gray-500">
-                      Ready to transform your relationships? Let's begin with your personal baseline assessment.
+                      You can update your name, username, and preferences anytime in settings.
                     </p>
                   </div>
                 </>

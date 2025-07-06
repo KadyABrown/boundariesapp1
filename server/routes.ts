@@ -1903,24 +1903,21 @@ export async function registerRoutes(app: Express): Promise<Server> {
       const subscription = await stripe.subscriptions.retrieve(session.subscription as string);
 
       // Create or update user account
-      if (customer && customer.email) {
+      if (customer && (customer as any).email) {
+        const email = (customer as any).email;
         const userId = `stripe_${customer.id}`;
         
-        // Create user account
+        // Create basic user account - they can update details later
         const userData = {
           id: userId,
-          email: customer.email,
-          firstName: (customer as any).name?.split(' ')[0] || '',
-          lastName: (customer as any).name?.split(' ').slice(1).join(' ') || '',
-          stripeCustomerId: customer.id,
-          stripeSubscriptionId: subscription.id,
-          subscriptionStatus: 'active',
-          userRole: 'user',
-          createdAt: new Date(),
-          updatedAt: new Date()
+          email: email,
+          firstName: null,
+          lastName: null,
+          profileImageUrl: null,
         };
 
-        await storage.createUser(userData);
+        // Create/update user account
+        await storage.upsertUser(userData);
         
         res.json({ 
           success: true, 
