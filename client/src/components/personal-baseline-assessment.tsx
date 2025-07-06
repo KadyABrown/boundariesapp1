@@ -36,7 +36,7 @@ export default function PersonalBaselineAssessment({
     // Communication Preferences
     communicationStyle: existingBaseline?.communicationStyle || '',
     communicationStyleRanking: existingBaseline?.communicationStyleRanking || [],
-    conflictResolutionStyle: existingBaseline?.conflictResolutionStyle || '',
+    conflictResolution: existingBaseline?.conflictResolution || '',
     listeningNeeds: existingBaseline?.listeningNeeds || [],
     feedbackPreference: existingBaseline?.feedbackPreference || '',
     
@@ -179,9 +179,7 @@ export default function PersonalBaselineAssessment({
                         <span className="text-xs text-gray-500">≡</span>
                       </div>
                       <Label className="flex-1 cursor-move">{style.label}</Label>
-                      <div className="text-sm text-gray-500">
-                        Auto-weight: {10 - (index * 2)}
-                      </div>
+
                     </div>
                   ))}
                 </div>
@@ -191,8 +189,8 @@ export default function PersonalBaselineAssessment({
               <div>
                 <Label className="text-base font-medium">When there's conflict, I prefer to:</Label>
                 <RadioGroup 
-                  value={baselineData.conflictResolutionStyle} 
-                  onValueChange={(value) => updateData('conflictResolutionStyle', value)}
+                  value={baselineData.conflictResolution} 
+                  onValueChange={(value) => updateData('conflictResolution', value)}
                   className="mt-2"
                 >
                   <div className="flex items-center space-x-2">
@@ -527,7 +525,7 @@ export default function PersonalBaselineAssessment({
                 </CardHeader>
                 <CardContent>
                   <p><strong>Style:</strong> {baselineData.communicationStyle}</p>
-                  <p><strong>Conflict Resolution:</strong> {baselineData.conflictResolutionStyle}</p>
+                  <p><strong>Conflict Resolution:</strong> {baselineData.conflictResolution}</p>
                 </CardContent>
               </Card>
 
