@@ -1896,31 +1896,53 @@ export async function registerRoutes(app: Express): Promise<Server> {
         });
       }
 
-      // Get customer's subscriptions from Stripe
-      const subscriptions = await stripe.subscriptions.list({
-        customer: user.stripeCustomerId,
-        status: 'all',
-        limit: 10
-      });
-
-      const activeSubscription = subscriptions.data.find(sub => 
-        sub.status === 'active' || sub.status === 'trialing'
-      );
-
-      if (activeSubscription) {
+      // Handle test subscriptions for admin/testing
+      if (user.stripeCustomerId === 'cus_test_admin' && user.stripeSubscriptionId === 'sub_test_admin') {
         return res.json({
-          status: activeSubscription.status,
+          status: 'active',
           hasSubscription: true,
-          subscriptionId: activeSubscription.id,
+          subscriptionId: user.stripeSubscriptionId,
           customerId: user.stripeCustomerId,
-          currentPeriodStart: new Date(activeSubscription.current_period_start * 1000),
-          currentPeriodEnd: new Date(activeSubscription.current_period_end * 1000),
-          cancelAtPeriodEnd: activeSubscription.cancel_at_period_end,
-          priceId: activeSubscription.items.data[0]?.price.id,
-          amount: activeSubscription.items.data[0]?.price.unit_amount,
-          currency: activeSubscription.items.data[0]?.price.currency,
-          interval: activeSubscription.items.data[0]?.price.recurring?.interval
+          currentPeriodStart: new Date(Date.now() - 7 * 24 * 60 * 60 * 1000).toISOString(), // 7 days ago
+          currentPeriodEnd: new Date(Date.now() + 23 * 24 * 60 * 60 * 1000).toISOString(), // 23 days from now
+          cancelAtPeriodEnd: false,
+          priceId: 'price_test_monthly',
+          amount: 1299, // $12.99 in cents
+          currency: 'usd',
+          interval: 'month'
         });
+      }
+
+      try {
+        // Get customer's subscriptions from Stripe
+        const subscriptions = await stripe.subscriptions.list({
+          customer: user.stripeCustomerId,
+          status: 'all',
+          limit: 10
+        });
+
+        const activeSubscription = subscriptions.data.find(sub => 
+          sub.status === 'active' || sub.status === 'trialing'
+        );
+
+        if (activeSubscription) {
+          return res.json({
+            status: activeSubscription.status,
+            hasSubscription: true,
+            subscriptionId: activeSubscription.id,
+            customerId: user.stripeCustomerId,
+            currentPeriodStart: new Date(activeSubscription.current_period_start * 1000),
+            currentPeriodEnd: new Date(activeSubscription.current_period_end * 1000),
+            cancelAtPeriodEnd: activeSubscription.cancel_at_period_end,
+            priceId: activeSubscription.items.data[0]?.price.id,
+            amount: activeSubscription.items.data[0]?.price.unit_amount,
+            currency: activeSubscription.items.data[0]?.price.currency,
+            interval: activeSubscription.items.data[0]?.price.recurring?.interval
+          });
+        }
+      } catch (error) {
+        console.error('Error fetching Stripe subscription:', error);
+        // If Stripe call fails but user has subscription status, handle gracefully
       }
 
       return res.json({ 
@@ -2047,6 +2069,13 @@ export async function registerRoutes(app: Express): Promise<Server> {
       
       if (!user || !user.stripeCustomerId) {
         return res.status(404).json({ message: 'No subscription found' });
+      }
+
+      // Handle test subscriptions for admin/testing - redirect to a mock portal page
+      if (user.stripeCustomerId === 'cus_test_admin' && user.stripeSubscriptionId === 'sub_test_admin') {
+        return res.json({ 
+          portalUrl: `${req.protocol}://${req.get('host')}/profile?tab=subscription&message=test-portal`
+        });
       }
 
       // Create customer portal session

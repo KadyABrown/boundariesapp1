@@ -183,7 +183,7 @@ export function SubscriptionManagement() {
             <p className="text-muted-foreground mb-6">
               {subscription.message || "You don't have an active subscription."}
             </p>
-            <Button onClick={() => window.location.href = '/pricing'}>
+            <Button onClick={() => window.location.href = '/api/checkout'}>
               Subscribe Now
             </Button>
           </div>
