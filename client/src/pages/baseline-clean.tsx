@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { useMutation, useQuery } from '@tanstack/react-query';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
@@ -47,9 +47,9 @@ export default function BaselinePageClean() {
 
   // Check if user has existing baseline
   const { data: existingBaseline, isLoading } = useQuery({
-    queryKey: ['/api/baseline/latest'],
+    queryKey: ['/api/baseline'],
     queryFn: async () => {
-      const response = await fetch('/api/baseline/latest');
+      const response = await fetch('/api/baseline');
       if (!response.ok) return null;
       return response.json();
     }
@@ -83,16 +83,38 @@ export default function BaselinePageClean() {
     }
   });
 
+  // Populate form with existing baseline data when it loads
+  useEffect(() => {
+    if (existingBaseline) {
+      setFormData({
+        communicationStyle: existingBaseline.communicationStyle || '',
+        conflictResolution: existingBaseline.conflictResolution || '',
+        feedbackPreference: existingBaseline.feedbackPreference || '',
+        emotionalSupport: existingBaseline.emotionalSupport || '',
+        emotionalProcessingTime: existingBaseline.emotionalProcessingTime || 0,
+        validationNeeds: existingBaseline.validationNeeds || '',
+        personalSpaceNeeds: existingBaseline.personalSpaceNeeds || '',
+        responseTimeExpectation: existingBaseline.responseTimeExpectation || 0,
+        aloneTimeFrequency: existingBaseline.aloneTimeFrequency || '',
+        triggers: existingBaseline.triggers || [],
+        dealBreakerBehaviors: existingBaseline.dealBreakerBehaviors || [],
+        nonNegotiableBoundaries: existingBaseline.nonNegotiableBoundaries || [],
+        notes: existingBaseline.notes || ''
+      });
+    }
+  }, [existingBaseline]);
+
   const updateFormData = (field: string, value: any) => {
     setFormData(prev => ({ ...prev, [field]: value }));
   };
 
-  const toggleArrayItem = (field: string, item: string) => {
+  const toggleArrayItem = (field: keyof BaselineData, item: string) => {
+    const currentArray = formData[field] as string[];
     setFormData(prev => ({
       ...prev,
-      [field]: prev[field as keyof BaselineData].includes(item)
-        ? (prev[field as keyof BaselineData] as string[]).filter(i => i !== item)
-        : [...(prev[field as keyof BaselineData] as string[]), item]
+      [field]: currentArray.includes(item)
+        ? currentArray.filter(i => i !== item)
+        : [...currentArray, item]
     }));
   };
 

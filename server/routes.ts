@@ -2259,12 +2259,29 @@ export async function registerRoutes(app: Express): Promise<Server> {
       }
 
       // Create customer portal session
-      const session = await stripe.billingPortal.sessions.create({
-        customer: user.stripeCustomerId,
-        return_url: `${req.protocol}://${req.get('host')}/profile`,
-      });
-
-      res.json({ portalUrl: session.url });
+      try {
+        const session = await stripe.billingPortal.sessions.create({
+          customer: user.stripeCustomerId,
+          return_url: `${req.protocol}://${req.get('host')}/profile`,
+        });
+        res.json({ portalUrl: session.url });
+      } catch (portalError: any) {
+        // If customer portal is not configured, provide fallback functionality
+        if (portalError.code === 'customer_portal_customer_not_valid' || 
+            portalError.message?.includes('portal settings') ||
+            portalError.message?.includes('configuration')) {
+          console.log("Customer portal not configured, providing fallback");
+          
+          // Return a message about manual payment management
+          res.json({ 
+            message: "Payment management is handled directly through Stripe. Contact support for payment updates.",
+            fallback: true,
+            supportEmail: "hello@roxzmedia.com"
+          });
+        } else {
+          throw portalError;
+        }
+      }
     } catch (error) {
       console.error("Error creating customer portal:", error);
       res.status(500).json({ 
