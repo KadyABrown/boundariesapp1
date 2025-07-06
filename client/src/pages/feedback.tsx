@@ -11,6 +11,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { CheckCircle, Clock, AlertCircle, Bug, Lightbulb, Plus } from "lucide-react";
 import { apiRequest, queryClient } from "@/lib/queryClient";
 import { useToast } from "@/hooks/use-toast";
+import Navigation from "@/components/navigation";
 
 interface FeedbackItem {
   id: number;
@@ -133,27 +134,30 @@ export default function Feedback() {
   const reportedItems = filterByStatus('reported');
 
   return (
-    <div className="container mx-auto px-4 py-8 max-w-6xl">
-      <div className="flex items-center justify-between mb-6">
-        <div>
-          <h1 className="text-3xl font-bold text-gray-900">Development Updates</h1>
-          <p className="text-gray-600 mt-2">Track bug fixes, feature requests, and improvements</p>
+    <div className="min-h-screen bg-neutral-50">
+      <Navigation />
+      
+      <div className="container mx-auto px-4 py-8 max-w-6xl">
+        <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 mb-6">
+          <div>
+            <h1 className="text-2xl sm:text-3xl font-bold text-gray-900">Development Updates</h1>
+            <p className="text-gray-600 mt-2">Track bug fixes, feature requests, and improvements</p>
+          </div>
+          <Button 
+            onClick={() => setShowSubmissionForm(true)}
+            className="flex items-center gap-2 w-full sm:w-auto"
+          >
+            <Plus className="w-4 h-4" />
+            Report Issue
+          </Button>
         </div>
-        <Button 
-          onClick={() => setShowSubmissionForm(true)}
-          className="flex items-center gap-2"
-        >
-          <Plus className="w-4 h-4" />
-          Report Issue
-        </Button>
-      </div>
 
-      <Tabs defaultValue="current" className="w-full">
-        <TabsList className="grid w-full grid-cols-3">
-          <TabsTrigger value="current">Current Update</TabsTrigger>
-          <TabsTrigger value="next">Next Update</TabsTrigger>
-          <TabsTrigger value="completed">Completed</TabsTrigger>
-        </TabsList>
+        <Tabs defaultValue="current" className="w-full">
+          <TabsList className="grid w-full grid-cols-3 h-auto">
+            <TabsTrigger value="current" className="text-xs sm:text-sm p-2 sm:p-3">Current Update</TabsTrigger>
+            <TabsTrigger value="next" className="text-xs sm:text-sm p-2 sm:p-3">Next Update</TabsTrigger>
+            <TabsTrigger value="completed" className="text-xs sm:text-sm p-2 sm:p-3">Completed</TabsTrigger>
+          </TabsList>
 
         <TabsContent value="current" className="space-y-4">
           <Card>
@@ -289,10 +293,10 @@ export default function Feedback() {
             </CardContent>
           </Card>
         </TabsContent>
-      </Tabs>
+        </Tabs>
 
-      {/* Submission Form Modal */}
-      {showSubmissionForm && (
+        {/* Submission Form Modal */}
+        {showSubmissionForm && (
         <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center p-4 z-50">
           <Card className="w-full max-w-md">
             <CardHeader>
@@ -375,7 +379,8 @@ export default function Feedback() {
             </CardContent>
           </Card>
         </div>
-      )}
+        )}
+      </div>
     </div>
   );
 }
