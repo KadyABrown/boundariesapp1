@@ -334,6 +334,8 @@ Identifies when boundary violations and relationship issues are most likely to o
 - July 2, 2025. Restored clean web-only version after mobile app experiment. Removed React Native/Expo mobile components to maintain stable web application. Mobile app development will continue in separate Expo project to preserve web app stability.
 - July 5, 2025. Built comprehensive admin dashboard for tracking users, subscriptions, and revenue. Includes user management table, signup analytics, payment status monitoring, and search functionality. Implemented secure admin access control and comprehensive business metrics for subscription management.
 - July 5, 2025. Enhanced admin dashboard with account type indicators. Added Account Type column showing "Admin" badges with crown icons for administrators and "User" badges for regular users. Prepared for future "Provider" account type for therapist and coach users.
+- July 6, 2025. Successfully restored working backup version after encountering authentication issues with experimental rebuild. All core features now functional: authentication, database connections, API endpoints working properly.
+- July 6, 2025. Removed paywall restrictions - all features now completely free. Added comprehensive marketing website with separate pages for unauthenticated users (homepage, pricing, demo, FAQ) while preserving app interface for authenticated users. Marketing site includes features overview, pricing explanation, interactive demos, and comprehensive FAQ section.
 
 ## Future User Role System Planning
 
