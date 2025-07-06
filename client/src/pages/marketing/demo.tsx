@@ -9,7 +9,7 @@ export default function DemoPage() {
       <nav className="border-b bg-white/80 backdrop-blur-sm sticky top-0 z-50">
         <div className="container mx-auto px-4 py-4">
           <div className="flex items-center justify-between">
-            <div className="flex items-center gap-2">
+            <div className="flex items-center gap-2 cursor-pointer" onClick={() => window.location.href = "/"}>
               <Shield className="h-8 w-8 text-purple-600" />
               <span className="text-2xl font-bold text-gray-900">BoundarySpace</span>
             </div>
