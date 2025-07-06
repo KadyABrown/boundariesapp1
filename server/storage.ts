@@ -1585,10 +1585,11 @@ export class DatabaseStorage implements IStorage {
       
       // Delete friendship-related data
       await db.delete(friendships).where(
-        or(
-          eq(friendships.userId, userId),
-          eq(friendships.friendId, userId)
-        )
+        eq(friendships.requesterId, userId)
+      );
+      
+      await db.delete(friendships).where(
+        eq(friendships.receiverId, userId)
       );
       
       await db.delete(friendCircles).where(

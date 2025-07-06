@@ -24,6 +24,7 @@ function AdminPage() {
   const { toast } = useToast();
   const queryClient = useQueryClient();
   const [searchTerm, setSearchTerm] = useState("");
+  const [userFilter, setUserFilter] = useState<'all' | 'active' | 'cancelled'>('all');
 
   // Admin authorization check
   const isAdmin = user?.email === "hello@roxzmedia.com" || user?.id === "44415082";
@@ -126,12 +127,25 @@ function AdminPage() {
     }
   };
 
-  // Filter users based on search term
-  const filteredUsers = Array.isArray(allUsers) ? allUsers.filter((user: any) =>
-    user.email?.toLowerCase().includes(searchTerm.toLowerCase()) ||
-    user.firstName?.toLowerCase().includes(searchTerm.toLowerCase()) ||
-    user.lastName?.toLowerCase().includes(searchTerm.toLowerCase())
-  ) : [];
+  // Filter users based on search term and subscription status
+  const filteredUsers = Array.isArray(allUsers) ? allUsers.filter((user: any) => {
+    // Search filter
+    const matchesSearch = user.email?.toLowerCase().includes(searchTerm.toLowerCase()) ||
+      user.firstName?.toLowerCase().includes(searchTerm.toLowerCase()) ||
+      user.lastName?.toLowerCase().includes(searchTerm.toLowerCase());
+    
+    // Subscription filter
+    const isPremium = user.stripeCustomerId && user.stripeSubscriptionId && user.subscriptionStatus === 'active';
+    let matchesFilter = true;
+    
+    if (userFilter === 'active') {
+      matchesFilter = isPremium;
+    } else if (userFilter === 'cancelled') {
+      matchesFilter = !isPremium;
+    }
+    
+    return matchesSearch && matchesFilter;
+  }) : [];
 
   if (isLoading || statsLoading || usersLoading) {
     return (
@@ -274,7 +288,30 @@ function AdminPage() {
           <CardHeader>
             <div className="flex items-center justify-between">
               <CardTitle>All Users</CardTitle>
-              <div className="flex items-center gap-2">
+              <div className="flex items-center gap-4">
+                <div className="flex items-center gap-2">
+                  <Button
+                    variant={userFilter === 'all' ? 'default' : 'outline'}
+                    size="sm"
+                    onClick={() => setUserFilter('all')}
+                  >
+                    All Users
+                  </Button>
+                  <Button
+                    variant={userFilter === 'active' ? 'default' : 'outline'}
+                    size="sm"
+                    onClick={() => setUserFilter('active')}
+                  >
+                    Active Subscribers
+                  </Button>
+                  <Button
+                    variant={userFilter === 'cancelled' ? 'default' : 'outline'}
+                    size="sm"
+                    onClick={() => setUserFilter('cancelled')}
+                  >
+                    Free Users
+                  </Button>
+                </div>
                 <div className="relative">
                   <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 w-4 h-4" />
                   <Input
