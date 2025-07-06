@@ -1866,30 +1866,6 @@ export async function registerRoutes(app: Express): Promise<Server> {
         consent_collection: {
           promotions: 'auto',
         },
-        custom_fields: [
-          {
-            key: 'email_marketing',
-            label: {
-              type: 'custom',
-              custom: 'Subscribe to BoundarySpace tips and updates'
-            },
-            type: 'dropdown',
-            dropdown: {
-              default_value: 'yes',
-              options: [
-                {
-                  label: 'Yes, send me helpful relationship tips',
-                  value: 'yes'
-                },
-                {
-                  label: 'No thanks',
-                  value: 'no'
-                }
-              ]
-            },
-            optional: true
-          }
-        ],
         line_items: [
           {
             price_data: {
