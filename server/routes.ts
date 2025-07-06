@@ -1862,9 +1862,6 @@ export async function registerRoutes(app: Express): Promise<Server> {
         mode: 'subscription',
         payment_method_types: ['card'],
         billing_address_collection: 'required',
-        consent_collection: {
-          promotions: 'auto',
-        },
         line_items: [
           {
             price_data: {
