@@ -322,6 +322,7 @@ Identifies when boundary violations and relationship issues are most likely to o
 - July 1, 2025. Implemented comprehensive gamification system with achievement notifications, sound effects, daily challenges, boundary quotes, and streak recovery features
 - July 1, 2025. Added advanced relationship analysis features: comprehensive interaction tracker (5-step wizard), mood/energy/physical symptoms tracking, recovery time analysis, trigger pattern identification, communication silence tracking, personal baseline assessment, cross-relationship comparison, and time-based pattern analysis
 - July 6, 2025. Fixed critical API query path issues in relationship profile detail component - corrected flags and check-ins data fetching, fixed property mapping for behavioral flags display, and restored working health score calculations with real test data (8 green flags, 3 red flags showing 73% health score for Bet profile)
+- July 6, 2025. Created comprehensive public-facing marketing website with mobile-responsive design: landing page with "Know Your Boundaries" hero, interactive demo with pre-populated relationship data and working check-in functionality, detailed pricing page ($12.99/month), comprehensive FAQ with expandable sections, and public routes accessible without authentication
 
 ## User Preferences
 

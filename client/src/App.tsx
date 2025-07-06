@@ -16,6 +16,9 @@ import FlagExamples from "@/pages/flag-examples";
 import BaselinePage from "@/pages/baseline";
 import Admin from "@/pages/admin";
 import Feedback from "@/pages/feedback";
+import Pricing from "@/pages/pricing";
+import Demo from "@/pages/demo";
+import FAQ from "@/pages/faq";
 
 import NotFound from "@/pages/not-found";
 
@@ -24,6 +27,11 @@ function Router() {
 
   return (
     <Switch>
+      {/* Public routes accessible without authentication */}
+      <Route path="/pricing" component={Pricing} />
+      <Route path="/demo" component={Demo} />
+      <Route path="/faq" component={FAQ} />
+      
       {isLoading || !isAuthenticated ? (
         <Route path="/" component={Landing} />
       ) : (
@@ -38,8 +46,6 @@ function Router() {
           <Route path="/insights" component={Insights} />
           <Route path="/feedback" component={Feedback} />
           <Route path="/admin" component={Admin} />
-
-
         </>
       )}
       <Route component={NotFound} />
