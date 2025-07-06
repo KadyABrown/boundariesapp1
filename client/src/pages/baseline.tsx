@@ -13,7 +13,6 @@ export default function BaselinePage() {
   const { toast } = useToast();
   const { isAuthenticated, isLoading } = useAuth();
   const [userBaseline, setUserBaseline] = useState(null);
-  const [showEditForm, setShowEditForm] = useState(false);
 
   // Fetch relationships data for compatibility analysis
   const { data: relationships = [] } = useQuery({
@@ -39,27 +38,11 @@ export default function BaselinePage() {
     enabled: isAuthenticated && Array.isArray(relationships) && relationships.length > 0,
   });
 
-  // Fetch current baseline data
-  const { data: currentBaseline, isLoading: baselineLoading } = useQuery({
-    queryKey: ["/api/baseline"],
-    enabled: isAuthenticated,
-  });
-
   // Fetch baseline versions for historical tracking
   const { data: baselineVersions = [] } = useQuery({
     queryKey: ["/api/baseline/versions"],
     enabled: isAuthenticated,
   });
-
-  // Debug logging
-  useEffect(() => {
-    console.log('Baseline page debug:', {
-      isAuthenticated,
-      isLoading,
-      currentBaseline,
-      baselineLoading
-    });
-  }, [isAuthenticated, isLoading, currentBaseline, baselineLoading]);
 
   // Redirect to home if not authenticated
   useEffect(() => {
@@ -187,143 +170,11 @@ export default function BaselinePage() {
         </div>
 
         {/* Baseline Assessment */}
-        {baselineLoading ? (
-          <div className="flex items-center justify-center py-12">
-            <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary"></div>
-            <span className="ml-3">Loading baseline data...</span>
-          </div>
-        ) : !showEditForm ? (
-          /* Current Baseline Display */
-          currentBaseline ? (
-            <div className="space-y-6">
-              <Card>
-                <CardHeader>
-                  <CardTitle className="flex items-center gap-2">
-                    <MessageCircle className="h-5 w-5" />
-                    Communication Preferences
-                  </CardTitle>
-                </CardHeader>
-                <CardContent className="space-y-4">
-                  <div>
-                    <strong>Communication Style:</strong> {currentBaseline.communicationStyle || 'Not set'}
-                  </div>
-                  <div>
-                    <strong>Conflict Resolution:</strong> {currentBaseline.conflictResolution || 'Not set'}
-                  </div>
-                  <div>
-                    <strong>Feedback Preference:</strong> {currentBaseline.feedbackPreference || 'Not set'}
-                  </div>
-                </CardContent>
-              </Card>
-
-              <Card>
-                <CardHeader>
-                  <CardTitle className="flex items-center gap-2">
-                    <Heart className="h-5 w-5" />
-                    Emotional Needs
-                  </CardTitle>
-                </CardHeader>
-                <CardContent className="space-y-4">
-                  <div>
-                    <strong>Emotional Support:</strong> {currentBaseline.emotionalSupport || 'Not set'}
-                  </div>
-                  <div>
-                    <strong>Validation Needs:</strong> {currentBaseline.validationNeeds || 'Not set'}
-                  </div>
-                  <div>
-                    <strong>Processing Time:</strong> {currentBaseline.emotionalProcessingTime || 0} minutes
-                  </div>
-                  {currentBaseline.triggers && currentBaseline.triggers.length > 0 && (
-                    <div>
-                      <strong>Triggers:</strong>
-                      <ul className="ml-4 mt-1">
-                        {currentBaseline.triggers.map((trigger: string, index: number) => (
-                          <li key={index} className="text-sm">• {trigger}</li>
-                        ))}
-                      </ul>
-                    </div>
-                  )}
-                </CardContent>
-              </Card>
-
-              <Card>
-                <CardHeader>
-                  <CardTitle className="flex items-center gap-2">
-                    <Shield className="h-5 w-5" />
-                    Boundaries
-                  </CardTitle>
-                </CardHeader>
-                <CardContent className="space-y-4">
-                  <div>
-                    <strong>Personal Space Needs:</strong> {currentBaseline.personalSpaceNeeds || 'Not set'}
-                  </div>
-                  <div>
-                    <strong>Response Time Expectation:</strong> {currentBaseline.responseTimeExpectation || 0} hours
-                  </div>
-                  {currentBaseline.nonNegotiableBoundaries && currentBaseline.nonNegotiableBoundaries.length > 0 && (
-                    <div>
-                      <strong>Non-Negotiable Boundaries:</strong>
-                      <ul className="ml-4 mt-1">
-                        {currentBaseline.nonNegotiableBoundaries.map((boundary: string, index: number) => (
-                          <li key={index} className="text-sm">• {boundary}</li>
-                        ))}
-                      </ul>
-                    </div>
-                  )}
-                  {currentBaseline.dealBreakerBehaviors && currentBaseline.dealBreakerBehaviors.length > 0 && (
-                    <div>
-                      <strong>Deal Breaker Behaviors:</strong>
-                      <ul className="ml-4 mt-1">
-                        {currentBaseline.dealBreakerBehaviors.map((behavior: string, index: number) => (
-                          <li key={index} className="text-sm">• {behavior}</li>
-                        ))}
-                      </ul>
-                    </div>
-                  )}
-                </CardContent>
-              </Card>
-
-              {currentBaseline.notes && (
-                <Card>
-                  <CardHeader>
-                    <CardTitle>Additional Notes</CardTitle>
-                  </CardHeader>
-                  <CardContent>
-                    <p className="text-gray-700">{currentBaseline.notes}</p>
-                  </CardContent>
-                </Card>
-              )}
-
-              <div className="flex gap-4">
-                <Button onClick={() => setShowEditForm(true)}>
-                  Edit Baseline
-                </Button>
-                <Button variant="outline" onClick={() => window.location.href = '/dashboard'}>
-                  Back to Dashboard
-                </Button>
-              </div>
-            </div>
-          ) : (
-            <Card>
-              <CardContent className="py-8 text-center">
-                <p className="text-gray-600">No baseline assessment found.</p>
-                <Button 
-                  onClick={() => setShowEditForm(true)}
-                  className="mt-4"
-                >
-                  Create Baseline Assessment
-                </Button>
-              </CardContent>
-            </Card>
-          )
-        ) : (
-          /* Edit Form */
-          <PersonalBaselineAssessment 
-            existingBaseline={currentBaseline || undefined}
-            onComplete={handleSaveBaseline}
-            onCancel={() => setShowEditForm(false)}
-          />
-        )}
+        <PersonalBaselineAssessment
+          existingBaseline={userBaseline || undefined}
+          onComplete={handleSaveBaseline}
+          onCancel={() => window.location.href = '/dashboard'}
+        />
       </div>
     </div>
   );

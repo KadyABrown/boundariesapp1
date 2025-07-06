@@ -11,8 +11,10 @@ interface PaywallProps {
 export function Paywall({ children, feature = "this feature" }: PaywallProps) {
   const { user } = useAuth();
   
-  // All features are now free - no paywall restrictions
-  const hasSubscription = true;
+  // Check if user has active subscription
+  // TEMP: Set to false so you can see the paywall demo
+  const hasSubscription = false;
+  // Normal: user?.subscriptionStatus === 'active' || user?.subscriptionStatus === 'trial';
   
   if (hasSubscription) {
     return <>{children}</>;

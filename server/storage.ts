@@ -55,7 +55,6 @@ export interface IStorage {
   // User operations (required for Replit Auth)
   getUser(id: string): Promise<User | undefined>;
   upsertUser(user: UpsertUser): Promise<User>;
-  updateUser(id: string, updates: Partial<UpsertUser>): Promise<User>;
   
   // Boundary operations
   createBoundary(boundary: InsertBoundary): Promise<Boundary>;
@@ -213,15 +212,6 @@ export class DatabaseStorage implements IStorage {
           updatedAt: new Date(),
         },
       })
-      .returning();
-    return user;
-  }
-
-  async updateUser(id: string, updates: Partial<UpsertUser>): Promise<User> {
-    const [user] = await db
-      .update(users)
-      .set({ ...updates, updatedAt: new Date() })
-      .where(eq(users.id, id))
       .returning();
     return user;
   }
@@ -1514,10 +1504,6 @@ export class DatabaseStorage implements IStorage {
     }
   }
 
-  async getAllUsers(): Promise<User[]> {
-    return await db.select().from(users);
-  }
-
   async getAllUsersForAdmin(): Promise<Array<User & {
     relationshipCount: number;
     lastActiveAt: Date | null;
@@ -1551,84 +1537,6 @@ export class DatabaseStorage implements IStorage {
     );
 
     return usersWithMetadata;
-  }
-
-  async deleteUser(userId: string): Promise<void> {
-    try {
-      // Delete all user-related data in the correct order to handle foreign key constraints
-      
-      // Delete relationship-related data first
-      await db.delete(emotionalCheckIns).where(
-        eq(emotionalCheckIns.userId, userId)
-      );
-      
-      await db.delete(behavioralFlags).where(
-        eq(behavioralFlags.userId, userId)
-      );
-      
-      await db.delete(relationshipProfiles).where(
-        eq(relationshipProfiles.userId, userId)
-      );
-      
-      // Delete boundary-related data
-      await db.delete(boundaries).where(
-        eq(boundaries.userId, userId)
-      );
-      
-      await db.delete(boundaryEntries).where(
-        eq(boundaryEntries.userId, userId)
-      );
-      
-      await db.delete(reflectionEntries).where(
-        eq(reflectionEntries.userId, userId)
-      );
-      
-      // Delete friendship-related data
-      await db.delete(friendships).where(
-        eq(friendships.requesterId, userId)
-      );
-      
-      await db.delete(friendships).where(
-        eq(friendships.receiverId, userId)
-      );
-      
-      await db.delete(friendCircles).where(
-        eq(friendCircles.userId, userId)
-      );
-      
-      // Delete comprehensive interactions
-      await db.delete(comprehensiveInteractions).where(
-        eq(comprehensiveInteractions.userId, userId)
-      );
-      
-      // Delete personal baselines
-      await db.delete(personalBaselines).where(
-        eq(personalBaselines.userId, userId)
-      );
-      
-      // Delete goal check-ins
-      await db.delete(goalCheckIns).where(
-        eq(goalCheckIns.userId, userId)
-      );
-      
-      // Delete boundary goals
-      await db.delete(boundaryGoals).where(
-        eq(boundaryGoals.userId, userId)
-      );
-      
-      // Delete user settings
-      await db.delete(userSettings).where(
-        eq(userSettings.userId, userId)
-      );
-      
-      // Finally delete the user
-      await db.delete(users).where(eq(users.id, userId));
-      
-      console.log(`Successfully deleted user ${userId} and all related data`);
-    } catch (error) {
-      console.error(`Failed to delete user ${userId}:`, error);
-      throw error;
-    }
   }
 }
 

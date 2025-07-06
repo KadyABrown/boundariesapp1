@@ -459,49 +459,7 @@ export default function RelationshipProfileDetail({ relationship, onClose }: Rel
           onClose={() => setShowCIT(false)}
           onSubmit={async (data: any) => {
             try {
-              // Map frontend data structure to database schema
-              const mappedData = {
-                relationshipId: data.relationshipId,
-                
-                // Pre-interaction state (map frontend names to backend names)
-                preEnergyLevel: data.energyBefore,
-                preAnxietyLevel: data.anxietyBefore,
-                preSelfWorth: data.selfWorthBefore,
-                preMood: data.moodBefore,
-                preWarningSigns: data.emotionalWarningSignsPresent || [],
-                
-                // Interaction context
-                interactionType: data.interactionType,
-                durationMinutes: data.duration,
-                locationSetting: data.location,
-                witnessesPresent: data.witnesses,
-                boundaryTesting: data.boundariesTested,
-                
-                // Post-interaction impact
-                postEnergyLevel: data.energyAfter,
-                postAnxietyLevel: data.anxietyAfter,
-                postSelfWorth: data.selfWorthAfter,
-                physicalSymptoms: data.physicalSymptomsAfter || [],
-                emotionalStates: data.emotionalStateAfter || [],
-                
-                // Recovery analysis
-                recoveryTimeMinutes: data.recoveryTime,
-                recoveryStrategies: data.recoveryStrategies || [],
-                whatHelped: data.whatHelped?.join(', ') || '',
-                whatMadeWorse: data.whatMadeItWorse?.join(', ') || '',
-                supportUsed: data.copingSkillsUsed || [],
-                
-                // Learning and growth
-                warningSignsRecognized: data.warningSignsNoticed || [],
-                boundariesMaintained: data.boundariesMaintained || [],
-                selfAdvocacyActions: data.selfAdvocacyActions || [],
-                lessonsLearned: data.lessonsLearned || '',
-                futureStrategies: data.futurePreparation?.join(', ') || ''
-              };
-
-              console.log("Mapped CIT data:", mappedData);
-              
-              await apiRequest("POST", "/api/interactions", mappedData);
+              await apiRequest("POST", "/api/interactions", data);
               queryClient.invalidateQueries({ queryKey: ['/api/interactions', relationship.id] });
               setShowCIT(false);
               toast({

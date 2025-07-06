@@ -15,9 +15,8 @@ import { Switch } from "@/components/ui/switch";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Badge } from "@/components/ui/badge";
-import { User, Settings, Shield, Bell, Users, Heart, Volume2, Play, CreditCard } from "lucide-react";
+import { User, Settings, Shield, Bell, Users, Heart, Volume2, Play } from "lucide-react";
 import BoundaryBoost from "@/components/boundary-boost";
-import { SubscriptionManagement } from "@/components/subscription-management";
 import { AudioEffects } from "@/lib/audioEffects";
 
 interface UserProfile {
@@ -269,14 +268,10 @@ export default function Profile() {
 
         {/* Profile Management Tabs */}
         <Tabs defaultValue="basic" className="space-y-6">
-          <TabsList className="grid w-full grid-cols-2 md:grid-cols-5 gap-1 h-auto">
+          <TabsList className="grid w-full grid-cols-2 md:grid-cols-4 gap-1 h-auto">
             <TabsTrigger value="basic" className="text-xs md:text-sm px-2 py-2 md:px-4">Basic Info</TabsTrigger>
             <TabsTrigger value="preferences" className="text-xs md:text-sm px-2 py-2 md:px-4">Preferences</TabsTrigger>
             <TabsTrigger value="privacy" className="text-xs md:text-sm px-2 py-2 md:px-4">Privacy</TabsTrigger>
-            <TabsTrigger value="subscription" className="text-xs md:text-sm px-2 py-2 md:px-4">
-              <CreditCard className="w-3 h-3 mr-1" />
-              Subscription
-            </TabsTrigger>
             <TabsTrigger value="achievements" className="text-xs md:text-sm px-2 py-2 md:px-4">Achievements</TabsTrigger>
           </TabsList>
 
@@ -583,11 +578,6 @@ export default function Profile() {
                 </Button>
               </CardContent>
             </Card>
-          </TabsContent>
-
-          {/* Subscription Management Tab */}
-          <TabsContent value="subscription">
-            <SubscriptionManagement />
           </TabsContent>
 
           {/* Achievements Tab */}

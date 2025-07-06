@@ -35,39 +35,39 @@ export default function PersonalBaselineAssessment({
   const [baselineData, setBaselineData] = useState({
     // Communication Preferences
     communicationStyle: existingBaseline?.communicationStyle || '',
-    communicationStyleRanking: Array.isArray(existingBaseline?.communicationStyleRanking) ? existingBaseline.communicationStyleRanking : [],
+    communicationStyleRanking: existingBaseline?.communicationStyleRanking || [],
     conflictResolution: existingBaseline?.conflictResolution || '',
-    listeningNeeds: Array.isArray(existingBaseline?.listeningNeeds) ? existingBaseline.listeningNeeds : [],
+    listeningNeeds: existingBaseline?.listeningNeeds || [],
     feedbackPreference: existingBaseline?.feedbackPreference || '',
     
     // Emotional Needs
     emotionalSupport: existingBaseline?.emotionalSupport || '',
     emotionalValidationNeeds: existingBaseline?.emotionalValidationNeeds || '',
-    validationStyle: Array.isArray(existingBaseline?.validationStyle) ? existingBaseline.validationStyle : [],
-    affectionStyle: Array.isArray(existingBaseline?.affectionStyle) ? existingBaseline.affectionStyle : [],
+    validationStyle: existingBaseline?.validationStyle || [],
+    affectionStyle: existingBaseline?.affectionStyle || [],
     validationNeeds: existingBaseline?.validationNeeds || '',
     emotionalProcessingTime: existingBaseline?.emotionalProcessingTime || 0,
-    triggers: Array.isArray(existingBaseline?.triggers) ? existingBaseline.triggers : [],
-    comfortingSources: Array.isArray(existingBaseline?.comfortingSources) ? existingBaseline.comfortingSources : [],
+    triggers: existingBaseline?.triggers || [],
+    comfortingSources: existingBaseline?.comfortingSources || [],
     
     // Boundary Requirements
     personalSpaceNeeds: existingBaseline?.personalSpaceNeeds || '',
     privacyLevel: existingBaseline?.privacyLevel || '',
     decisionMakingStyle: existingBaseline?.decisionMakingStyle || '',
-    nonNegotiableBoundaries: Array.isArray(existingBaseline?.nonNegotiableBoundaries) ? existingBaseline.nonNegotiableBoundaries : [],
-    flexibleBoundaries: Array.isArray(existingBaseline?.flexibleBoundaries) ? existingBaseline.flexibleBoundaries : [],
+    nonNegotiableBoundaries: existingBaseline?.nonNegotiableBoundaries || [],
+    flexibleBoundaries: existingBaseline?.flexibleBoundaries || [],
     
     // Core Values & Deal-breakers
-    coreValues: Array.isArray(existingBaseline?.coreValues) ? existingBaseline.coreValues : [],
-    dealBreakers: Array.isArray(existingBaseline?.dealBreakers) ? existingBaseline.dealBreakers : [],
+    coreValues: existingBaseline?.coreValues || [],
+    dealBreakers: existingBaseline?.dealBreakers || [],
     toleranceLevels: existingBaseline?.toleranceLevels || {},
     
     // Physical & Mental Health Patterns
-    energyDrains: Array.isArray(existingBaseline?.energyDrains) ? existingBaseline.energyDrains : [],
-    energySources: Array.isArray(existingBaseline?.energySources) ? existingBaseline.energySources : [],
-    anxietyTriggers: Array.isArray(existingBaseline?.anxietyTriggers) ? existingBaseline.anxietyTriggers : [],
-    selfWorthFactors: Array.isArray(existingBaseline?.selfWorthFactors) ? existingBaseline.selfWorthFactors : [],
-    physicalSymptomTriggers: Array.isArray(existingBaseline?.physicalSymptomTriggers) ? existingBaseline.physicalSymptomTriggers : []
+    energyDrains: existingBaseline?.energyDrains || [],
+    energySources: existingBaseline?.energySources || [],
+    anxietyTriggers: existingBaseline?.anxietyTriggers || [],
+    selfWorthFactors: existingBaseline?.selfWorthFactors || [],
+    physicalSymptomTriggers: existingBaseline?.physicalSymptomTriggers || []
   });
 
   const handleNext = () => {
