@@ -668,6 +668,61 @@ export default function Relationships() {
           </Dialog>
         </div>
 
+        {/* Relationships Summary */}
+        {profiles && profiles.length > 0 && (
+          <Card className="mb-8">
+            <CardHeader>
+              <CardTitle className="flex items-center">
+                <BarChart3 className="w-5 h-5 mr-2" />
+                Relationships Summary
+              </CardTitle>
+            </CardHeader>
+            <CardContent>
+              <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+                <div className="text-center">
+                  <div className="text-2xl font-bold text-neutral-800">{profiles.length}</div>
+                  <div className="text-sm text-neutral-600">Total Relationships</div>
+                </div>
+                <div className="text-center">
+                  <div className="text-2xl font-bold text-red-600">
+                    {profiles.filter((p: any) => p.relationshipType === 'romantic').length}
+                  </div>
+                  <div className="text-sm text-neutral-600">Romantic</div>
+                </div>
+                <div className="text-center">
+                  <div className="text-2xl font-bold text-blue-600">
+                    {profiles.filter((p: any) => p.relationshipType === 'platonic').length}
+                  </div>
+                  <div className="text-sm text-neutral-600">Platonic</div>
+                </div>
+                <div className="text-center">
+                  <div className="text-2xl font-bold text-green-600">
+                    {profiles.filter((p: any) => p.currentStatus === 'active').length}
+                  </div>
+                  <div className="text-sm text-neutral-600">Active</div>
+                </div>
+              </div>
+              
+              {/* Relationship Status Breakdown */}
+              <div className="mt-6 pt-4 border-t">
+                <h4 className="text-sm font-medium text-neutral-700 mb-3">Relationship Status Distribution</h4>
+                <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-2">
+                  {['dating', 'talking', 'interested', 'friendship', 'family', 'over'].map(status => {
+                    const count = profiles.filter((p: any) => p.relationshipStatus === status).length;
+                    if (count === 0) return null;
+                    return (
+                      <div key={status} className="text-center p-2 bg-neutral-100 rounded">
+                        <div className="text-lg font-semibold text-neutral-800">{count}</div>
+                        <div className="text-xs text-neutral-600 capitalize">{status}</div>
+                      </div>
+                    );
+                  })}
+                </div>
+              </div>
+            </CardContent>
+          </Card>
+        )}
+
         {profilesLoading ? (
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
             {[...Array(6)].map((_, i) => (
