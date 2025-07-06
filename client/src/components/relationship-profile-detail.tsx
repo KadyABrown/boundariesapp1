@@ -81,6 +81,14 @@ export default function RelationshipProfileDetail({ relationship, onClose }: Rel
   const [showCheckInDialog, setShowCheckInDialog] = useState(false);
   const [showSettingsDialog, setShowSettingsDialog] = useState(false);
   
+  // Flag form state
+  const [flagFormData, setFlagFormData] = useState({
+    flagType: 'green',
+    category: 'communication',
+    behavior: '',
+    notes: ''
+  });
+  
   const { data: flags, isLoading: flagsLoading } = useQuery({
     queryKey: [`/api/relationships/${relationship.id}/flags`],
     refetchOnWindowFocus: false,
@@ -424,7 +432,13 @@ export default function RelationshipProfileDetail({ relationship, onClose }: Rel
                                 <div className="flex items-start justify-between">
                                   <div className="flex-1">
                                     <div className="flex items-center gap-2">
-                                      <Badge variant={flag.flag_type === 'green' ? 'default' : 'destructive'}>
+                                      <Badge 
+                                        className={
+                                          flag.flag_type === 'green' 
+                                            ? 'bg-green-100 text-green-800 border-green-200' 
+                                            : 'bg-red-100 text-red-800 border-red-200'
+                                        }
+                                      >
                                         {flag.flag_type} flag
                                       </Badge>
                                       <span className="text-sm text-gray-500">{flag.flag_category}</span>
@@ -553,14 +567,22 @@ export default function RelationshipProfileDetail({ relationship, onClose }: Rel
             <div className="space-y-4">
               <div>
                 <label className="text-sm font-medium text-gray-700">Flag Type</label>
-                <select className="w-full mt-1 p-2 border rounded-md">
+                <select 
+                  className="w-full mt-1 p-2 border rounded-md"
+                  value={flagFormData.flagType}
+                  onChange={(e) => setFlagFormData({...flagFormData, flagType: e.target.value})}
+                >
                   <option value="green">Green Flag (Positive)</option>
                   <option value="red">Red Flag (Concerning)</option>
                 </select>
               </div>
               <div>
                 <label className="text-sm font-medium text-gray-700">Category</label>
-                <select className="w-full mt-1 p-2 border rounded-md">
+                <select 
+                  className="w-full mt-1 p-2 border rounded-md"
+                  value={flagFormData.category}
+                  onChange={(e) => setFlagFormData({...flagFormData, category: e.target.value})}
+                >
                   <option value="communication">Communication</option>
                   <option value="respect">Respect</option>
                   <option value="trust">Trust & Reliability</option>
@@ -573,6 +595,8 @@ export default function RelationshipProfileDetail({ relationship, onClose }: Rel
                   className="w-full mt-1 p-2 border rounded-md" 
                   rows={3} 
                   placeholder="Describe the specific behavior you observed..."
+                  value={flagFormData.behavior}
+                  onChange={(e) => setFlagFormData({...flagFormData, behavior: e.target.value})}
                 />
               </div>
               <div>
@@ -581,12 +605,22 @@ export default function RelationshipProfileDetail({ relationship, onClose }: Rel
                   className="w-full mt-1 p-2 border rounded-md" 
                   rows={2} 
                   placeholder="Additional context or notes..."
+                  value={flagFormData.notes}
+                  onChange={(e) => setFlagFormData({...flagFormData, notes: e.target.value})}
                 />
               </div>
             </div>
             <div className="flex gap-2 mt-6">
               <Button 
-                onClick={() => setShowFlagDialog(false)} 
+                onClick={() => {
+                  setFlagFormData({
+                    flagType: 'green',
+                    category: 'communication',
+                    behavior: '',
+                    notes: ''
+                  });
+                  setShowFlagDialog(false);
+                }} 
                 variant="outline" 
                 className="flex-1"
               >
@@ -595,14 +629,46 @@ export default function RelationshipProfileDetail({ relationship, onClose }: Rel
               <Button 
                 onClick={async () => {
                   try {
-                    // TODO: Add actual flag creation API call
+                    if (!flagFormData.behavior.trim()) {
+                      toast({
+                        title: "Missing Information",
+                        description: "Please describe the behavior before adding the flag.",
+                        variant: "destructive",
+                      });
+                      return;
+                    }
+
+                    const flagData = {
+                      profileId: relationship.id,
+                      flagCategory: flagFormData.category,
+                      flagName: flagFormData.behavior,
+                      flagType: flagFormData.flagType,
+                      isPresent: true,
+                      notes: flagFormData.notes || null
+                    };
+
+                    await apiRequest("POST", `/api/relationships/${relationship.id}/flags`, flagData);
+                    
+                    // Reset form
+                    setFlagFormData({
+                      flagType: 'green',
+                      category: 'communication',
+                      behavior: '',
+                      notes: ''
+                    });
+                    
+                    setShowFlagDialog(false);
+                    
+                    // Invalidate queries to refresh data
+                    queryClient.invalidateQueries({ queryKey: [`/api/relationships/${relationship.id}/flags`] });
+                    queryClient.invalidateQueries({ queryKey: [`/api/relationships/${relationship.id}/stats`] });
+                    
                     toast({
                       title: "Flag Added",
                       description: "Behavioral flag has been recorded successfully.",
                     });
-                    setShowFlagDialog(false);
-                    queryClient.invalidateQueries({ queryKey: ['/api/relationships', relationship.id, 'flags'] });
                   } catch (error) {
+                    console.error("Error adding flag:", error);
                     toast({
                       title: "Error",
                       description: "Failed to add flag. Please try again.",
@@ -611,6 +677,7 @@ export default function RelationshipProfileDetail({ relationship, onClose }: Rel
                   }
                 }} 
                 className="flex-1"
+                disabled={!flagFormData.behavior.trim()}
               >
                 Add Flag
               </Button>
