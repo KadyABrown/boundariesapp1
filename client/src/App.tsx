@@ -20,6 +20,7 @@ import Pricing from "@/pages/pricing";
 import Demo from "@/pages/demo-clean";
 import FAQ from "@/pages/faq";
 import Subscribe from "@/pages/subscribe";
+import SubscriptionSuccess from "@/pages/subscription-success";
 
 import NotFound from "@/pages/not-found";
 
@@ -33,6 +34,7 @@ function Router() {
       <Route path="/demo" component={Demo} />
       <Route path="/faq" component={FAQ} />
       <Route path="/subscribe" component={Subscribe} />
+      <Route path="/subscription-success" component={SubscriptionSuccess} />
       
       {isLoading || !isAuthenticated ? (
         <Route path="/" component={Landing} />
