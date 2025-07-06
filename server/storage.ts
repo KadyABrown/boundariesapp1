@@ -1558,42 +1558,70 @@ export class DatabaseStorage implements IStorage {
       // Delete all user-related data in the correct order to handle foreign key constraints
       
       // Delete relationship-related data first
-      await this.db.delete(relationshipCheckins).where(
-        relationshipCheckins.userId.eq(userId)
+      await db.delete(emotionalCheckIns).where(
+        eq(emotionalCheckIns.userId, userId)
       );
       
-      await this.db.delete(relationshipUsers).where(
-        relationshipUsers.userId.eq(userId)
+      await db.delete(behavioralFlags).where(
+        eq(behavioralFlags.userId, userId)
       );
       
-      await this.db.delete(relationshipProfiles).where(
-        relationshipProfiles.userId.eq(userId)
+      await db.delete(relationshipProfiles).where(
+        eq(relationshipProfiles.userId, userId)
       );
       
       // Delete boundary-related data
-      await this.db.delete(boundaries).where(
-        boundaries.userId.eq(userId)
+      await db.delete(boundaries).where(
+        eq(boundaries.userId, userId)
       );
       
-      await this.db.delete(entries).where(
-        entries.userId.eq(userId)
+      await db.delete(boundaryEntries).where(
+        eq(boundaryEntries.userId, userId)
+      );
+      
+      await db.delete(reflectionEntries).where(
+        eq(reflectionEntries.userId, userId)
       );
       
       // Delete friendship-related data
-      await this.db.delete(friendships).where(
+      await db.delete(friendships).where(
         or(
-          friendships.userId.eq(userId),
-          friendships.friendId.eq(userId)
+          eq(friendships.userId, userId),
+          eq(friendships.friendId, userId)
         )
       );
       
-      // Delete baseline assessment
-      await this.db.delete(baselineAssessments).where(
-        baselineAssessments.userId.eq(userId)
+      await db.delete(friendCircles).where(
+        eq(friendCircles.userId, userId)
+      );
+      
+      // Delete comprehensive interactions
+      await db.delete(comprehensiveInteractions).where(
+        eq(comprehensiveInteractions.userId, userId)
+      );
+      
+      // Delete personal baselines
+      await db.delete(personalBaselines).where(
+        eq(personalBaselines.userId, userId)
+      );
+      
+      // Delete goal check-ins
+      await db.delete(goalCheckIns).where(
+        eq(goalCheckIns.userId, userId)
+      );
+      
+      // Delete boundary goals
+      await db.delete(boundaryGoals).where(
+        eq(boundaryGoals.userId, userId)
+      );
+      
+      // Delete user settings
+      await db.delete(userSettings).where(
+        eq(userSettings.userId, userId)
       );
       
       // Finally delete the user
-      await this.db.delete(users).where(users.id.eq(userId));
+      await db.delete(users).where(eq(users.id, userId));
       
       console.log(`Successfully deleted user ${userId} and all related data`);
     } catch (error) {
