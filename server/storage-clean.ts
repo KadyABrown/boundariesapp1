@@ -18,6 +18,40 @@ import { eq, and, desc } from "drizzle-orm";
 
 export class Storage {
   
+  // User Methods
+  async upsertUser(userData: any): Promise<any> {
+    try {
+      const [user] = await db.insert(users).values({
+        id: userData.id,
+        name: userData.name,
+        email: userData.email,
+        image: userData.image
+      }).onConflictDoUpdate({
+        target: users.id,
+        set: {
+          name: userData.name,
+          email: userData.email,
+          image: userData.image,
+          updatedAt: new Date()
+        }
+      }).returning();
+      
+      return user;
+    } catch (error) {
+      console.error("Upsert user error:", error);
+      throw error;
+    }
+  }
+
+  async getUser(userId: string): Promise<any> {
+    const user = await db.select()
+      .from(users)
+      .where(eq(users.id, userId))
+      .limit(1);
+    
+    return user[0] || null;
+  }
+  
   // Personal Baseline Methods
   async createBaseline(userId: string, data: InsertPersonalBaseline): Promise<PersonalBaseline> {
     const [baseline] = await db.insert(personalBaselines).values({

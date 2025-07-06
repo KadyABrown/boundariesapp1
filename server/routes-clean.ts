@@ -14,7 +14,7 @@ export function registerRoutes(app: Express) {
   // User authentication check
   app.get("/api/user", isAuthenticated, async (req: Request, res: Response) => {
     try {
-      const user = getSession()?.user;
+      const user = (req as any).user;
       if (!user) {
         return res.status(401).json({ message: "Not authenticated" });
       }
@@ -34,7 +34,7 @@ export function registerRoutes(app: Express) {
   // Personal Baseline Routes
   app.post("/api/baseline", isAuthenticated, async (req: Request, res: Response) => {
     try {
-      const userId = req.user?.id;
+      const userId = (req as any).user?.id;
       if (!userId) {
         return res.status(401).json({ message: "Unauthorized" });
       }
