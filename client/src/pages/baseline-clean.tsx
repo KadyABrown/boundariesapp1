@@ -8,6 +8,7 @@ import { RadioGroup, RadioGroupItem } from '@/components/ui/radio-group';
 import { Checkbox } from '@/components/ui/checkbox';
 import { useToast } from '@/hooks/use-toast';
 import { ArrowRight, ArrowLeft, Save, CheckCircle, Heart, Shield } from 'lucide-react';
+import Navigation from '@/components/navigation';
 
 interface BaselineData {
   communicationStyle: string;
@@ -127,17 +128,22 @@ export default function BaselinePageClean() {
 
   if (isLoading) {
     return (
-      <div className="min-h-screen bg-gradient-to-br from-primary/5 to-purple-50 flex items-center justify-center">
-        <div className="text-center">
-          <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary mx-auto mb-4"></div>
-          <p className="text-neutral-600">Loading your baseline...</p>
+      <>
+        <Navigation />
+        <div className="min-h-screen bg-gradient-to-br from-primary/5 to-purple-50 flex items-center justify-center">
+          <div className="text-center">
+            <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary mx-auto mb-4"></div>
+            <p className="text-neutral-600">Loading your baseline...</p>
+          </div>
         </div>
-      </div>
+      </>
     );
   }
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-primary/5 to-purple-50">
+    <>
+      <Navigation />
+      <div className="min-h-screen bg-gradient-to-br from-primary/5 to-purple-50">
       <div className="container mx-auto px-4 py-8 max-w-4xl">
         {/* Header */}
         <div className="bg-white/80 backdrop-blur-sm rounded-xl p-8 mb-8 border-0 shadow-lg">
@@ -605,5 +611,6 @@ export default function BaselinePageClean() {
         </div>
       </div>
     </div>
+    </>
   );
 }
