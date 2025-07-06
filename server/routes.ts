@@ -1781,8 +1781,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
           interval: 'month',
         },
         product_data: {
-          name: 'BoundarySpace Pro',
-          description: 'Monthly subscription to BoundarySpace relationship tracking app',
+          name: 'BoundarySpace',
         },
       });
 

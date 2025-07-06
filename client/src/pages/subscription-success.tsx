@@ -18,7 +18,7 @@ export default function SubscriptionSuccess() {
             <CheckCircle className="w-8 h-8 text-green-600 dark:text-green-400" />
           </div>
           <CardTitle className="text-3xl font-bold text-green-800 dark:text-green-200">
-            Welcome to BoundarySpace Pro!
+            Welcome to BoundarySpace!
           </CardTitle>
           <CardDescription className="text-lg mt-2">
             Your subscription is now active. Let's start building healthier relationships together.
@@ -70,18 +70,11 @@ export default function SubscriptionSuccess() {
             </ul>
           </div>
 
-          <div className="flex flex-col sm:flex-row gap-4 justify-center">
-            <Link href="/dashboard">
-              <Button className="w-full sm:w-auto" size="lg">
-                Go to Dashboard
-                <ArrowRight className="w-4 h-4 ml-2" />
-              </Button>
-            </Link>
-            <Link href="/baseline-assessment">
-              <Button variant="outline" className="w-full sm:w-auto" size="lg">
-                Start Assessment
-              </Button>
-            </Link>
+          <div className="flex justify-center">
+            <Button className="w-full sm:w-auto" size="lg" onClick={() => window.location.href = '/dashboard'}>
+              Go to Dashboard
+              <ArrowRight className="w-4 h-4 ml-2" />
+            </Button>
           </div>
 
           <div className="text-center text-sm text-gray-500 dark:text-gray-400">
