@@ -1,7 +1,7 @@
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
-import { Heart, Brain, Calendar, BarChart3, User, Edit2, MapPin, Trash2, Plus, X } from "lucide-react";
+import { Heart, Brain, Calendar, BarChart3, User, Edit2, MapPin, Trash2, Plus, X, Activity, TrendingUp } from "lucide-react";
 import EmotionalWeather from "@/components/emotional-weather";
 import BoundaryBuddy from "@/components/boundary-buddy";
 import { useState } from "react";

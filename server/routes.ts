@@ -6,6 +6,7 @@ import { db } from "./db";
 import { flagExamples } from "@shared/schema";
 import fs from 'fs';
 import path from 'path';
+import Stripe from "stripe";
 import {
   insertBoundarySchema,
   insertBoundaryEntrySchema,
@@ -22,6 +23,14 @@ import {
   insertFeedbackSchema,
 } from "@shared/schema";
 import { z } from "zod";
+
+// Initialize Stripe
+if (!process.env.STRIPE_SECRET_KEY) {
+  throw new Error('Missing required Stripe secret: STRIPE_SECRET_KEY');
+}
+const stripe = new Stripe(process.env.STRIPE_SECRET_KEY, {
+  apiVersion: "2025-06-30.basil",
+});
 
 export async function registerRoutes(app: Express): Promise<Server> {
   // Auth middleware
@@ -1731,6 +1740,150 @@ export async function registerRoutes(app: Express): Promise<Server> {
     } catch (error) {
       console.error("Error updating feedback:", error);
       res.status(500).json({ message: "Failed to update feedback" });
+    }
+  });
+
+  // Stripe subscription routes
+  app.post('/api/create-payment-intent', async (req: any, res) => {
+    try {
+      const { amount } = req.body;
+      const paymentIntent = await stripe.paymentIntents.create({
+        amount: Math.round(amount * 100), // Convert to cents
+        currency: "usd",
+      });
+      res.json({ clientSecret: paymentIntent.client_secret });
+    } catch (error: any) {
+      console.error("Error creating payment intent:", error);
+      res.status(500).json({ message: "Error creating payment intent: " + error.message });
+    }
+  });
+
+  app.post('/api/get-or-create-subscription', isAuthenticated, async (req: any, res) => {
+    try {
+      const userId = req.user.claims.sub;
+      let user = await storage.getUser(userId);
+      
+      if (!user) {
+        return res.status(404).json({ message: "User not found" });
+      }
+
+      // Check if user already has an active subscription
+      if (user.stripeSubscriptionId) {
+        try {
+          const subscription = await stripe.subscriptions.retrieve(user.stripeSubscriptionId);
+          
+          if (subscription.status === 'active') {
+            return res.json({
+              subscriptionId: subscription.id,
+              status: subscription.status,
+              clientSecret: subscription.latest_invoice?.payment_intent?.client_secret,
+            });
+          }
+        } catch (error) {
+          console.log("Subscription not found, creating new one");
+        }
+      }
+
+      if (!user.email) {
+        return res.status(400).json({ message: 'User email is required for subscription' });
+      }
+
+      // Create or get Stripe customer
+      let customer;
+      if (user.stripeCustomerId) {
+        try {
+          customer = await stripe.customers.retrieve(user.stripeCustomerId);
+        } catch (error) {
+          console.log("Customer not found, creating new one");
+        }
+      }
+
+      if (!customer) {
+        customer = await stripe.customers.create({
+          email: user.email || undefined,
+          name: user.firstName && user.lastName ? `${user.firstName} ${user.lastName}` : user.username || undefined,
+        });
+
+        // Update user with Stripe customer ID
+        await storage.updateUser(userId, { stripeCustomerId: customer.id });
+      }
+
+      // For now, let's create a simple payment intent for $12.99
+      const paymentIntent = await stripe.paymentIntents.create({
+        amount: 1299, // $12.99 in cents
+        currency: 'usd',
+        customer: customer.id,
+        metadata: {
+          type: 'subscription',
+          userId: userId,
+        },
+      });
+
+      // Update user with subscription info (mock for now)
+      await storage.updateUser(userId, {
+        stripeCustomerId: customer.id,
+        subscriptionStatus: 'pending',
+      });
+
+      res.json({
+        clientSecret: paymentIntent.client_secret,
+        paymentIntentId: paymentIntent.id,
+      });
+    } catch (error: any) {
+      console.error("Error creating subscription:", error);
+      res.status(500).json({ message: "Error creating subscription: " + error.message });
+    }
+  });
+
+  // Check subscription status
+  app.get('/api/subscription/status', isAuthenticated, async (req: any, res) => {
+    try {
+      const userId = req.user.claims.sub;
+      const user = await storage.getUser(userId);
+      
+      if (!user || !user.stripeSubscriptionId) {
+        return res.json({ status: 'inactive', hasAccess: false });
+      }
+
+      const subscription = await stripe.subscriptions.retrieve(user.stripeSubscriptionId);
+      
+      // Update user subscription status
+      await storage.updateUser(userId, {
+        subscriptionStatus: subscription.status,
+      });
+
+      res.json({
+        status: subscription.status,
+        hasAccess: subscription.status === 'active',
+        currentPeriodEnd: subscription.current_period_end,
+      });
+    } catch (error: any) {
+      console.error("Error checking subscription status:", error);
+      res.status(500).json({ message: "Error checking subscription status: " + error.message });
+    }
+  });
+
+  // Cancel subscription
+  app.post('/api/subscription/cancel', isAuthenticated, async (req: any, res) => {
+    try {
+      const userId = req.user.claims.sub;
+      const user = await storage.getUser(userId);
+      
+      if (!user || !user.stripeSubscriptionId) {
+        return res.status(404).json({ message: "No subscription found" });
+      }
+
+      const subscription = await stripe.subscriptions.cancel(user.stripeSubscriptionId);
+      
+      // Update user subscription status
+      await storage.updateUser(userId, {
+        subscriptionStatus: 'cancelled',
+      });
+
+      res.json({ message: "Subscription cancelled successfully" });
+    } catch (error: any) {
+      console.error("Error cancelling subscription:", error);
+      res.status(500).json({ message: "Error cancelling subscription: " + error.message });
     }
   });
 
