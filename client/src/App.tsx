@@ -17,7 +17,7 @@ import BaselinePage from "@/pages/baseline";
 import Admin from "@/pages/admin";
 import Feedback from "@/pages/feedback";
 import Pricing from "@/pages/pricing";
-import Demo from "@/pages/demo";
+import Demo from "@/pages/demo-clean";
 import FAQ from "@/pages/faq";
 
 import NotFound from "@/pages/not-found";
