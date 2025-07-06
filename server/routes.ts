@@ -1726,23 +1726,23 @@ export async function registerRoutes(app: Express): Promise<Server> {
   const ShopifyService = (await import('./shopify.js')).ShopifyService;
   const shopifyService = ShopifyService.getInstance();
 
-  // Create checkout session for subscription
-  app.post('/api/subscription/checkout', isAuthenticated, async (req: any, res) => {
+  // Create checkout session for subscription (no authentication required)
+  app.post('/api/subscription/checkout', async (req: any, res) => {
     try {
-      const userId = req.user.claims.sub;
-      const user = await storage.getUser(userId);
-      
-      if (!user?.email) {
-        return res.status(400).json({ message: "User email not found" });
-      }
+      // For unauthenticated users, we'll collect email during Shopify checkout
+      const { email } = req.body;
+      const userEmail = email || 'customer@boundaryspace.app'; // Shopify will collect the real email
+      const tempUserId = 'guest-' + Date.now(); // Temporary ID for guest checkout
 
       const returnUrl = `${req.protocol}://${req.get('host')}/subscription/success`;
-      const checkoutUrl = await shopifyService.createSubscriptionCheckout(userId, user.email, returnUrl);
+      const checkoutUrl = await shopifyService.createSubscriptionCheckout(tempUserId, userEmail, returnUrl);
       
       res.json({ checkoutUrl });
     } catch (error) {
       console.error("Error creating checkout:", error);
-      res.status(500).json({ message: "Failed to create checkout session" });
+      res.status(500).json({ 
+        message: error instanceof Error ? error.message : "Failed to create checkout session" 
+      });
     }
   });
 
