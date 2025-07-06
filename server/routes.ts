@@ -1758,6 +1758,98 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
+  // Create subscription without authentication - creates account automatically
+  app.post('/api/create-subscription-with-account', async (req: any, res) => {
+    try {
+      const { email, firstName, lastName } = req.body;
+      
+      if (!email) {
+        return res.status(400).json({ message: 'Email is required' });
+      }
+
+      // Create Stripe customer
+      const customer = await stripe.customers.create({
+        email: email,
+        name: firstName && lastName ? `${firstName} ${lastName}` : firstName || 'Customer',
+      });
+
+      // Create subscription
+      const subscription = await stripe.subscriptions.create({
+        customer: customer.id,
+        items: [{
+          price: 'price_1QZ1dSDhBZktB5VznyAa9fNE', // $12.99/month price ID
+        }],
+        payment_behavior: 'default_incomplete',
+        expand: ['latest_invoice.payment_intent'],
+      });
+
+      // Store subscription info in session for later account creation
+      req.session.pendingSubscription = {
+        email,
+        firstName,
+        lastName,
+        stripeCustomerId: customer.id,
+        stripeSubscriptionId: subscription.id,
+      };
+
+      res.json({
+        subscriptionId: subscription.id,
+        clientSecret: subscription.latest_invoice?.payment_intent?.client_secret,
+      });
+    } catch (error: any) {
+      console.error("Error creating subscription:", error);
+      res.status(500).json({ message: "Error creating subscription: " + error.message });
+    }
+  });
+
+  // Webhook to handle successful payments and create accounts
+  app.post('/api/stripe-webhook', async (req: any, res) => {
+    try {
+      const event = req.body;
+      
+      if (event.type === 'payment_intent.succeeded') {
+        const paymentIntent = event.data.object;
+        
+        // Find the subscription associated with this payment
+        const subscriptions = await stripe.subscriptions.list({
+          customer: paymentIntent.customer,
+          status: 'active',
+        });
+        
+        if (subscriptions.data.length > 0) {
+          const subscription = subscriptions.data[0];
+          const customer = await stripe.customers.retrieve(paymentIntent.customer);
+          
+          if (customer && typeof customer === 'object' && customer.email) {
+            // Create user account
+            const userId = `stripe_${customer.id}`;
+            
+            try {
+              await storage.createUser({
+                id: userId,
+                email: customer.email,
+                firstName: customer.name?.split(' ')[0] || 'Customer',
+                lastName: customer.name?.split(' ').slice(1).join(' ') || '',
+                stripeCustomerId: customer.id,
+                stripeSubscriptionId: subscription.id,
+                subscriptionStatus: 'active',
+              });
+              
+              console.log(`Created user account for ${customer.email} with subscription ${subscription.id}`);
+            } catch (error) {
+              console.error('Error creating user account:', error);
+            }
+          }
+        }
+      }
+      
+      res.json({ received: true });
+    } catch (error: any) {
+      console.error("Webhook error:", error);
+      res.status(400).json({ message: "Webhook error: " + error.message });
+    }
+  });
+
   app.post('/api/get-or-create-subscription', isAuthenticated, async (req: any, res) => {
     try {
       const userId = req.user.claims.sub;

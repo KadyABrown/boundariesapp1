@@ -4,6 +4,8 @@ import { useEffect, useState } from 'react';
 import { apiRequest } from "@/lib/queryClient";
 import { useToast } from "@/hooks/use-toast";
 import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 
 // Load Stripe
@@ -65,52 +67,48 @@ const SubscribeForm = () => {
 
 export default function Subscribe() {
   const [clientSecret, setClientSecret] = useState("");
-  const [loading, setLoading] = useState(true);
+  const [customerInfo, setCustomerInfo] = useState({
+    email: "",
+    firstName: "",
+    lastName: ""
+  });
+  const [step, setStep] = useState(1); // 1 = customer info, 2 = payment
+  const [loading, setLoading] = useState(false);
   const { toast } = useToast();
 
-  useEffect(() => {
-    // Create subscription when page loads
-    apiRequest("POST", "/api/get-or-create-subscription")
-      .then((res) => {
-        if (!res.ok) {
-          throw new Error('Failed to create subscription');
-        }
-        return res.json();
-      })
-      .then((data) => {
-        setClientSecret(data.clientSecret);
-        setLoading(false);
-      })
-      .catch((error) => {
-        console.error("Error creating subscription:", error);
-        toast({
-          title: "Error",
-          description: "Failed to initialize subscription. Please try again.",
-          variant: "destructive",
-        });
-        setLoading(false);
+  const handleCustomerInfoSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    
+    if (!customerInfo.email) {
+      toast({
+        title: "Email Required",
+        description: "Please enter your email address.",
+        variant: "destructive",
       });
-  }, [toast]);
+      return;
+    }
+
+    setLoading(true);
+    try {
+      const response = await apiRequest("POST", "/api/create-subscription-with-account", customerInfo);
+      const data = await response.json();
+      setClientSecret(data.clientSecret);
+      setStep(2);
+    } catch (error) {
+      console.error("Error creating subscription:", error);
+      toast({
+        title: "Error",
+        description: "Failed to create subscription. Please try again.",
+        variant: "destructive",
+      });
+    }
+    setLoading(false);
+  };
 
   if (loading) {
     return (
       <div className="min-h-screen flex items-center justify-center">
         <div className="animate-spin w-8 h-8 border-4 border-primary border-t-transparent rounded-full" aria-label="Loading"/>
-      </div>
-    );
-  }
-
-  if (!clientSecret) {
-    return (
-      <div className="min-h-screen flex items-center justify-center">
-        <Card className="w-full max-w-md">
-          <CardHeader>
-            <CardTitle>Subscription Error</CardTitle>
-            <CardDescription>
-              Unable to initialize subscription. Please try again later.
-            </CardDescription>
-          </CardHeader>
-        </Card>
       </div>
     );
   }
@@ -125,9 +123,52 @@ export default function Subscribe() {
           </CardDescription>
         </CardHeader>
         <CardContent>
-          <Elements stripe={stripePromise} options={{ clientSecret }}>
-            <SubscribeForm />
-          </Elements>
+          {step === 1 ? (
+            // Customer Information Form
+            <form onSubmit={handleCustomerInfoSubmit} className="space-y-4">
+              <div className="space-y-2">
+                <Label htmlFor="email">Email Address *</Label>
+                <Input
+                  id="email"
+                  type="email"
+                  value={customerInfo.email}
+                  onChange={(e) => setCustomerInfo(prev => ({ ...prev, email: e.target.value }))}
+                  placeholder="your@email.com"
+                  required
+                />
+              </div>
+              <div className="grid grid-cols-2 gap-4">
+                <div className="space-y-2">
+                  <Label htmlFor="firstName">First Name</Label>
+                  <Input
+                    id="firstName"
+                    value={customerInfo.firstName}
+                    onChange={(e) => setCustomerInfo(prev => ({ ...prev, firstName: e.target.value }))}
+                    placeholder="John"
+                  />
+                </div>
+                <div className="space-y-2">
+                  <Label htmlFor="lastName">Last Name</Label>
+                  <Input
+                    id="lastName"
+                    value={customerInfo.lastName}
+                    onChange={(e) => setCustomerInfo(prev => ({ ...prev, lastName: e.target.value }))}
+                    placeholder="Smith"
+                  />
+                </div>
+              </div>
+              <Button type="submit" className="w-full" disabled={loading}>
+                {loading ? "Creating Account..." : "Continue to Payment"}
+              </Button>
+            </form>
+          ) : (
+            // Payment Form
+            clientSecret && (
+              <Elements stripe={stripePromise} options={{ clientSecret }}>
+                <SubscribeForm />
+              </Elements>
+            )
+          )}
         </CardContent>
       </Card>
     </div>

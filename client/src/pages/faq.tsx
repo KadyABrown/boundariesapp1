@@ -28,10 +28,7 @@ export default function FAQ() {
           q: "How do I get started with BoundarySpace?",
           a: "Simply sign up for an account, complete your personal baseline assessment to understand your communication style and needs, then start creating relationship profiles and logging your experiences. The app guides you through each step."
         },
-        {
-          q: "Is there a free trial?",
-          a: "Yes! We offer a 7-day free trial so you can explore all features before committing to a subscription. No credit card required to start."
-        }
+
       ]
     },
     {
@@ -98,12 +95,9 @@ export default function FAQ() {
         },
         {
           q: "Can I cancel anytime?",
-          a: "Yes, you can cancel your subscription at any time. You'll continue to have access until the end of your billing period, and you can always export your data."
+          a: "Yes, you can cancel your subscription at any time through your account settings. You'll continue to have access until the end of your billing period, and you can always export your data. No cancellation fees or long-term commitments."
         },
-        {
-          q: "Do you offer refunds?",
-          a: "We offer a 7-day free trial to ensure the app meets your needs before you subscribe. All subscriptions are final once the trial period ends."
-        }
+
       ]
     },
     {
@@ -249,30 +243,7 @@ export default function FAQ() {
           ))}
         </div>
 
-        {/* Still Have Questions */}
-        <div className="mt-16 text-center bg-white rounded-lg p-8 shadow-lg">
-          <h2 className="text-2xl font-bold text-gray-900 mb-4">
-            Still Have Questions?
-          </h2>
-          <p className="text-gray-600 mb-6 max-w-2xl mx-auto">
-            Can't find what you're looking for? Our support team is here to help you get the most out of BoundarySpace.
-          </p>
-          <div className="flex flex-col sm:flex-row items-center justify-center space-y-3 sm:space-y-0 sm:space-x-4">
-            <Button 
-              className="bg-indigo-600 hover:bg-indigo-700 text-white px-8 py-3 text-lg w-full sm:w-auto"
-              onClick={() => window.location.href = 'mailto:support@boundaryspace.com'}
-            >
-              Contact Support
-            </Button>
-            <Button 
-              variant="outline" 
-              className="px-8 py-3 text-lg w-full sm:w-auto"
-              onClick={() => window.location.href = '/demo'}
-            >
-              Try Demo
-            </Button>
-          </div>
-        </div>
+
 
         {/* Ready to Start CTA */}
         <div className="mt-12 text-center bg-indigo-600 rounded-lg p-8 text-white">
@@ -287,7 +258,7 @@ export default function FAQ() {
               className="bg-white text-indigo-600 hover:bg-gray-100 px-8 py-3 text-lg w-full sm:w-auto"
               onClick={() => window.location.href = '/pricing'}
             >
-              Start Free Trial
+              Subscribe Now
             </Button>
             <Button 
               variant="outline" 

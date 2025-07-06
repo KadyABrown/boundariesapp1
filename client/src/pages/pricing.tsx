@@ -134,7 +134,7 @@ export default function Pricing() {
               
               <div className="mt-4 text-center">
                 <p className="text-sm text-gray-500">
-                  7-day free trial • Cancel anytime • No setup fees
+                  Cancel anytime • No setup fees
                 </p>
               </div>
             </CardContent>
