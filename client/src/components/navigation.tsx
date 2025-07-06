@@ -5,23 +5,21 @@ import { Button } from "@/components/ui/button";
 import { Sheet, SheetContent, SheetTrigger } from "@/components/ui/sheet";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuSeparator, DropdownMenuTrigger } from "@/components/ui/dropdown-menu";
-import { Shield, Menu, Bell, BarChart3, BookOpen, Settings, Target, Heart, Flag, User, LogOut, Users, Brain, Crown } from "lucide-react";
+import { Shield, Menu, Bell, BarChart3, BookOpen, Settings, Target, Heart, Flag, User, LogOut, Users, Brain } from "lucide-react";
 
 export default function Navigation() {
   const [location, setLocation] = useLocation();
   const { user } = useAuth();
   const [isSheetOpen, setIsSheetOpen] = useState(false);
 
-  const isAdmin = user?.email === "hello@roxzmedia.com" || user?.id === "44415082";
-  
   const navigation = [
     { name: "Dashboard", href: "/", icon: BarChart3, current: location === "/" },
     { name: "Boundaries", href: "/boundaries", icon: Target, current: location === "/boundaries" },
     { name: "Relationships", href: "/relationships", icon: Heart, current: location === "/relationships" || location.startsWith("/relationships/") },
     { name: "My Baseline", href: "/baseline", icon: Brain, current: location === "/baseline" },
     { name: "Friends", href: "/friends", icon: Users, current: location === "/friends" },
+    { name: "Flag Examples", href: "/flag-examples", icon: Flag, current: location === "/flag-examples" },
     { name: "Insights", href: "/insights", icon: BarChart3, current: location === "/insights" },
-    ...(isAdmin ? [{ name: "Admin", href: "/admin", icon: Crown, current: location === "/admin" }] : []),
   ];
 
   const handleNavigation = (href: string) => {

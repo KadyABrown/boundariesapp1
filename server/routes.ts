@@ -723,16 +723,9 @@ export async function registerRoutes(app: Express): Promise<Server> {
   // Enhanced CSV parser for paired flag format
   app.post('/api/import-paired-csv', async (req: any, res) => {
     try {
-      let { csvData } = req.body;
-      
-      // If no CSV data provided, try to read from attached file
+      const { csvData } = req.body;
       if (!csvData) {
-        try {
-          const csvPath = path.join(process.cwd(), 'attached_assets', 'Final Data Training - Red and Green flag data base - Red & Green Flag example bank (1)_1751747397428.csv');
-          csvData = fs.readFileSync(csvPath, 'utf-8');
-        } catch (error) {
-          return res.status(400).json({ message: "CSV data is required and no attached file found" });
-        }
+        return res.status(400).json({ message: "CSV data is required" });
       }
 
       // Advanced CSV parser that handles multi-line cells and quoted content
@@ -740,8 +733,8 @@ export async function registerRoutes(app: Express): Promise<Server> {
         const lines = csvContent.split('\n');
         const flags = [];
         
-        // Skip header row (first line only for new format)
-        let i = 1;
+        // Skip header rows (first 2 lines)
+        let i = 2;
         while (i < lines.length) {
           let currentLine = lines[i];
           let fields = [];
@@ -775,10 +768,9 @@ export async function registerRoutes(app: Express): Promise<Server> {
             }
           }
           
-          // Process the parsed row if we have enough fields for new format:
-          // Theme, Behavior Description, Green flag, Red flag, Red flag Example, Unhealthy Impact, Action steps
-          if (fields.length >= 7) {
-            const [theme, behaviorDesc, greenFlag, redFlag, redExample, unhealthyImpact, actionSteps] = fields;
+          // Process the parsed row if we have enough fields
+          if (fields.length >= 8) {
+            const [greenFlag, redFlag, behaviorDesc, example, impact, worthAddressing, actionSteps, theme] = fields;
             
             // Create paired entry
             if (greenFlag && redFlag && theme) {
@@ -787,16 +779,19 @@ export async function registerRoutes(app: Express): Promise<Server> {
                 greenFlag: {
                   title: greenFlag.replace(/💚/g, '').trim(),
                   description: behaviorDesc,
-                  exampleScenario: `Healthy approach: ${greenFlag}`,
-                  emotionalImpact: 'Builds trust and emotional safety',
-                  actionSteps: 'Continue this positive pattern'
+                  exampleScenario: example,
+                  emotionalImpact: impact,
+                  actionSteps: actionSteps
                 },
                 redFlag: {
                   title: redFlag.replace(/🚩/g, '').trim(),
                   description: behaviorDesc,
-                  exampleScenario: redExample || `Unhealthy approach: ${redFlag}`,
-                  emotionalImpact: unhealthyImpact || 'Creates emotional disconnection',
-                  actionSteps: actionSteps || 'Address this pattern directly'
+                  exampleScenario: example,
+                  emotionalImpact: impact,
+                  actionSteps: actionSteps,
+                  addressability: worthAddressing?.toLowerCase().includes('never') ? 'dealbreaker' :
+                                 worthAddressing?.toLowerCase().includes('always') ? 'always_worth_addressing' :
+                                 'sometimes_worth_addressing'
                 }
               });
             }
@@ -1470,15 +1465,11 @@ export async function registerRoutes(app: Express): Promise<Server> {
         baseline = await storage.updatePersonalBaseline(userId, baselineData);
       } else {
         baseline = await storage.createPersonalBaseline(baselineData);
-        
-        // Auto-generate boundaries from baseline for new users
-        await storage.generateBoundariesFromBaseline(userId, baselineData);
       }
       
       res.json(baseline);
     } catch (error) {
       if (error instanceof z.ZodError) {
-        console.error("Baseline validation error:", error.errors);
         res.status(400).json({ message: "Invalid baseline data", errors: error.errors });
       } else {
         console.error("Error saving baseline:", error);
@@ -1636,89 +1627,6 @@ export async function registerRoutes(app: Express): Promise<Server> {
     } catch (error) {
       console.error("Error deleting goal check-in:", error);
       res.status(500).json({ message: "Failed to delete goal check-in" });
-    }
-  });
-
-  // Admin routes (protected)
-  const isAdmin = async (req: any, res: any, next: any) => {
-    const userId = req.user?.claims?.sub;
-    const userEmail = req.user?.claims?.email;
-    
-    // Check if user is admin (update with your admin email)
-    if (userEmail === "hello@roxzmedia.com" || userId === "44415082") {
-      next();
-    } else {
-      res.status(403).json({ message: "Admin access required" });
-    }
-  };
-
-  app.get('/api/admin/stats', isAuthenticated, isAdmin, async (req: any, res) => {
-    try {
-      // Get comprehensive admin statistics
-      const stats = await storage.getAdminStats();
-      res.json(stats);
-    } catch (error) {
-      console.error("Error fetching admin stats:", error);
-      res.status(500).json({ message: "Failed to fetch admin statistics" });
-    }
-  });
-
-  app.get('/api/admin/users', isAuthenticated, isAdmin, async (req: any, res) => {
-    try {
-      // Get all users with their relationship counts and activity
-      const users = await storage.getAllUsersForAdmin();
-      res.json(users);
-    } catch (error) {
-      console.error("Error fetching users for admin:", error);
-      res.status(500).json({ message: "Failed to fetch users" });
-    }
-  });
-
-  // User profile drill-down
-  app.get('/api/admin/user/:userId', isAuthenticated, isAdmin, async (req: any, res) => {
-    try {
-      const { userId } = req.params;
-      const userProfile = await storage.getUserProfile(userId);
-      res.json(userProfile);
-    } catch (error) {
-      console.error("Error fetching user profile:", error);
-      res.status(500).json({ message: "Failed to fetch user profile" });
-    }
-  });
-
-  // Feature usage analytics
-  app.get('/api/admin/feature-usage', isAuthenticated, isAdmin, async (req: any, res) => {
-    try {
-      const featureUsage = await storage.getFeatureUsageStats();
-      res.json(featureUsage);
-    } catch (error) {
-      console.error("Error fetching feature usage:", error);
-      res.status(500).json({ message: "Failed to fetch feature usage" });
-    }
-  });
-
-  // Churn analytics
-  app.get('/api/admin/churn', isAuthenticated, isAdmin, async (req: any, res) => {
-    try {
-      const churnData = await storage.getChurnAnalytics();
-      res.json(churnData);
-    } catch (error) {
-      console.error("Error fetching churn data:", error);
-      res.status(500).json({ message: "Failed to fetch churn data" });
-    }
-  });
-
-  // User management actions
-  app.patch('/api/admin/user/:userId/action', isAuthenticated, isAdmin, async (req: any, res) => {
-    try {
-      const { userId } = req.params;
-      const { action, value } = req.body;
-      
-      const result = await storage.performUserAction(userId, action, value);
-      res.json(result);
-    } catch (error) {
-      console.error("Error performing user action:", error);
-      res.status(500).json({ message: "Failed to perform user action" });
     }
   });
 

@@ -22,7 +22,7 @@ function InteractionAnalysis({ relationshipId }: { relationshipId: number }) {
     return <div className="text-center py-4 text-gray-500">Loading analysis...</div>;
   }
 
-  if (!interactions || !Array.isArray(interactions) || interactions.length === 0) {
+  if (!interactions || interactions.length === 0) {
     return (
       <div className="text-center py-8 text-gray-500">
         <p>No interaction data available yet.</p>
@@ -31,70 +31,22 @@ function InteractionAnalysis({ relationshipId }: { relationshipId: number }) {
     );
   }
 
-  // Calculate comprehensive health metrics from interaction data
+  // Calculate simple metrics from interaction data
   const totalInteractions = interactions.length;
   const avgEnergyBefore = interactions.reduce((sum: number, i: any) => sum + (i.preEnergyLevel || 0), 0) / totalInteractions;
   const avgEnergyAfter = interactions.reduce((sum: number, i: any) => sum + (i.postEnergyLevel || 0), 0) / totalInteractions;
   const energyChange = avgEnergyAfter - avgEnergyBefore;
-  
-  const avgAnxietyBefore = interactions.reduce((sum: number, i: any) => sum + (i.preAnxietyLevel || 0), 0) / totalInteractions;
-  const avgAnxietyAfter = interactions.reduce((sum: number, i: any) => sum + (i.postAnxietyLevel || 0), 0) / totalInteractions;
-  const anxietyChange = avgAnxietyAfter - avgAnxietyBefore;
-  
-  const avgSelfWorthBefore = interactions.reduce((sum: number, i: any) => sum + (i.preSelfWorth || 0), 0) / totalInteractions;
-  const avgSelfWorthAfter = interactions.reduce((sum: number, i: any) => sum + (i.postSelfWorth || 0), 0) / totalInteractions;
-  const selfWorthChange = avgSelfWorthAfter - avgSelfWorthBefore;
-  
-  const avgRecoveryTime = interactions.reduce((sum: number, i: any) => sum + (i.recoveryTimeMinutes || 0), 0) / totalInteractions;
-  
-  // Calculate overall health score (0-100)
-  const healthScore = Math.round(
-    ((energyChange + 10) / 20) * 25 + // Energy impact (25%)
-    ((10 - anxietyChange) / 20) * 25 + // Anxiety impact (25%)
-    ((selfWorthChange + 10) / 20) * 25 + // Self-worth impact (25%)
-    (Math.max(0, (120 - avgRecoveryTime)) / 120) * 25 // Recovery time (25%)
-  );
 
   return (
-    <div className="space-y-6">
-      {/* Overall Health Score */}
-      <Card>
-        <CardHeader>
-          <CardTitle>Relationship Health Score</CardTitle>
-        </CardHeader>
-        <CardContent>
-          <div className="text-center">
-            <div className={`text-4xl font-bold ${healthScore >= 70 ? 'text-green-600' : healthScore >= 40 ? 'text-yellow-600' : 'text-red-600'}`}>
-              {healthScore}%
-            </div>
-            <p className="text-sm text-gray-600 mt-1">
-              Based on {totalInteractions} interaction{totalInteractions !== 1 ? 's' : ''}
-            </p>
-          </div>
-        </CardContent>
-      </Card>
-      
-      {/* Detailed Metrics */}
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+    <div className="space-y-4">
+      <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
         <div className="text-center p-4 bg-blue-50 rounded-lg">
           <div className="text-2xl font-bold text-blue-600">{totalInteractions}</div>
           <div className="text-sm text-gray-600">Total Interactions</div>
         </div>
         <div className="text-center p-4 bg-green-50 rounded-lg">
-          <div className={`text-2xl font-bold ${energyChange >= 0 ? 'text-green-600' : 'text-red-600'}`}>
-            {energyChange > 0 ? '+' : ''}{energyChange.toFixed(1)}
-          </div>
-          <div className="text-sm text-gray-600">Avg Energy Impact</div>
-        </div>
-        <div className="text-center p-4 bg-purple-50 rounded-lg">
-          <div className={`text-2xl font-bold ${anxietyChange <= 0 ? 'text-green-600' : 'text-red-600'}`}>
-            {anxietyChange > 0 ? '+' : ''}{anxietyChange.toFixed(1)}
-          </div>
-          <div className="text-sm text-gray-600">Avg Anxiety Impact</div>
-        </div>
-        <div className="text-center p-4 bg-orange-50 rounded-lg">
-          <div className="text-2xl font-bold text-orange-600">{Math.round(avgRecoveryTime)}</div>
-          <div className="text-sm text-gray-600">Avg Recovery (min)</div>
+          <div className="text-2xl font-bold text-green-600">{avgEnergyBefore.toFixed(1)}</div>
+          <div className="text-sm text-gray-600">Avg Energy Before</div>
         </div>
         <div className="text-center p-4 bg-orange-50 rounded-lg">
           <div className={`text-2xl font-bold ${energyChange >= 0 ? 'text-green-600' : 'text-red-600'}`}>
@@ -125,6 +77,7 @@ interface RelationshipProfileDetailProps {
 export default function RelationshipProfileDetail({ relationship, onClose }: RelationshipProfileDetailProps) {
   const { toast } = useToast();
   const [showCIT, setShowCIT] = useState(false);
+  const [showFlagDialog, setShowFlagDialog] = useState(false);
   const [showCheckInDialog, setShowCheckInDialog] = useState(false);
   const [showSettingsDialog, setShowSettingsDialog] = useState(false);
   
@@ -144,12 +97,10 @@ export default function RelationshipProfileDetail({ relationship, onClose }: Rel
   });
 
   const getHealthScore = () => {
-    if (!stats || typeof stats !== 'object') return 0;
-    const greenFlags = (stats as any).greenFlags || 0;
-    const redFlags = (stats as any).redFlags || 0;
-    const totalFlags = greenFlags + redFlags;
+    if (!stats) return 0;
+    const totalFlags = stats.greenFlags + stats.redFlags;
     if (totalFlags === 0) return 0;
-    return Math.round((greenFlags / totalFlags) * 100);
+    return Math.round((stats.greenFlags / totalFlags) * 100);
   };
 
   const getHealthColor = (score: number) => {
@@ -199,10 +150,11 @@ export default function RelationshipProfileDetail({ relationship, onClose }: Rel
           <div className="flex-1 overflow-hidden">
             <Tabs defaultValue="overview" className="h-full flex flex-col">
               <div className="px-6 pt-4">
-                <TabsList className="grid w-full grid-cols-4">
+                <TabsList className="grid w-full grid-cols-5">
                   <TabsTrigger value="overview">Overview</TabsTrigger>
                   <TabsTrigger value="interactions">Interactions</TabsTrigger>
                   <TabsTrigger value="log-new">Log New</TabsTrigger>
+                  <TabsTrigger value="flags">Flags & Check-ins</TabsTrigger>
                   <TabsTrigger value="analysis">Analysis</TabsTrigger>
                 </TabsList>
               </div>
@@ -227,33 +179,33 @@ export default function RelationshipProfileDetail({ relationship, onClose }: Rel
                         </div>
                         <div className="text-center p-4 bg-white rounded-lg shadow-sm">
                           <div className="text-3xl font-bold text-green-600">
-                            {(stats as any)?.greenFlags || 0}
+                            {stats?.greenFlags || 0}
                           </div>
                           <div className="text-sm text-gray-600 mt-1">Green Flags</div>
                         </div>
                         <div className="text-center p-4 bg-white rounded-lg shadow-sm">
                           <div className="text-3xl font-bold text-red-600">
-                            {(stats as any)?.redFlags || 0}
+                            {stats?.redFlags || 0}
                           </div>
                           <div className="text-sm text-gray-600 mt-1">Red Flags</div>
                         </div>
                         <div className="text-center p-4 bg-white rounded-lg shadow-sm">
                           <div className="text-3xl font-bold text-blue-600">
-                            {(stats as any)?.checkInCount || 0}
+                            {stats?.checkInCount || 0}
                           </div>
                           <div className="text-sm text-gray-600 mt-1">Check-ins</div>
                         </div>
                       </div>
-                      {(stats as any)?.averageSafetyRating && (
+                      {stats?.averageSafetyRating && (
                         <div className="mt-4 p-3 bg-white rounded-lg shadow-sm">
                           <div className="flex items-center justify-between">
                             <span className="text-sm text-gray-600">Average Safety Rating</span>
-                            <span className="font-semibold">{(stats as any).averageSafetyRating}/10</span>
+                            <span className="font-semibold">{stats.averageSafetyRating}/10</span>
                           </div>
                           <div className="w-full bg-gray-200 rounded-full h-2 mt-2">
                             <div 
                               className="bg-blue-600 h-2 rounded-full transition-all"
-                              style={{ width: `${((stats as any).averageSafetyRating / 10) * 100}%` }}
+                              style={{ width: `${(stats.averageSafetyRating / 10) * 100}%` }}
                             />
                           </div>
                         </div>
@@ -427,7 +379,111 @@ export default function RelationshipProfileDetail({ relationship, onClose }: Rel
                   </div>
                 </TabsContent>
 
+                <TabsContent value="flags" className="p-6 space-y-6">
+                  <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+                    {/* Behavioral Flags */}
+                    <Card>
+                      <CardHeader>
+                        <CardTitle className="flex items-center justify-between">
+                          <div className="flex items-center gap-2">
+                            <Flag className="w-5 h-5 text-orange-500" />
+                            Behavioral Flags
+                          </div>
+                          <Button 
+                            size="sm" 
+                            variant="outline"
+                            onClick={() => setShowFlagDialog(true)}
+                          >
+                            <Plus className="w-4 h-4 mr-1" />
+                            Add Flag
+                          </Button>
+                        </CardTitle>
+                      </CardHeader>
+                      <CardContent>
+                        {flagsLoading ? (
+                          <div className="space-y-2">
+                            {[1, 2, 3].map((i) => (
+                              <div key={i} className="h-16 bg-gray-200 rounded animate-pulse"></div>
+                            ))}
+                          </div>
+                        ) : flags && flags.length > 0 ? (
+                          <div className="space-y-3">
+                            {flags.map((flag: any) => (
+                              <div key={flag.id} className="border rounded-lg p-3">
+                                <div className="flex items-start justify-between">
+                                  <div className="flex-1">
+                                    <div className="flex items-center gap-2">
+                                      <Badge variant={flag.flagType === 'green' ? 'default' : 'destructive'}>
+                                        {flag.flagType} flag
+                                      </Badge>
+                                      <span className="text-sm text-gray-500">{flag.category}</span>
+                                    </div>
+                                    <p className="text-sm font-medium mt-1">{flag.behavior}</p>
+                                    {flag.notes && (
+                                      <p className="text-xs text-gray-600 mt-1">{flag.notes}</p>
+                                    )}
+                                  </div>
+                                </div>
+                              </div>
+                            ))}
+                          </div>
+                        ) : (
+                          <p className="text-gray-500 text-center py-4">No flags recorded yet</p>
+                        )}
+                      </CardContent>
+                    </Card>
 
+                    {/* Check-ins */}
+                    <Card>
+                      <CardHeader>
+                        <CardTitle className="flex items-center justify-between">
+                          <div className="flex items-center gap-2">
+                            <MessageSquare className="w-5 h-5 text-blue-500" />
+                            Recent Check-ins
+                          </div>
+                          <Button 
+                            size="sm" 
+                            variant="outline"
+                            onClick={() => setShowCheckInDialog(true)}
+                          >
+                            <Plus className="w-4 h-4 mr-1" />
+                            Check In
+                          </Button>
+                        </CardTitle>
+                      </CardHeader>
+                      <CardContent>
+                        {checkInsLoading ? (
+                          <div className="space-y-2">
+                            {[1, 2, 3].map((i) => (
+                              <div key={i} className="h-12 bg-gray-200 rounded animate-pulse"></div>
+                            ))}
+                          </div>
+                        ) : checkIns && checkIns.length > 0 ? (
+                          <div className="space-y-3">
+                            {checkIns.slice(0, 5).map((checkIn: any) => (
+                              <div key={checkIn.id} className="border rounded-lg p-3">
+                                <div className="flex items-center justify-between">
+                                  <div>
+                                    <p className="text-sm font-medium">Safety: {checkIn.safetyRating}/10</p>
+                                    <p className="text-xs text-gray-500">
+                                      {format(new Date(checkIn.createdAt), 'MMM d, yyyy')}
+                                    </p>
+                                  </div>
+                                  <Badge variant="outline">Check-in</Badge>
+                                </div>
+                                {checkIn.notes && (
+                                  <p className="text-xs text-gray-600 mt-2">{checkIn.notes}</p>
+                                )}
+                              </div>
+                            ))}
+                          </div>
+                        ) : (
+                          <p className="text-gray-500 text-center py-4">No check-ins recorded yet</p>
+                        )}
+                      </CardContent>
+                    </Card>
+                  </div>
+                </TabsContent>
 
                 <TabsContent value="analysis" className="p-6">
                   <div className="space-y-6">
@@ -478,7 +534,79 @@ export default function RelationshipProfileDetail({ relationship, onClose }: Rel
         />
       )}
 
-
+      {/* Flag Creation Dialog */}
+      {showFlagDialog && (
+        <div className="fixed inset-0 bg-black bg-opacity-50 z-50 flex items-center justify-center p-4">
+          <div className="bg-white rounded-lg p-6 w-full max-w-md">
+            <h3 className="text-lg font-semibold mb-4">Add Behavioral Flag</h3>
+            <div className="space-y-4">
+              <div>
+                <label className="text-sm font-medium text-gray-700">Flag Type</label>
+                <select className="w-full mt-1 p-2 border rounded-md">
+                  <option value="green">Green Flag (Positive)</option>
+                  <option value="red">Red Flag (Concerning)</option>
+                </select>
+              </div>
+              <div>
+                <label className="text-sm font-medium text-gray-700">Category</label>
+                <select className="w-full mt-1 p-2 border rounded-md">
+                  <option value="communication">Communication</option>
+                  <option value="respect">Respect</option>
+                  <option value="trust">Trust & Reliability</option>
+                  <option value="emotional">Emotional Consistency</option>
+                </select>
+              </div>
+              <div>
+                <label className="text-sm font-medium text-gray-700">Behavior Description</label>
+                <textarea 
+                  className="w-full mt-1 p-2 border rounded-md" 
+                  rows={3} 
+                  placeholder="Describe the specific behavior you observed..."
+                />
+              </div>
+              <div>
+                <label className="text-sm font-medium text-gray-700">Notes (Optional)</label>
+                <textarea 
+                  className="w-full mt-1 p-2 border rounded-md" 
+                  rows={2} 
+                  placeholder="Additional context or notes..."
+                />
+              </div>
+            </div>
+            <div className="flex gap-2 mt-6">
+              <Button 
+                onClick={() => setShowFlagDialog(false)} 
+                variant="outline" 
+                className="flex-1"
+              >
+                Cancel
+              </Button>
+              <Button 
+                onClick={async () => {
+                  try {
+                    // TODO: Add actual flag creation API call
+                    toast({
+                      title: "Flag Added",
+                      description: "Behavioral flag has been recorded successfully.",
+                    });
+                    setShowFlagDialog(false);
+                    queryClient.invalidateQueries({ queryKey: ['/api/relationships', relationship.id, 'flags'] });
+                  } catch (error) {
+                    toast({
+                      title: "Error",
+                      description: "Failed to add flag. Please try again.",
+                      variant: "destructive",
+                    });
+                  }
+                }} 
+                className="flex-1"
+              >
+                Add Flag
+              </Button>
+            </div>
+          </div>
+        </div>
+      )}
 
       {/* Simple Check-in Dialog */}
       {showCheckInDialog && (

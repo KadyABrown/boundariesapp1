@@ -2,17 +2,7 @@
 
 ## Overview
 
-BoundarySpace is a comprehensive relationship health tracking application that automatically analyzes relationship patterns through detailed interaction tracking and personal baseline assessment. The core function is to help users understand how their relationships impact their physical health, emotional well-being, and personal boundaries by comparing real interaction data against their established personal needs and values.
-
-**Decision: Building from Scratch**
-July 6, 2025 - After encountering persistent legacy issues with the existing codebase (authentication failures, database connection issues, conflicting dependencies), the decision was made to build a completely new project from scratch to avoid these exact problems and ensure a clean, working foundation.
-
-**Core App Function:**
-1. **Personal Baseline Assessment** - Users define their communication style, emotional needs, boundary requirements, and core values
-2. **Comprehensive Interaction Tracking (CIT)** - Detailed logging of relationship interactions with pre/post measurements of energy, anxiety, self-worth, and physical symptoms
-3. **Automatic Pattern Recognition** - The app analyzes CIT data against the baseline to automatically identify concerning patterns and positive behaviors
-4. **Intelligent Health Scoring** - Combines interaction data, baseline compatibility, and pattern analysis for meaningful relationship health scores
-5. **Actionable Insights** - Shows how relationships affect physical health, self-esteem, and boundary respect with specific recommendations based on personal baseline
+BoundarySpace is a full-stack web application designed to help users define, track, and reflect on their personal boundaries. The application transforms a traditional boundary tracking journal into an interactive digital experience, enabling users to build healthier relationships through guided self-awareness tools.
 
 The system is built as a modern React SPA with an Express.js backend, using PostgreSQL for data persistence and Replit's authentication system for user management.
 
@@ -331,30 +321,6 @@ Identifies when boundary violations and relationship issues are most likely to o
 - July 1, 2025. Implemented interactive relationship activity timeline visualization with chronological event tracking, expandable details, filtering capabilities, animated transitions, and dual view modes (timeline/list) - successfully tested and working
 - July 1, 2025. Implemented comprehensive gamification system with achievement notifications, sound effects, daily challenges, boundary quotes, and streak recovery features
 - July 1, 2025. Added advanced relationship analysis features: comprehensive interaction tracker (5-step wizard), mood/energy/physical symptoms tracking, recovery time analysis, trigger pattern identification, communication silence tracking, personal baseline assessment, cross-relationship comparison, and time-based pattern analysis
-- July 2, 2025. Restored clean web-only version after mobile app experiment. Removed React Native/Expo mobile components to maintain stable web application. Mobile app development will continue in separate Expo project to preserve web app stability.
-- July 5, 2025. Built comprehensive admin dashboard for tracking users, subscriptions, and revenue. Includes user management table, signup analytics, payment status monitoring, and search functionality. Implemented secure admin access control and comprehensive business metrics for subscription management.
-- July 5, 2025. Enhanced admin dashboard with account type indicators. Added Account Type column showing "Admin" badges with crown icons for administrators and "User" badges for regular users. Prepared for future "Provider" account type for therapist and coach users.
-- July 6, 2025. Successfully restored working backup version after encountering authentication issues with experimental rebuild. All core features now functional: authentication, database connections, API endpoints working properly.
-- July 6, 2025. Removed paywall restrictions - all features now completely free. Added comprehensive marketing website with separate pages for unauthenticated users (homepage, pricing, demo, FAQ) while preserving app interface for authenticated users. Marketing site includes features overview, pricing explanation, interactive demos, and comprehensive FAQ section.
-- July 6, 2025. Implemented fully functional Stripe payment integration. Successfully replaced Shopify with Stripe for $12.99/month subscription processing. Checkout flow working end-to-end: users can subscribe without authentication, redirected to Stripe's secure checkout, and payment processing confirmed. Subscription model now ready for production deployment.
-- July 6, 2025. Fixed admin dashboard user deletion functionality by correcting database table references and friendship table column names. Added user filtering system with three options: All Users, Active Subscribers, and Free Users. Admin can now search and filter users by subscription status, and successfully delete users with full data cleanup.
-
-## Future User Role System Planning
-
-The application will need a tiered permission system to support multiple user types and admin levels:
-
-### Planned User Types:
-1. **Admin** - Full system access (currently implemented)
-2. **Provider** - Therapists and coaches with specialized interfaces
-3. **User** - Regular app users (currently implemented)
-
-### Planned Admin Permission Levels:
-1. **Super Admin** - Full system access, user management, business metrics
-2. **Developer Admin** - Code deployment, technical settings, limited user data
-3. **Marketing Admin** - Analytics, user engagement metrics, limited personal data access
-4. **Support Admin** - User support tools, limited system access
-
-This tiered approach will allow controlled backend access for partners while maintaining data security and appropriate access boundaries.
 
 ## User Preferences
 

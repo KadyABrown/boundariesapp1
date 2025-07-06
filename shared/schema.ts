@@ -39,10 +39,6 @@ export const users = pgTable("users", {
   defaultPrivacySetting: varchar("default_privacy_setting").default("private"), // private, friends_only, public
   bio: text("bio"),
   isProfileComplete: boolean("is_profile_complete").default(false),
-  subscriptionStatus: varchar("subscription_status").default("trial"), // trial, active, canceled, expired
-  stripeCustomerId: varchar("stripe_customer_id"),
-  stripeSubscriptionId: varchar("stripe_subscription_id"),
-  trialEndsAt: timestamp("trial_ends_at"),
   createdAt: timestamp("created_at").defaultNow(),
   updatedAt: timestamp("updated_at").defaultNow(),
 });
@@ -259,7 +255,6 @@ export const personalBaselines = pgTable("personal_baselines", {
   
   // Communication Preferences
   communicationStyle: varchar("communication_style"), // direct, gentle, collaborative, assertive
-  communicationStyleRanking: text("communication_style_ranking").array(), // Ranked preferences with weights
   conflictResolution: varchar("conflict_resolution"), // discuss-immediately, need-time-to-process, avoid-conflict, address-when-calm
   feedbackPreference: varchar("feedback_preference"), // frequent-check-ins, only-when-needed, scheduled-discussions, in-the-moment
   listeningNeeds: text("listening_needs").array(),
@@ -267,8 +262,6 @@ export const personalBaselines = pgTable("personal_baselines", {
   
   // Emotional Needs
   emotionalSupport: varchar("emotional_support"), // high, medium, low
-  emotionalValidationNeeds: varchar("emotional_validation_needs"), // immediate, gentle, space-first, minimal
-  validationStyle: text("validation_style").array(), // Ways they need validation
   affectionStyle: text("affection_style").array(),
   validationNeeds: varchar("validation_needs"), // frequent, moderate, minimal
   emotionalProcessingTime: integer("emotional_processing_time"), // hours

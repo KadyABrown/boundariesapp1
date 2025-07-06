@@ -76,15 +76,6 @@ interface ComprehensiveInteractionData {
   lessonsLearned: string;
   warningSignsNoticed: string[];
   futurePreparation: string[];
-  
-  // Baseline Values Validation (NEW)
-  communicationStyleRespected: boolean;
-  emotionalNeedsMet: boolean;
-  boundariesRespected: boolean;
-  triggersAvoided: boolean;
-  coreValuesAligned: boolean;
-  dealBreakersPresent: boolean;
-  baselineCompatibilityScore: number; // 1-10
 }
 
 interface ComprehensiveInteractionTrackerProps {
@@ -710,119 +701,6 @@ export default function ComprehensiveInteractionTracker({
           <div className="space-y-6">
             <div className="text-center">
               <h3 className="text-lg font-semibold text-gray-800 mb-2">
-                How well did this interaction align with your baseline values?
-              </h3>
-              <p className="text-sm text-gray-600">Evaluate compatibility with your personal needs</p>
-            </div>
-
-            <div className="space-y-4">
-              {/* Communication Style Respected */}
-              <div className="flex items-center justify-between p-3 bg-gray-50 rounded">
-                <Label className="font-medium">My communication style was respected</Label>
-                <div className="flex items-center space-x-2">
-                  <Checkbox
-                    id="communication-respected"
-                    checked={data.communicationStyleRespected || false}
-                    onCheckedChange={(checked) => updateData('communicationStyleRespected', checked)}
-                  />
-                  <Label htmlFor="communication-respected">Yes</Label>
-                </div>
-              </div>
-
-              {/* Emotional Needs Met */}
-              <div className="flex items-center justify-between p-3 bg-gray-50 rounded">
-                <Label className="font-medium">My emotional needs were met</Label>
-                <div className="flex items-center space-x-2">
-                  <Checkbox
-                    id="emotional-needs"
-                    checked={data.emotionalNeedsMet || false}
-                    onCheckedChange={(checked) => updateData('emotionalNeedsMet', checked)}
-                  />
-                  <Label htmlFor="emotional-needs">Yes</Label>
-                </div>
-              </div>
-
-              {/* Boundaries Respected */}
-              <div className="flex items-center justify-between p-3 bg-gray-50 rounded">
-                <Label className="font-medium">My boundaries were respected</Label>
-                <div className="flex items-center space-x-2">
-                  <Checkbox
-                    id="boundaries-respected"
-                    checked={data.boundariesRespected || false}
-                    onCheckedChange={(checked) => updateData('boundariesRespected', checked)}
-                  />
-                  <Label htmlFor="boundaries-respected">Yes</Label>
-                </div>
-              </div>
-
-              {/* Triggers Avoided */}
-              <div className="flex items-center justify-between p-3 bg-gray-50 rounded">
-                <Label className="font-medium">My emotional triggers were avoided</Label>
-                <div className="flex items-center space-x-2">
-                  <Checkbox
-                    id="triggers-avoided"
-                    checked={data.triggersAvoided || false}
-                    onCheckedChange={(checked) => updateData('triggersAvoided', checked)}
-                  />
-                  <Label htmlFor="triggers-avoided">Yes</Label>
-                </div>
-              </div>
-
-              {/* Core Values Aligned */}
-              <div className="flex items-center justify-between p-3 bg-gray-50 rounded">
-                <Label className="font-medium">This interaction aligned with my core values</Label>
-                <div className="flex items-center space-x-2">
-                  <Checkbox
-                    id="values-aligned"
-                    checked={data.coreValuesAligned || false}
-                    onCheckedChange={(checked) => updateData('coreValuesAligned', checked)}
-                  />
-                  <Label htmlFor="values-aligned">Yes</Label>
-                </div>
-              </div>
-
-              {/* Deal Breakers Present */}
-              <div className="flex items-center justify-between p-3 bg-red-50 rounded">
-                <Label className="font-medium">Any of my deal-breakers were present</Label>
-                <div className="flex items-center space-x-2">
-                  <Checkbox
-                    id="deal-breakers"
-                    checked={data.dealBreakersPresent || false}
-                    onCheckedChange={(checked) => updateData('dealBreakersPresent', checked)}
-                  />
-                  <Label htmlFor="deal-breakers">Yes</Label>
-                </div>
-              </div>
-
-              {/* Overall Compatibility Score */}
-              <div className="space-y-3">
-                <Label className="text-base font-medium flex items-center gap-2">
-                  <Target className="w-5 h-5 text-blue-600" />
-                  Overall Baseline Compatibility (1-10)
-                </Label>
-                <Slider
-                  value={[data.baselineCompatibilityScore || 5]}
-                  onValueChange={([value]) => updateData('baselineCompatibilityScore', value)}
-                  min={1}
-                  max={10}
-                  step={1}
-                  className="w-full"
-                />
-                <div className="flex justify-between text-xs text-gray-500">
-                  <span>1 - Completely Incompatible</span>
-                  <span className="font-medium">{data.baselineCompatibilityScore}/10</span>
-                  <span>10 - Perfectly Compatible</span>
-                </div>
-              </div>
-            </div>
-          </div>
-        );
-
-      case 6:
-        return (
-          <div className="space-y-6">
-            <div className="text-center">
-              <h3 className="text-lg font-semibold text-gray-800 mb-2">
                 Reflection and learning
               </h3>
               <p className="text-sm text-gray-600">What did you learn for next time?</p>
@@ -987,9 +865,9 @@ export default function ComprehensiveInteractionTracker({
                 Cancel
               </Button>
 
-              {step < 6 ? (
+              {step < 5 ? (
                 <Button
-                  onClick={() => setStep(Math.min(6, step + 1))}
+                  onClick={() => setStep(Math.min(5, step + 1))}
                   className="flex items-center gap-2"
                 >
                   Next
