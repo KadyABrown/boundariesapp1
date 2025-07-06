@@ -1,11 +1,13 @@
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
-import { Heart, Brain, Calendar, BarChart3, User, Edit2, MapPin, Trash2, Plus } from "lucide-react";
+import { Heart, Brain, Calendar, BarChart3, User, Edit2, MapPin, Trash2, Plus, X } from "lucide-react";
 import EmotionalWeather from "@/components/emotional-weather";
 import BoundaryBuddy from "@/components/boundary-buddy";
+import { useState } from "react";
 
 export default function Demo() {
+  const [selectedProfile, setSelectedProfile] = useState<number | null>(null);
   // Demo data - pre-populated relationship profiles
   const demoProfiles = [
     {
@@ -214,7 +216,7 @@ export default function Demo() {
                     <Button
                       variant="ghost"
                       size="sm"
-                      onClick={() => alert('Demo mode - view detailed profile in full app')}
+                      onClick={() => setSelectedProfile(profile.id)}
                       title="View Profile & Interactions"
                     >
                       <User className="w-4 h-4" />
@@ -222,14 +224,14 @@ export default function Demo() {
                     <Button
                       variant="ghost"
                       size="sm"
-                      onClick={() => alert('Demo mode - edit profiles in full app')}
+                      disabled
                     >
                       <Edit2 className="w-4 h-4" />
                     </Button>
                     <Button
                       variant="ghost"
                       size="sm"
-                      onClick={() => alert('Demo mode - manage profiles in full app')}
+                      disabled
                     >
                       <Trash2 className="w-4 h-4" />
                     </Button>
@@ -384,6 +386,53 @@ export default function Demo() {
           </Card>
         </div>
       </div>
+
+      {/* Detailed Profile Modal */}
+      {selectedProfile && (
+        <div className="fixed inset-0 bg-black bg-opacity-50 z-50 flex items-center justify-center p-4">
+          <div className="bg-white rounded-lg shadow-xl w-full max-w-4xl h-[90vh] overflow-hidden">
+            <div className="flex flex-col h-full">
+              {/* Header */}
+              <div className="p-6 border-b border-gray-200 bg-gray-50">
+                <div className="flex items-center justify-between">
+                  <div>
+                    <h2 className="text-2xl font-bold text-gray-800">
+                      {demoProfiles.find(p => p.id === selectedProfile)?.name} - Detailed Profile
+                    </h2>
+                    <p className="text-gray-600 mt-1">
+                      Comprehensive relationship analysis and tracking
+                    </p>
+                  </div>
+                  <Button
+                    variant="outline"
+                    onClick={() => setSelectedProfile(null)}
+                  >
+                    <X className="w-4 h-4 mr-2" />
+                    Close
+                  </Button>
+                </div>
+              </div>
+              
+              {/* Content */}
+              <div className="flex-1 overflow-y-auto p-6">
+                <div className="text-center py-12">
+                  <Brain className="w-16 h-16 text-indigo-600 mx-auto mb-4" />
+                  <h3 className="text-xl font-semibold text-gray-900 mb-2">
+                    Detailed Analysis Available in Full App
+                  </h3>
+                  <p className="text-gray-600 mb-6 max-w-md mx-auto">
+                    This detailed profile view includes comprehensive tracking, behavioral analysis, 
+                    interaction history, and personalized insights. Sign up to access full functionality.
+                  </p>
+                  <Button onClick={() => window.location.href = '/pricing'}>
+                    Get Full Access - $12.99/month
+                  </Button>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 }
