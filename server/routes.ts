@@ -1655,8 +1655,102 @@ export async function registerRoutes(app: Express): Promise<Server> {
 
   app.get('/api/admin/stats', isAuthenticated, isAdmin, async (req: any, res) => {
     try {
-      // Get comprehensive admin statistics
-      const stats = await storage.getAdminStats();
+      if (!process.env.STRIPE_SECRET_KEY) {
+        return res.status(500).json({ message: 'Stripe integration not configured' });
+      }
+
+      const stripe = new Stripe(process.env.STRIPE_SECRET_KEY, {
+        apiVersion: '2024-06-20',
+      });
+
+      // Get basic user counts
+      const allUsers = await storage.getAllUsers();
+      const totalUsers = allUsers.length;
+      
+      // Calculate date ranges
+      const now = new Date();
+      const weekAgo = new Date(now.getTime() - 7 * 24 * 60 * 60 * 1000);
+      const monthAgo = new Date(now.getTime() - 30 * 24 * 60 * 60 * 1000);
+      
+      // Filter users created this week
+      const newUsersThisWeek = allUsers.filter((user: any) => 
+        user.createdAt && new Date(user.createdAt) >= weekAgo
+      ).length;
+
+      // Get Stripe subscription data
+      const subscriptions = await stripe.subscriptions.list({
+        limit: 100,
+        status: 'all',
+      });
+
+      // Calculate subscription metrics
+      const activeSubscriptions = subscriptions.data.filter(sub => 
+        sub.status === 'active' || sub.status === 'trialing'
+      );
+      
+      const premiumUsers = activeSubscriptions.filter(sub => 
+        sub.status === 'active'
+      ).length;
+      
+      const activeTrials = activeSubscriptions.filter(sub => 
+        sub.status === 'trialing'
+      ).length;
+
+      // Calculate revenue from active subscriptions
+      const monthlyRevenue = activeSubscriptions
+        .filter(sub => sub.status === 'active')
+        .reduce((total, sub) => {
+          const amount = sub.items.data[0]?.price?.unit_amount || 0;
+          return total + (amount / 100); // Convert cents to dollars
+        }, 0);
+
+      // Get new subscribers this week
+      const newSubscribersThisWeek = subscriptions.data.filter(sub => {
+        const createdDate = new Date(sub.created * 1000);
+        return createdDate >= weekAgo && (sub.status === 'active' || sub.status === 'trialing');
+      }).length;
+
+      // Calculate trial conversion rate
+      const completedTrials = subscriptions.data.filter(sub => 
+        sub.status === 'active' && sub.trial_end && new Date(sub.trial_end * 1000) < now
+      ).length;
+      
+      const totalTrials = subscriptions.data.filter(sub => 
+        sub.trial_end !== null
+      ).length;
+      
+      const trialConversionRate = totalTrials > 0 ? (completedTrials / totalTrials) * 100 : 0;
+
+      // Calculate revenue growth (compare to last month)
+      const lastMonthSubscriptions = await stripe.subscriptions.list({
+        limit: 100,
+        status: 'active',
+        created: {
+          gte: Math.floor(monthAgo.getTime() / 1000),
+          lt: Math.floor(weekAgo.getTime() / 1000),
+        },
+      });
+
+      const lastMonthRevenue = lastMonthSubscriptions.data.reduce((total, sub) => {
+        const amount = sub.items.data[0]?.price?.unit_amount || 0;
+        return total + (amount / 100);
+      }, 0);
+
+      const revenueGrowth = lastMonthRevenue > 0 
+        ? ((monthlyRevenue - lastMonthRevenue) / lastMonthRevenue) * 100 
+        : 0;
+
+      const stats = {
+        totalUsers,
+        premiumUsers,
+        activeTrials,
+        monthlyRevenue: Number(monthlyRevenue.toFixed(2)),
+        newUsersThisWeek,
+        newSubscribersThisWeek,
+        trialConversionRate: Number(trialConversionRate.toFixed(1)),
+        revenueGrowth: Number(revenueGrowth.toFixed(1)),
+      };
+
       res.json(stats);
     } catch (error) {
       console.error("Error fetching admin stats:", error);
@@ -1997,12 +2091,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
         phone: user.phoneNumber || undefined
       });
 
-      // Update user with Shopify customer ID
-      if (customer.id && !user.shopifyCustomerId) {
-        await storage.updateUser(userId, {
-          shopifyCustomerId: customer.id.toString()
-        });
-      }
+      // Note: This endpoint is deprecated - now using Stripe for payments
 
       res.json(customer);
     } catch (error) {

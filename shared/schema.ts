@@ -40,9 +40,6 @@ export const users = pgTable("users", {
   bio: text("bio"),
   isProfileComplete: boolean("is_profile_complete").default(false),
   subscriptionStatus: varchar("subscription_status").default("trial"), // trial, active, canceled, expired
-  shopifyCustomerId: varchar("shopify_customer_id"),
-  shopifySubscriptionId: varchar("shopify_subscription_id"),
-  shopifyOrderId: varchar("shopify_order_id"),
   stripeCustomerId: varchar("stripe_customer_id"),
   stripeSubscriptionId: varchar("stripe_subscription_id"),
   trialEndsAt: timestamp("trial_ends_at"),

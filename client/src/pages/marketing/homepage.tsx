@@ -22,7 +22,14 @@ export default function MarketingHomepage() {
               <a href="/demo" className="text-gray-600 hover:text-purple-600 transition-colors">Demo</a>
               <a href="/faq" className="text-gray-600 hover:text-purple-600 transition-colors">FAQ</a>
               <Button 
+                variant="outline"
                 onClick={() => window.location.href = "/api/login"}
+                className="border-purple-600 text-purple-600 hover:bg-purple-50"
+              >
+                Login
+              </Button>
+              <Button 
+                onClick={() => window.location.href = "/pricing"}
                 className="bg-purple-600 hover:bg-purple-700"
               >
                 Get Started
@@ -66,15 +73,27 @@ export default function MarketingHomepage() {
                   >
                     FAQ
                   </a>
-                  <Button
-                    onClick={() => {
-                      setIsOpen(false);
-                      window.location.href = "/api/login";
-                    }}
-                    className="bg-purple-600 hover:bg-purple-700 mt-4"
-                  >
-                    Get Started
-                  </Button>
+                  <div className="flex flex-col gap-3 mt-4">
+                    <Button
+                      variant="outline"
+                      onClick={() => {
+                        setIsOpen(false);
+                        window.location.href = "/api/login";
+                      }}
+                      className="border-purple-600 text-purple-600 hover:bg-purple-50"
+                    >
+                      Login
+                    </Button>
+                    <Button
+                      onClick={() => {
+                        setIsOpen(false);
+                        window.location.href = "/pricing";
+                      }}
+                      className="bg-purple-600 hover:bg-purple-700"
+                    >
+                      Get Started
+                    </Button>
+                  </div>
                 </nav>
               </SheetContent>
             </Sheet>
