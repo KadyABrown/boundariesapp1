@@ -1635,7 +1635,8 @@ export async function registerRoutes(app: Express): Promise<Server> {
   app.get('/api/admin/users', isAuthenticated, async (req: any, res) => {
     try {
       // Check if user is admin
-      if (req.user.email !== "hello@roxzmedia.com") {
+      const userEmail = req.user?.email || req.user?.claims?.email;
+      if (userEmail !== "hello@roxzmedia.com") {
         return res.status(403).json({ message: "Access denied" });
       }
       
@@ -1650,7 +1651,8 @@ export async function registerRoutes(app: Express): Promise<Server> {
   app.get('/api/admin/stats', isAuthenticated, async (req: any, res) => {
     try {
       // Check if user is admin
-      if (req.user.email !== "hello@roxzmedia.com") {
+      const userEmail = req.user?.email || req.user?.claims?.email;
+      if (userEmail !== "hello@roxzmedia.com") {
         return res.status(403).json({ message: "Access denied" });
       }
       
@@ -1665,7 +1667,8 @@ export async function registerRoutes(app: Express): Promise<Server> {
   app.delete('/api/admin/users/:id', isAuthenticated, async (req: any, res) => {
     try {
       // Check if user is admin
-      if (req.user.email !== "hello@roxzmedia.com") {
+      const userEmail = req.user?.email || req.user?.claims?.email;
+      if (userEmail !== "hello@roxzmedia.com") {
         return res.status(403).json({ message: "Access denied" });
       }
       
@@ -1715,7 +1718,8 @@ export async function registerRoutes(app: Express): Promise<Server> {
   // Admin route to update feedback status
   app.patch('/api/admin/feedback/:id', isAuthenticated, async (req: any, res) => {
     try {
-      if (req.user.email !== "hello@roxzmedia.com") {
+      const userEmail = req.user?.email || req.user?.claims?.email;
+      if (userEmail !== "hello@roxzmedia.com") {
         return res.status(403).json({ message: "Access denied" });
       }
 
