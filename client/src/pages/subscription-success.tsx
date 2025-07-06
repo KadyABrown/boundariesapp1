@@ -36,7 +36,8 @@ export default function SubscriptionSuccessPage() {
           setSubscriptionStatus({ status: 'active' });
           // Redirect to profile to complete setup after a brief delay
           setTimeout(() => {
-            window.location.href = '/profile?onboarding=true';
+            // Force a full page reload to ensure session is properly loaded
+            window.location.replace('/profile?onboarding=true');
           }, 3000);
         } else {
           setError(result.message || 'Payment verification failed');

@@ -1977,10 +1977,24 @@ export async function registerRoutes(app: Express): Promise<Server> {
         const finalUser = await storage.getUser(userId);
         console.log("Final user state:", finalUser);
         
-        res.json({ 
-          success: true, 
-          message: 'Account created successfully',
-          redirectUrl: '/dashboard'
+        // Create session for the new user
+        console.log("Creating session for new user...");
+        req.session.userId = userId;
+        req.session.user = finalUser;
+        
+        // Save session
+        req.session.save((err: any) => {
+          if (err) {
+            console.error("Error saving session:", err);
+            return res.status(500).json({ message: 'Session creation failed' });
+          }
+          
+          console.log("Session created successfully for user:", userId);
+          res.json({ 
+            success: true, 
+            message: 'Account created successfully',
+            redirectUrl: '/dashboard'
+          });
         });
       } else {
         res.status(400).json({ message: 'Customer email not found' });
