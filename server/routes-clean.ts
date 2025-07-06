@@ -1,7 +1,7 @@
 import type { Express, Request, Response } from "express";
 import { z } from "zod";
 import { storage } from "./storage-clean";
-import { isAuthenticated } from "./replitAuth";
+import { isAuthenticated, getSession } from "./replitAuth";
 import { 
   insertPersonalBaselineSchema,
   insertRelationshipSchema,
@@ -10,6 +10,26 @@ import {
 } from "../shared/schema";
 
 export function registerRoutes(app: Express) {
+  
+  // User authentication check
+  app.get("/api/user", isAuthenticated, async (req: Request, res: Response) => {
+    try {
+      const user = getSession()?.user;
+      if (!user) {
+        return res.status(401).json({ message: "Not authenticated" });
+      }
+      
+      res.json({
+        id: user.id,
+        name: user.name,
+        email: user.email,
+        image: user.image
+      });
+    } catch (error) {
+      console.error("Get user error:", error);
+      res.status(500).json({ message: "Failed to get user" });
+    }
+  });
   
   // Personal Baseline Routes
   app.post("/api/baseline", isAuthenticated, async (req: Request, res: Response) => {
