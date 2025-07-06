@@ -1552,6 +1552,55 @@ export class DatabaseStorage implements IStorage {
 
     return usersWithMetadata;
   }
+
+  async deleteUser(userId: string): Promise<void> {
+    try {
+      // Delete all user-related data in the correct order to handle foreign key constraints
+      
+      // Delete relationship-related data first
+      await this.db.delete(relationshipCheckins).where(
+        relationshipCheckins.userId.eq(userId)
+      );
+      
+      await this.db.delete(relationshipUsers).where(
+        relationshipUsers.userId.eq(userId)
+      );
+      
+      await this.db.delete(relationshipProfiles).where(
+        relationshipProfiles.userId.eq(userId)
+      );
+      
+      // Delete boundary-related data
+      await this.db.delete(boundaries).where(
+        boundaries.userId.eq(userId)
+      );
+      
+      await this.db.delete(entries).where(
+        entries.userId.eq(userId)
+      );
+      
+      // Delete friendship-related data
+      await this.db.delete(friendships).where(
+        or(
+          friendships.userId.eq(userId),
+          friendships.friendId.eq(userId)
+        )
+      );
+      
+      // Delete baseline assessment
+      await this.db.delete(baselineAssessments).where(
+        baselineAssessments.userId.eq(userId)
+      );
+      
+      // Finally delete the user
+      await this.db.delete(users).where(users.id.eq(userId));
+      
+      console.log(`Successfully deleted user ${userId} and all related data`);
+    } catch (error) {
+      console.error(`Failed to delete user ${userId}:`, error);
+      throw error;
+    }
+  }
 }
 
 export const storage = new DatabaseStorage();

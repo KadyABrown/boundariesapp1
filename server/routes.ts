@@ -1819,6 +1819,22 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
+  // Delete user
+  app.delete('/api/admin/users/:userId', isAuthenticated, isAdmin, async (req: any, res) => {
+    try {
+      const { userId } = req.params;
+      console.log(`Admin deleting user: ${userId}`);
+      
+      const result = await storage.deleteUser(userId);
+      console.log(`User ${userId} deleted successfully`);
+      
+      res.json({ success: true, message: "User deleted successfully" });
+    } catch (error) {
+      console.error("Error deleting user:", error);
+      res.status(500).json({ message: "Failed to delete user" });
+    }
+  });
+
   // Shopify subscription routes
   const ShopifyService = (await import('./shopify.js')).ShopifyService;
   const shopifyService = ShopifyService.getInstance();
@@ -1936,16 +1952,30 @@ export async function registerRoutes(app: Express): Promise<Server> {
           subscriptionStatus: 'active'
         };
 
-        // Create/update user account
-        console.log("Creating user with data:", userData);
-        const createdUser = await storage.upsertUser(userData);
-        console.log("User created successfully:", createdUser);
-        console.log("Type of created user:", typeof createdUser);
+        // Check if user already exists
+        console.log("Checking if user already exists...");
+        let existingUser = await storage.getUser(userId);
         
-        // Verify user was actually saved by trying to retrieve it
-        console.log("Verifying user was saved...");
-        const retrievedUser = await storage.getUser(userId);
-        console.log("Retrieved user:", retrievedUser);
+        if (existingUser) {
+          console.log("User already exists, updating Stripe subscription details...");
+          // Update existing user with new subscription details using storage method
+          const updateData = {
+            ...existingUser,
+            stripeCustomerId: customer.id,
+            stripeSubscriptionId: subscription.id,
+            subscriptionStatus: 'active' as const
+          };
+          await storage.updateUser(userId, updateData);
+          console.log("Updated existing user with new subscription");
+        } else {
+          console.log("Creating new user with data:", userData);
+          const createdUser = await storage.upsertUser(userData);
+          console.log("New user created successfully:", createdUser);
+        }
+        
+        // Verify final user state
+        const finalUser = await storage.getUser(userId);
+        console.log("Final user state:", finalUser);
         
         res.json({ 
           success: true, 

@@ -1,4 +1,5 @@
-import { useQuery } from "@tanstack/react-query";
+import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
+import { apiRequest } from "@/lib/queryClient";
 import { useAuth } from "@/hooks/useAuth";
 import { useToast } from "@/hooks/use-toast";
 import { isUnauthorizedError } from "@/lib/authUtils";
@@ -31,6 +32,7 @@ import { useState, useEffect } from "react";
 export default function AdminPage() {
   const { user, isAuthenticated, isLoading } = useAuth();
   const { toast } = useToast();
+  const queryClient = useQueryClient();
   const [searchTerm, setSearchTerm] = useState("");
   const [selectedUser, setSelectedUser] = useState(null);
   const [showFeatureHeatmap, setShowFeatureHeatmap] = useState(false);
@@ -111,6 +113,35 @@ export default function AdminPage() {
     user.firstName?.toLowerCase().includes(searchTerm.toLowerCase()) ||
     user.lastName?.toLowerCase().includes(searchTerm.toLowerCase())
   );
+
+  // Delete user mutation
+  const deleteUserMutation = useMutation({
+    mutationFn: async (userId: string) => {
+      const response = await apiRequest("DELETE", `/api/admin/users/${userId}`);
+      return response.json();
+    },
+    onSuccess: () => {
+      toast({
+        title: "User Deleted",
+        description: "User has been successfully deleted",
+      });
+      queryClient.invalidateQueries({ queryKey: ["/api/admin/users"] });
+      queryClient.invalidateQueries({ queryKey: ["/api/admin/stats"] });
+    },
+    onError: (error: any) => {
+      toast({
+        title: "Delete Failed",
+        description: error.message || "Failed to delete user",
+        variant: "destructive",
+      });
+    },
+  });
+
+  const deleteUser = (userId: string, email: string) => {
+    if (confirm(`Are you sure you want to delete user ${email}? This action cannot be undone.`)) {
+      deleteUserMutation.mutate(userId);
+    }
+  };
 
   const formatDate = (dateString: string) => {
     return new Date(dateString).toLocaleDateString('en-US', {
@@ -464,6 +495,7 @@ export default function AdminPage() {
                     <th className="text-left py-3 px-4">Joined</th>
                     <th className="text-left py-3 px-4">Relationships</th>
                     <th className="text-left py-3 px-4">Last Active</th>
+                    <th className="text-left py-3 px-4">Actions</th>
                   </tr>
                 </thead>
                 <tbody>
@@ -510,6 +542,17 @@ export default function AdminPage() {
                       </td>
                       <td className="py-3 px-4 text-sm text-gray-600">
                         {user.lastActiveAt ? formatDate(user.lastActiveAt) : 'Never'}
+                      </td>
+                      <td className="py-3 px-4">
+                        <Button
+                          variant="destructive"
+                          size="sm"
+                          onClick={() => deleteUser(user.id, user.email)}
+                          className="flex items-center gap-1"
+                        >
+                          <UserX className="w-4 h-4" />
+                          Delete
+                        </Button>
                       </td>
                     </tr>
                   ))}
