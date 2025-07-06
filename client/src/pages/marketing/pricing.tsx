@@ -49,9 +49,9 @@ export default function PricingPage() {
         <div className="container mx-auto max-w-2xl">
           <Card className="border-2 border-purple-200 shadow-2xl">
             <CardHeader className="text-center py-12 bg-gradient-to-r from-purple-600 to-blue-600 text-white rounded-t-lg">
-              <CardTitle className="text-4xl font-bold mb-4">BoundarySpace</CardTitle>
-              <div className="text-6xl font-bold mb-4">Free</div>
-              <p className="text-xl text-purple-100">Forever. For everyone.</p>
+              <CardTitle className="text-4xl font-bold mb-4">BoundarySpace Premium</CardTitle>
+              <div className="text-6xl font-bold mb-4">$12.99</div>
+              <p className="text-xl text-purple-100">per month</p>
             </CardHeader>
             <CardContent className="p-12">
               <div className="space-y-6">

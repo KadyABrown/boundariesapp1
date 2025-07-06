@@ -14,10 +14,9 @@ export default function MarketingHomepage() {
               <span className="text-2xl font-bold text-gray-900">BoundarySpace</span>
             </div>
             <div className="hidden md:flex items-center gap-6">
-              <a href="#features" className="text-gray-600 hover:text-purple-600 transition-colors">Features</a>
-              <a href="#pricing" className="text-gray-600 hover:text-purple-600 transition-colors">Pricing</a>
-              <a href="#demo" className="text-gray-600 hover:text-purple-600 transition-colors">Demo</a>
-              <a href="#faq" className="text-gray-600 hover:text-purple-600 transition-colors">FAQ</a>
+              <a href="/pricing" className="text-gray-600 hover:text-purple-600 transition-colors">Pricing</a>
+              <a href="/demo" className="text-gray-600 hover:text-purple-600 transition-colors">Demo</a>
+              <a href="/faq" className="text-gray-600 hover:text-purple-600 transition-colors">FAQ</a>
               <Button 
                 onClick={() => window.location.href = "/api/login"}
                 className="bg-purple-600 hover:bg-purple-700"
@@ -33,8 +32,8 @@ export default function MarketingHomepage() {
       <section className="py-20 px-4">
         <div className="container mx-auto text-center max-w-4xl">
           <h1 className="text-5xl md:text-6xl font-bold text-gray-900 mb-6">
-            Build Healthier 
-            <span className="text-purple-600"> Relationships</span>
+            Know Your 
+            <span className="text-purple-600">Boundaries</span>
           </h1>
           <p className="text-xl text-gray-600 mb-8 max-w-2xl mx-auto">
             Track relationship patterns, understand your boundaries, and make data-driven decisions 
