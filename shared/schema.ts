@@ -43,6 +43,8 @@ export const users = pgTable("users", {
   shopifyCustomerId: varchar("shopify_customer_id"),
   shopifySubscriptionId: varchar("shopify_subscription_id"),
   shopifyOrderId: varchar("shopify_order_id"),
+  stripeCustomerId: varchar("stripe_customer_id"),
+  stripeSubscriptionId: varchar("stripe_subscription_id"),
   trialEndsAt: timestamp("trial_ends_at"),
   createdAt: timestamp("created_at").defaultNow(),
   updatedAt: timestamp("updated_at").defaultNow(),

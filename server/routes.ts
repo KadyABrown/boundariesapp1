@@ -1740,7 +1740,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
       }
 
       const stripe = new Stripe(process.env.STRIPE_SECRET_KEY, {
-        apiVersion: '2023-10-16',
+        apiVersion: '2024-06-20',
       });
 
       console.log("Creating Stripe checkout session...");
@@ -1783,29 +1783,190 @@ export async function registerRoutes(app: Express): Promise<Server> {
   // Get subscription status
   app.get('/api/subscription/status', isAuthenticated, async (req: any, res) => {
     try {
+      if (!process.env.STRIPE_SECRET_KEY) {
+        return res.status(500).json({ message: 'Stripe integration not configured' });
+      }
+
+      const stripe = new Stripe(process.env.STRIPE_SECRET_KEY, {
+        apiVersion: '2024-06-20',
+      });
+
       const userId = req.user.claims.sub;
-      const subscriptionDetails = await shopifyService.getSubscriptionDetails(userId);
-      res.json(subscriptionDetails);
+      const user = await storage.getUser(userId);
+      
+      if (!user || !user.stripeCustomerId) {
+        return res.json({ 
+          status: 'inactive', 
+          hasSubscription: false,
+          message: 'No subscription found'
+        });
+      }
+
+      // Get customer's subscriptions from Stripe
+      const subscriptions = await stripe.subscriptions.list({
+        customer: user.stripeCustomerId,
+        status: 'all',
+        limit: 10
+      });
+
+      const activeSubscription = subscriptions.data.find(sub => 
+        sub.status === 'active' || sub.status === 'trialing'
+      );
+
+      if (activeSubscription) {
+        return res.json({
+          status: activeSubscription.status,
+          hasSubscription: true,
+          subscriptionId: activeSubscription.id,
+          customerId: user.stripeCustomerId,
+          currentPeriodStart: new Date(activeSubscription.current_period_start * 1000),
+          currentPeriodEnd: new Date(activeSubscription.current_period_end * 1000),
+          cancelAtPeriodEnd: activeSubscription.cancel_at_period_end,
+          priceId: activeSubscription.items.data[0]?.price.id,
+          amount: activeSubscription.items.data[0]?.price.unit_amount,
+          currency: activeSubscription.items.data[0]?.price.currency,
+          interval: activeSubscription.items.data[0]?.price.recurring?.interval
+        });
+      }
+
+      return res.json({ 
+        status: 'inactive', 
+        hasSubscription: false,
+        customerId: user.stripeCustomerId
+      });
     } catch (error) {
       console.error("Error fetching subscription status:", error);
-      res.status(500).json({ message: "Failed to fetch subscription status" });
+      res.status(500).json({ 
+        message: error instanceof Error ? error.message : "Failed to fetch subscription status" 
+      });
     }
   });
 
-  // Cancel subscription
+  // Cancel subscription  
   app.post('/api/subscription/cancel', isAuthenticated, async (req: any, res) => {
     try {
-      const userId = req.user.claims.sub;
-      const success = await shopifyService.cancelSubscription(userId);
-      
-      if (success) {
-        res.json({ message: "Subscription cancelled successfully" });
-      } else {
-        res.status(500).json({ message: "Failed to cancel subscription" });
+      if (!process.env.STRIPE_SECRET_KEY) {
+        return res.status(500).json({ message: 'Stripe integration not configured' });
       }
+
+      const stripe = new Stripe(process.env.STRIPE_SECRET_KEY, {
+        apiVersion: '2024-06-20',
+      });
+
+      const userId = req.user.claims.sub;
+      const user = await storage.getUser(userId);
+      
+      if (!user || !user.stripeCustomerId) {
+        return res.status(404).json({ message: 'No subscription found' });
+      }
+
+      // Get active subscription
+      const subscriptions = await stripe.subscriptions.list({
+        customer: user.stripeCustomerId,
+        status: 'active'
+      });
+
+      if (subscriptions.data.length === 0) {
+        return res.status(404).json({ message: 'No active subscription found' });
+      }
+
+      const subscription = subscriptions.data[0];
+      
+      // Cancel subscription at period end (user keeps access until billing period ends)
+      const updatedSubscription = await stripe.subscriptions.update(subscription.id, {
+        cancel_at_period_end: true
+      });
+
+      res.json({ 
+        message: "Subscription cancelled successfully. You'll retain access until the end of your billing period.",
+        cancelAtPeriodEnd: updatedSubscription.cancel_at_period_end,
+        currentPeriodEnd: new Date(updatedSubscription.current_period_end * 1000)
+      });
     } catch (error) {
       console.error("Error cancelling subscription:", error);
-      res.status(500).json({ message: "Failed to cancel subscription" });
+      res.status(500).json({ 
+        message: error instanceof Error ? error.message : "Failed to cancel subscription" 
+      });
+    }
+  });
+
+  // Reactivate subscription (undo cancellation)
+  app.post('/api/subscription/reactivate', isAuthenticated, async (req: any, res) => {
+    try {
+      if (!process.env.STRIPE_SECRET_KEY) {
+        return res.status(500).json({ message: 'Stripe integration not configured' });
+      }
+
+      const stripe = new Stripe(process.env.STRIPE_SECRET_KEY, {
+        apiVersion: '2024-06-20',
+      });
+
+      const userId = req.user.claims.sub;
+      const user = await storage.getUser(userId);
+      
+      if (!user || !user.stripeCustomerId) {
+        return res.status(404).json({ message: 'No subscription found' });
+      }
+
+      // Get subscription scheduled for cancellation
+      const subscriptions = await stripe.subscriptions.list({
+        customer: user.stripeCustomerId,
+        status: 'active'
+      });
+
+      const subscription = subscriptions.data.find(sub => sub.cancel_at_period_end);
+      
+      if (!subscription) {
+        return res.status(404).json({ message: 'No subscription scheduled for cancellation' });
+      }
+
+      // Reactivate subscription by removing cancellation
+      const updatedSubscription = await stripe.subscriptions.update(subscription.id, {
+        cancel_at_period_end: false
+      });
+
+      res.json({ 
+        message: "Subscription reactivated successfully",
+        cancelAtPeriodEnd: updatedSubscription.cancel_at_period_end
+      });
+    } catch (error) {
+      console.error("Error reactivating subscription:", error);
+      res.status(500).json({ 
+        message: error instanceof Error ? error.message : "Failed to reactivate subscription" 
+      });
+    }
+  });
+
+  // Update payment method - redirect to customer portal
+  app.post('/api/subscription/update-payment', isAuthenticated, async (req: any, res) => {
+    try {
+      if (!process.env.STRIPE_SECRET_KEY) {
+        return res.status(500).json({ message: 'Stripe integration not configured' });
+      }
+
+      const stripe = new Stripe(process.env.STRIPE_SECRET_KEY, {
+        apiVersion: '2024-06-20',
+      });
+
+      const userId = req.user.claims.sub;
+      const user = await storage.getUser(userId);
+      
+      if (!user || !user.stripeCustomerId) {
+        return res.status(404).json({ message: 'No subscription found' });
+      }
+
+      // Create customer portal session
+      const session = await stripe.billingPortal.sessions.create({
+        customer: user.stripeCustomerId,
+        return_url: `${req.protocol}://${req.get('host')}/profile`,
+      });
+
+      res.json({ portalUrl: session.url });
+    } catch (error) {
+      console.error("Error creating customer portal:", error);
+      res.status(500).json({ 
+        message: error instanceof Error ? error.message : "Failed to create customer portal" 
+      });
     }
   });
 
