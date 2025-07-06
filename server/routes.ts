@@ -1880,6 +1880,8 @@ export async function registerRoutes(app: Express): Promise<Server> {
   app.post('/api/subscription/verify-session', async (req: any, res) => {
     try {
       const { sessionId } = req.body;
+      console.log("=== VERIFY SESSION DEBUG ===");
+      console.log("Session ID received:", sessionId);
       
       if (!sessionId) {
         return res.status(400).json({ message: 'Session ID required' });
@@ -1894,15 +1896,26 @@ export async function registerRoutes(app: Express): Promise<Server> {
       });
 
       // Retrieve the checkout session
+      console.log("Retrieving checkout session from Stripe...");
       const session = await stripe.checkout.sessions.retrieve(sessionId);
+      console.log("Session details:", {
+        id: session.id,
+        payment_status: session.payment_status,
+        customer: session.customer,
+        subscription: session.subscription
+      });
       
       if (session.payment_status !== 'paid') {
+        console.log("Payment not completed, returning false");
         return res.json({ success: false, message: 'Payment not completed' });
       }
 
       // Get customer and subscription details
+      console.log("Retrieving customer and subscription...");
       const customer = await stripe.customers.retrieve(session.customer as string);
       const subscription = await stripe.subscriptions.retrieve(session.subscription as string);
+      console.log("Customer retrieved:", { id: customer.id, email: (customer as any).email });
+      console.log("Subscription retrieved:", { id: subscription.id, status: subscription.status });
 
       // Create or update user account
       if (customer && (customer as any).email) {
@@ -1919,7 +1932,15 @@ export async function registerRoutes(app: Express): Promise<Server> {
         };
 
         // Create/update user account
-        await storage.upsertUser(userData);
+        console.log("Creating user with data:", userData);
+        const createdUser = await storage.upsertUser(userData);
+        console.log("User created successfully:", createdUser);
+        console.log("Type of created user:", typeof createdUser);
+        
+        // Verify user was actually saved by trying to retrieve it
+        console.log("Verifying user was saved...");
+        const retrievedUser = await storage.getUser(userId);
+        console.log("Retrieved user:", retrievedUser);
         
         res.json({ 
           success: true, 
@@ -2206,6 +2227,42 @@ export async function registerRoutes(app: Express): Promise<Server> {
     } catch (error) {
       console.error("Error creating/getting customer:", error);
       res.status(500).json({ message: "Failed to manage customer" });
+    }
+  });
+
+  // Test endpoint to manually create a Stripe user for debugging
+  app.post('/api/test/create-stripe-user', async (req: any, res) => {
+    try {
+      const testUserData = {
+        id: `stripe_test_${Date.now()}`,
+        email: `test${Date.now()}@stripe.example.com`,
+        firstName: null,
+        lastName: null,
+        profileImageUrl: null,
+        stripeCustomerId: `cus_test_${Date.now()}`,
+        stripeSubscriptionId: `sub_test_${Date.now()}`,
+        subscriptionStatus: 'active'
+      };
+
+      console.log("Creating test Stripe user:", testUserData);
+      const createdUser = await storage.upsertUser(testUserData);
+      console.log("Test user created:", createdUser);
+
+      // Verify it was saved by retrieving
+      const retrievedUser = await storage.getUser(testUserData.id);
+      console.log("Retrieved test user:", retrievedUser);
+
+      res.json({ 
+        success: true, 
+        createdUser,
+        retrievedUser,
+        message: 'Test user created successfully' 
+      });
+    } catch (error) {
+      console.error("Error creating test user:", error);
+      res.status(500).json({ 
+        message: error instanceof Error ? error.message : "Failed to create test user" 
+      });
     }
   });
 
