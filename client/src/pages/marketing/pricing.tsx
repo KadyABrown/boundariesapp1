@@ -198,14 +198,7 @@ export default function PricingPage() {
         <div className="container mx-auto max-w-4xl">
           <h2 className="text-4xl font-bold text-gray-900 mb-12 text-center">Common Questions</h2>
           <div className="space-y-8">
-            <div className="bg-white p-8 rounded-lg shadow-sm">
-              <h3 className="text-xl font-semibold mb-4">Will BoundarySpace always be free?</h3>
-              <p className="text-gray-600">
-                Yes, the core features of BoundarySpace will always remain free. We may introduce 
-                optional premium features in the future, but the essential relationship tracking 
-                and analysis tools will never be behind a paywall.
-              </p>
-            </div>
+
             <div className="bg-white p-8 rounded-lg shadow-sm">
               <h3 className="text-xl font-semibold mb-4">Are there any usage limits?</h3>
               <p className="text-gray-600">
