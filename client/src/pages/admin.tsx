@@ -13,7 +13,8 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
 import { Textarea } from "@/components/ui/textarea";
 import { Label } from "@/components/ui/label";
-import { Users, DollarSign, TrendingUp, Search, Trash2, UserCheck, Activity, Calendar, AlertTriangle, Eye, MessageSquare, Settings, BarChart3, RefreshCw, UserPlus } from "lucide-react";
+import { Users, DollarSign, TrendingUp, Search, Trash2, UserCheck, Activity, Calendar, AlertTriangle, Eye, MessageSquare, Settings, BarChart3, RefreshCw, UserPlus, Pause, Play, MoreVertical } from "lucide-react";
+import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from "@/components/ui/dropdown-menu";
 
 export default function Admin() {
   const { toast } = useToast();
@@ -82,7 +83,7 @@ export default function Admin() {
     },
   });
 
-  // Delete user mutation
+  // Delete user mutation (permanent)
   const deleteUserMutation = useMutation({
     mutationFn: async (userId: string) => {
       await apiRequest("DELETE", `/api/admin/users/${userId}`);
@@ -92,13 +93,57 @@ export default function Admin() {
       queryClient.invalidateQueries({ queryKey: ["/api/admin/stats"] });
       toast({
         title: "Success",
-        description: "User deleted successfully",
+        description: "User permanently deleted",
       });
     },
     onError: () => {
       toast({
         title: "Error",
         description: "Failed to delete user",
+        variant: "destructive",
+      });
+    },
+  });
+
+  // Suspend user mutation
+  const suspendUserMutation = useMutation({
+    mutationFn: async (userId: string) => {
+      await apiRequest("PATCH", `/api/admin/users/${userId}/suspend`);
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["/api/admin/users"] });
+      queryClient.invalidateQueries({ queryKey: ["/api/admin/stats"] });
+      toast({
+        title: "Success",
+        description: "User account suspended",
+      });
+    },
+    onError: () => {
+      toast({
+        title: "Error",
+        description: "Failed to suspend user",
+        variant: "destructive",
+      });
+    },
+  });
+
+  // Reactivate user mutation
+  const reactivateUserMutation = useMutation({
+    mutationFn: async (userId: string) => {
+      await apiRequest("PATCH", `/api/admin/users/${userId}/reactivate`);
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["/api/admin/users"] });
+      queryClient.invalidateQueries({ queryKey: ["/api/admin/stats"] });
+      toast({
+        title: "Success",
+        description: "User account reactivated",
+      });
+    },
+    onError: () => {
+      toast({
+        title: "Error",
+        description: "Failed to reactivate user",
         variant: "destructive",
       });
     },
@@ -390,6 +435,9 @@ export default function Admin() {
                                 <Badge variant={user.subscriptionStatus === "active" ? "default" : "secondary"}>
                                   {user.subscriptionStatus === "active" ? "Premium" : "Free"}
                                 </Badge>
+                                {user.accountStatus === "suspended" && (
+                                  <Badge variant="destructive">Suspended</Badge>
+                                )}
                                 {user.engagementRisk === "high" && (
                                   <Badge variant="destructive">High Risk</Badge>
                                 )}
@@ -414,18 +462,53 @@ export default function Admin() {
                               <UserProfileDrillDown user={user} />
                             </DialogContent>
                           </Dialog>
-                          <Button
-                            variant="destructive"
-                            size="sm"
-                            onClick={() => {
-                              if (confirm(`Are you sure you want to delete ${user.email}?`)) {
-                                deleteUserMutation.mutate(user.id);
-                              }
-                            }}
-                            disabled={deleteUserMutation.isPending}
-                          >
-                            <Trash2 className="w-4 h-4" />
-                          </Button>
+                          
+                          <DropdownMenu>
+                            <DropdownMenuTrigger asChild>
+                              <Button variant="outline" size="sm">
+                                <MoreVertical className="w-4 h-4" />
+                              </Button>
+                            </DropdownMenuTrigger>
+                            <DropdownMenuContent align="end">
+                              {user.accountStatus === "suspended" ? (
+                                <DropdownMenuItem
+                                  onClick={() => {
+                                    if (confirm(`Reactivate account for ${user.email}?`)) {
+                                      reactivateUserMutation.mutate(user.id);
+                                    }
+                                  }}
+                                  disabled={reactivateUserMutation.isPending}
+                                >
+                                  <Play className="w-4 h-4 mr-2" />
+                                  Reactivate Account
+                                </DropdownMenuItem>
+                              ) : (
+                                <DropdownMenuItem
+                                  onClick={() => {
+                                    if (confirm(`Suspend account for ${user.email}? This will disable login but preserve all data.`)) {
+                                      suspendUserMutation.mutate(user.id);
+                                    }
+                                  }}
+                                  disabled={suspendUserMutation.isPending}
+                                >
+                                  <Pause className="w-4 h-4 mr-2" />
+                                  Suspend Account
+                                </DropdownMenuItem>
+                              )}
+                              <DropdownMenuItem
+                                onClick={() => {
+                                  if (confirm(`PERMANENTLY DELETE ${user.email}? This action cannot be undone and will remove all user data.`)) {
+                                    deleteUserMutation.mutate(user.id);
+                                  }
+                                }}
+                                disabled={deleteUserMutation.isPending}
+                                className="text-red-600 focus:text-red-600"
+                              >
+                                <Trash2 className="w-4 h-4 mr-2" />
+                                Permanent Delete
+                              </DropdownMenuItem>
+                            </DropdownMenuContent>
+                          </DropdownMenu>
                         </div>
                       </div>
                     ))}

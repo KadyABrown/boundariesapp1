@@ -1690,6 +1690,60 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
+  // Suspend user account
+  app.patch('/api/admin/users/:id/suspend', isAuthenticated, async (req: any, res) => {
+    try {
+      // Check if user is admin
+      const userEmail = req.user?.email || req.user?.claims?.email;
+      if (userEmail !== "hello@roxzmedia.com") {
+        return res.status(403).json({ message: "Access denied" });
+      }
+      
+      const userId = req.params.id;
+      await storage.suspendUser(userId);
+      res.json({ success: true });
+    } catch (error) {
+      console.error("Error suspending user:", error);
+      res.status(500).json({ message: "Failed to suspend user" });
+    }
+  });
+
+  // Schedule user for deletion
+  app.patch('/api/admin/users/:id/schedule-deletion', isAuthenticated, async (req: any, res) => {
+    try {
+      // Check if user is admin
+      const userEmail = req.user?.email || req.user?.claims?.email;
+      if (userEmail !== "hello@roxzmedia.com") {
+        return res.status(403).json({ message: "Access denied" });
+      }
+      
+      const userId = req.params.id;
+      await storage.scheduleUserForDeletion(userId);
+      res.json({ success: true });
+    } catch (error) {
+      console.error("Error scheduling user for deletion:", error);
+      res.status(500).json({ message: "Failed to schedule user for deletion" });
+    }
+  });
+
+  // Reactivate user account
+  app.patch('/api/admin/users/:id/reactivate', isAuthenticated, async (req: any, res) => {
+    try {
+      // Check if user is admin
+      const userEmail = req.user?.email || req.user?.claims?.email;
+      if (userEmail !== "hello@roxzmedia.com") {
+        return res.status(403).json({ message: "Access denied" });
+      }
+      
+      const userId = req.params.id;
+      await storage.reactivateUser(userId);
+      res.json({ success: true });
+    } catch (error) {
+      console.error("Error reactivating user:", error);
+      res.status(500).json({ message: "Failed to reactivate user" });
+    }
+  });
+
   // Create premium user endpoint
   app.post('/api/admin/create-premium-user', isAuthenticated, async (req: any, res) => {
     try {

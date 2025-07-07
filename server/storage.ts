@@ -1275,6 +1275,32 @@ export class DatabaseStorage implements IStorage {
       .returning();
     return updatedFeedback;
   }
+  async suspendUser(id: string): Promise<void> {
+    await db.update(users)
+      .set({ 
+        accountStatus: "suspended",
+        updatedAt: new Date() 
+      })
+      .where(eq(users.id, id));
+  }
+
+  async scheduleUserForDeletion(id: string): Promise<void> {
+    await db.update(users)
+      .set({ 
+        accountStatus: "scheduled_for_deletion",
+        updatedAt: new Date() 
+      })
+      .where(eq(users.id, id));
+  }
+
+  async reactivateUser(id: string): Promise<void> {
+    await db.update(users)
+      .set({ 
+        accountStatus: "active",
+        updatedAt: new Date() 
+      })
+      .where(eq(users.id, id));
+  }
 }
 
 export const storage = new DatabaseStorage();
