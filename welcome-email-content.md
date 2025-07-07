@@ -1,11 +1,11 @@
-# Welcome to BoundarySpace! 🎉
+# Welcome to BoundaryCore! 🎉
 
 Welcome to your personal relationship health journey! You've just joined thousands of people who are transforming how they understand and nurture their relationships.
 
 ## Get Started in 3 Simple Steps:
 
 ### 1. Complete Your Personal Baseline Assessment
-Start by telling us about your communication style, emotional needs, and boundary preferences. This creates your personal blueprint that BoundarySpace uses to analyze all your relationships.
+Start by telling us about your communication style, emotional needs, and boundary preferences. This creates your personal blueprint that BoundaryCore uses to analyze all your relationships.
 → **Go to: Baseline Assessment**
 
 ### 2. Create Your First Relationship Profile
@@ -16,7 +16,7 @@ Add someone important in your life - a partner, friend, family member, or dating
 After your next conversation or time spent together, use our 5-step interaction tracker to capture how it affected your physical and emotional state.
 → **Go to: Track Interaction**
 
-## What Makes BoundarySpace Different:
+## What Makes BoundaryCore Different:
 
 ✓ **Real Data, Real Insights** - Track actual interactions instead of guessing
 ✓ **Personal Compatibility** - See how relationships match your specific needs
@@ -32,4 +32,4 @@ After your next conversation or time spent together, use our 5-step interaction 
 Ready to transform your relationships? Your journey to healthier boundaries starts now.
 
 Welcome aboard!
-The BoundarySpace Team
+The BoundaryCore Team

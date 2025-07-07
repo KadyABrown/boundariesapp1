@@ -1,4 +1,4 @@
-# Shopify Setup Guide for BoundarySpace
+# Shopify Setup Guide for BoundaryCore
 
 ## Quick Setup Options
 

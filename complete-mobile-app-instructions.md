@@ -1,4 +1,4 @@
-# BoundarySpace Mobile App - Complete Build Instructions
+# BoundaryCore Mobile App - Complete Build Instructions
 
 ## CRITICAL: Build EXACTLY This App Structure
 

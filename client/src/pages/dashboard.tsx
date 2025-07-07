@@ -102,7 +102,7 @@ export default function Dashboard() {
         <div className="w-8 h-8 bg-primary rounded-lg flex items-center justify-center mx-auto mb-4 animate-pulse">
           <span className="text-white text-sm">B</span>
         </div>
-        <p className="text-neutral-600">Loading your boundary space...</p>
+        <p className="text-neutral-600">Loading your data...</p>
       </div>
     </div>;
   }

@@ -32,7 +32,7 @@ export default function Pricing() {
           <div className="flex justify-between items-center h-16">
             <div className="flex items-center">
               <Heart className="h-6 w-6 sm:h-8 sm:w-8 text-indigo-600" />
-              <span className="ml-2 text-lg sm:text-xl font-bold text-gray-900">BoundarySpace</span>
+              <span className="ml-2 text-lg sm:text-xl font-bold text-gray-900">BoundaryCore</span>
             </div>
             <div className="hidden md:flex items-center space-x-8">
               <a href="/" className="text-gray-600 hover:text-gray-900">Home</a>
@@ -95,7 +95,7 @@ export default function Pricing() {
                 </div>
               </div>
               <CardTitle className="text-2xl font-bold text-gray-900">
-                BoundarySpace Pro
+                BoundaryCore Pro
               </CardTitle>
               <div className="mt-4">
                 <span className="text-4xl font-bold text-gray-900">

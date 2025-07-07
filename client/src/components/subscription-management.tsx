@@ -230,7 +230,7 @@ export function SubscriptionManagement() {
         <div className="flex items-center justify-between">
           <div>
             <h3 className="font-semibold">Current Plan</h3>
-            <p className="text-sm text-muted-foreground">BoundarySpace Premium</p>
+            <p className="text-sm text-muted-foreground">BoundaryCore Premium</p>
           </div>
           <div className="flex items-center gap-2">
             {subscription.status === 'active' ? (

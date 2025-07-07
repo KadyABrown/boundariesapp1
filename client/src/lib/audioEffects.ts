@@ -1,4 +1,4 @@
-// Audio Effects Utility for BoundarySpace
+// Audio Effects Utility for BoundaryCore
 // Centralized audio management for UI feedback sounds
 
 export class AudioEffects {

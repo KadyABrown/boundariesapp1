@@ -17,7 +17,7 @@ const MarketingNavigation = () => {
         <div className="mr-4 flex">
           <a href="/" className="mr-6 flex items-center space-x-2">
             <Shield className="h-6 w-6 text-purple-600" />
-            <span className="font-bold text-lg">BoundarySpace</span>
+            <span className="font-bold text-lg">BoundaryCore</span>
           </a>
           <nav className="hidden md:flex items-center space-x-6 text-sm font-medium">
             <a href="/" className="transition-colors hover:text-foreground/80 text-foreground/60">
@@ -40,7 +40,7 @@ const MarketingNavigation = () => {
               onClick={() => window.location.href = "/api/login"}
               className="bg-purple-600 hover:bg-purple-700"
             >
-              Try BoundarySpace
+              Try BoundaryCore
             </Button>
           </div>
           
@@ -88,7 +88,7 @@ const MarketingNavigation = () => {
                   }}
                   className="bg-purple-600 hover:bg-purple-700 mt-4"
                 >
-                  Try BoundarySpace
+                  Try BoundaryCore
                 </Button>
               </nav>
             </SheetContent>
@@ -173,7 +173,7 @@ export default function DemoPage() {
               Interactive Relationship Analysis Demo
             </h1>
             <p className="text-xl text-gray-600 mb-12 max-w-3xl mx-auto">
-              Explore a sample relationship profile and adjust the interaction tracking sliders to see how BoundarySpace analyzes relationship health and compatibility in real-time.
+              Explore a sample relationship profile and adjust the interaction tracking sliders to see how BoundaryCore analyzes relationship health and compatibility in real-time.
             </p>
           </div>
         </section>
@@ -503,7 +503,7 @@ export default function DemoPage() {
               className="bg-white text-purple-600 hover:bg-gray-100 px-8 py-3 text-lg"
               onClick={() => window.location.href = "/api/login"}
             >
-              Try BoundarySpace
+              Try BoundaryCore
             </Button>
             <p className="text-sm opacity-75 mt-4">
               $12.99/month subscription • Cancel anytime

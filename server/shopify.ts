@@ -175,7 +175,7 @@ export class ShopifyService {
       const subscriptionOrders = orders.filter((order: ShopifyOrder) => 
         order.line_items.some(item => 
           item.title.toLowerCase().includes('subscription') || 
-          item.title.toLowerCase().includes('boundaryspace')
+          item.title.toLowerCase().includes('boundarycore')
         )
       );
 
@@ -254,7 +254,7 @@ export class ShopifyService {
     // Check if this is a subscription order
     const isSubscription = order.line_items.some(item => 
       item.title.toLowerCase().includes('subscription') || 
-      item.title.toLowerCase().includes('boundaryspace')
+      item.title.toLowerCase().includes('boundarycore')
     );
 
     if (isSubscription && order.customer) {

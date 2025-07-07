@@ -30,7 +30,7 @@ export function Paywall({ children, feature = "this feature" }: PaywallProps) {
       </CardHeader>
       <CardContent className="text-center space-y-4">
         <p className="text-gray-600">
-          {feature} is available with a BoundarySpace subscription.
+          {feature} is available with a BoundaryCore subscription.
         </p>
         <Button className="w-full" onClick={() => window.location.href = '/subscribe'}>
           <Crown className="w-4 h-4 mr-2" />

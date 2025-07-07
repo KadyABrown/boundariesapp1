@@ -72,7 +72,7 @@ export default function Demo() {
           <div className="flex justify-between items-center h-16">
             <div className="flex items-center space-x-4">
               <a href="/" className="text-xl font-bold text-indigo-600">
-                BoundarySpace
+                BoundaryCore
               </a>
               <Badge variant="outline" className="text-xs bg-yellow-50 text-yellow-800 border-yellow-200">
                 Demo Mode
@@ -371,7 +371,7 @@ export default function Demo() {
                 Ready to Track Your Real Relationships?
               </h3>
               <p className="text-gray-600 mb-6">
-                This demo shows how BoundarySpace helps you understand relationship patterns.
+                This demo shows how BoundaryCore helps you understand relationship patterns.
                 Sign up to start tracking your own relationships with privacy controls and detailed analytics.
               </p>
               <div className="flex flex-col sm:flex-row gap-3 justify-center">

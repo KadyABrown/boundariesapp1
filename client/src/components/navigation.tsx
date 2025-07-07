@@ -5,7 +5,7 @@ import { Button } from "@/components/ui/button";
 import { Sheet, SheetContent, SheetTrigger } from "@/components/ui/sheet";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuSeparator, DropdownMenuTrigger } from "@/components/ui/dropdown-menu";
-import { Shield, Menu, Bell, BarChart3, BookOpen, Settings, Target, Heart, Flag, User, LogOut, Users, Brain } from "lucide-react";
+import { Shield, Menu, Bell, BarChart3, BookOpen, Settings, Target, Heart, User, LogOut, Users, Brain } from "lucide-react";
 
 export default function Navigation() {
   const [location, setLocation] = useLocation();
@@ -18,7 +18,7 @@ export default function Navigation() {
     { name: "Relationships", href: "/relationships", icon: Heart, current: location === "/relationships" || location.startsWith("/relationships/") },
     { name: "My Baseline", href: "/baseline", icon: Brain, current: location === "/baseline" },
     { name: "Friends", href: "/friends", icon: Users, current: location === "/friends" },
-    { name: "Flag Examples", href: "/flag-examples", icon: Flag, current: location === "/flag-examples" },
+
     { name: "Insights", href: "/insights", icon: BarChart3, current: location === "/insights" },
     { name: "Feedback", href: "/feedback", icon: Bell, current: location === "/feedback" },
   ];
@@ -46,7 +46,7 @@ export default function Navigation() {
             <div className="w-8 h-8 bg-primary rounded-lg flex items-center justify-center">
               <Shield className="w-4 h-4 text-white" />
             </div>
-            <h1 className="text-xl font-semibold text-neutral-800">BoundarySpace</h1>
+            <h1 className="text-xl font-semibold text-neutral-800">BoundaryCore</h1>
           </div>
           
           {/* Desktop Navigation */}
@@ -126,7 +126,7 @@ export default function Navigation() {
                   <div className="w-8 h-8 bg-primary rounded-lg flex items-center justify-center">
                     <Shield className="w-4 h-4 text-white" />
                   </div>
-                  <h2 className="text-lg font-semibold">BoundarySpace</h2>
+                  <h2 className="text-lg font-semibold">BoundaryCore</h2>
                 </div>
                 
                 <div className="space-y-2">

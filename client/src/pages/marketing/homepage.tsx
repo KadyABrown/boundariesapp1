@@ -15,7 +15,7 @@ export default function MarketingHomepage() {
           <div className="flex items-center justify-between">
             <div className="flex items-center gap-2">
               <Shield className="h-8 w-8 text-purple-600" />
-              <span className="text-2xl font-bold text-gray-900">BoundarySpace</span>
+              <span className="text-2xl font-bold text-gray-900">BoundaryCore</span>
             </div>
             <div className="hidden md:flex items-center gap-6">
               <a href="/pricing" className="text-gray-600 hover:text-purple-600 transition-colors">Pricing</a>
@@ -110,7 +110,7 @@ export default function MarketingHomepage() {
           </h1>
           <p className="text-xl text-gray-600 mb-8 max-w-2xl mx-auto">
             Track relationship patterns, understand your boundaries, and make data-driven decisions 
-            about the people in your life. BoundarySpace helps you prioritize your emotional well-being.
+            about the people in your life. BoundaryCore helps you prioritize your emotional well-being.
           </p>
           <div className="flex flex-col sm:flex-row gap-4 justify-center">
             <Button 
@@ -118,7 +118,7 @@ export default function MarketingHomepage() {
               className="bg-purple-600 hover:bg-purple-700 text-lg px-8 py-3"
               onClick={() => window.location.href = "/api/login"}
             >
-              Try BoundarySpace <ArrowRight className="ml-2 h-5 w-5" />
+              Try BoundaryCore <ArrowRight className="ml-2 h-5 w-5" />
             </Button>
             <Button 
               size="lg" 
@@ -190,7 +190,7 @@ export default function MarketingHomepage() {
       {/* Benefits Section */}
       <section className="py-20 px-4 bg-gradient-to-r from-purple-600 to-blue-600 text-white">
         <div className="container mx-auto max-w-4xl text-center">
-          <h2 className="text-4xl font-bold mb-8">Why Choose BoundarySpace?</h2>
+          <h2 className="text-4xl font-bold mb-8">Why Choose BoundaryCore?</h2>
           <div className="grid md:grid-cols-2 gap-8 text-left">
             <div className="flex items-start gap-4">
               <CheckCircle className="h-6 w-6 text-green-300 mt-1 flex-shrink-0" />
@@ -231,7 +231,7 @@ export default function MarketingHomepage() {
             Ready to Transform Your Relationships?
           </h2>
           <p className="text-xl text-gray-600 mb-8">
-            Join thousands of people who are building healthier, more fulfilling relationships with BoundarySpace.
+            Join thousands of people who are building healthier, more fulfilling relationships with BoundaryCore.
           </p>
           <Button 
             size="lg" 
@@ -251,7 +251,7 @@ export default function MarketingHomepage() {
         <div className="container mx-auto max-w-4xl text-center">
           <div className="flex items-center justify-center gap-2 mb-6">
             <Shield className="h-6 w-6 text-purple-400" />
-            <span className="text-xl font-bold">BoundarySpace</span>
+            <span className="text-xl font-bold">BoundaryCore</span>
           </div>
           <p className="text-gray-400 mb-6">
             Empowering healthier relationships through data-driven insights.
@@ -263,7 +263,7 @@ export default function MarketingHomepage() {
             <a href="#faq" className="hover:text-white transition-colors">FAQ</a>
           </div>
           <div className="mt-8 pt-8 border-t border-gray-800 text-gray-500 text-sm">
-            © 2025 BoundarySpace. All rights reserved.
+            © 2025 BoundaryCore. All rights reserved.
           </div>
         </div>
       </footer>

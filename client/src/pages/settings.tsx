@@ -247,7 +247,7 @@ export default function Settings() {
                 <div className="flex items-center justify-between">
                   <div>
                     <Label htmlFor="data-sharing" className="text-base font-medium">Anonymous Data Sharing</Label>
-                    <p className="text-sm text-gray-600">Help improve BoundarySpace by sharing anonymous usage data</p>
+                    <p className="text-sm text-gray-600">Help improve BoundaryCore by sharing anonymous usage data</p>
                   </div>
                   <Switch
                     id="data-sharing"

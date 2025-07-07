@@ -15,7 +15,7 @@ export default function DashboardPageClean() {
             </div>
             <div>
               <h1 className="text-3xl font-bold text-neutral-800">
-                Welcome to <span className="text-primary">BoundarySpace</span>
+                Welcome to <span className="text-primary">BoundaryCore</span>
               </h1>
               <p className="text-lg text-neutral-600">
                 Start your journey to healthier relationships by completing your personal baseline assessment.

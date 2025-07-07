@@ -21,11 +21,11 @@ export default function FAQ() {
       category: "Getting Started",
       questions: [
         {
-          q: "What is BoundarySpace and how does it work?",
-          a: "BoundarySpace is a relationship health tracking app that helps you understand patterns, set boundaries, and build healthier connections. You create profiles for important relationships, log emotional check-ins, track behavioral flags, and receive insights about your relationship dynamics."
+          q: "What is BoundaryCore and how does it work?",
+          a: "BoundaryCore is a relationship health tracking app that helps you understand patterns, set boundaries, and build healthier connections. You create profiles for important relationships, log emotional check-ins, track behavioral flags, and receive insights about your relationship dynamics."
         },
         {
-          q: "How do I get started with BoundarySpace?",
+          q: "How do I get started with BoundaryCore?",
           a: "Simply sign up for an account, complete your personal baseline assessment to understand your communication style and needs, then start creating relationship profiles and logging your experiences. The app guides you through each step."
         },
 
@@ -40,7 +40,7 @@ export default function FAQ() {
         },
         {
           q: "Can other people see my relationship data?",
-          a: "Only if you choose to share it. BoundarySpace includes friend circles and privacy controls that let you selectively share specific relationships with trusted friends or therapists. By default, everything is private to you."
+          a: "Only if you choose to share it. BoundaryCore includes friend circles and privacy controls that let you selectively share specific relationships with trusted friends or therapists. By default, everything is private to you."
         },
         {
           q: "What happens to my data if I cancel?",
@@ -90,8 +90,8 @@ export default function FAQ() {
       category: "Pricing & Subscription",
       questions: [
         {
-          q: "How much does BoundarySpace cost?",
-          a: "BoundarySpace costs $12.99/month or save 20% with an annual subscription. This includes all features, unlimited relationship profiles, and full access to analytics and insights."
+          q: "How much does BoundaryCore cost?",
+          a: "BoundaryCore costs $12.99/month or save 20% with an annual subscription. This includes all features, unlimited relationship profiles, and full access to analytics and insights."
         },
         {
           q: "Can I cancel anytime?",
@@ -104,8 +104,8 @@ export default function FAQ() {
       category: "Support & Help",
       questions: [
         {
-          q: "Is BoundarySpace a replacement for therapy?",
-          a: "No, BoundarySpace is a self-awareness and tracking tool, not a replacement for professional therapy or counseling. It can complement therapeutic work by helping you track patterns and progress, but it's not meant to diagnose or treat mental health conditions."
+          q: "Is BoundaryCore a replacement for therapy?",
+          a: "No, BoundaryCore is a self-awareness and tracking tool, not a replacement for professional therapy or counseling. It can complement therapeutic work by helping you track patterns and progress, but it's not meant to diagnose or treat mental health conditions."
         },
         {
           q: "Can I share my data with my therapist?",
@@ -113,7 +113,7 @@ export default function FAQ() {
         },
         {
           q: "What if I need help using the app?",
-          a: "We provide comprehensive help documentation, video tutorials, and email support. Our team is responsive and committed to helping you get the most out of BoundarySpace."
+          a: "We provide comprehensive help documentation, video tutorials, and email support. Our team is responsive and committed to helping you get the most out of BoundaryCore."
         },
         {
           q: "Will you add new features?",
@@ -131,7 +131,7 @@ export default function FAQ() {
           <div className="flex justify-between items-center h-16">
             <div className="flex items-center">
               <Heart className="h-6 w-6 sm:h-8 sm:w-8 text-indigo-600" />
-              <span className="ml-2 text-lg sm:text-xl font-bold text-gray-900">BoundarySpace</span>
+              <span className="ml-2 text-lg sm:text-xl font-bold text-gray-900">BoundaryCore</span>
             </div>
             <div className="hidden md:flex items-center space-x-8">
               <a href="/" className="text-gray-600 hover:text-gray-900">Home</a>
@@ -173,7 +173,7 @@ export default function FAQ() {
             Frequently Asked Questions
           </h1>
           <p className="text-lg sm:text-xl text-gray-600 mb-8 max-w-3xl mx-auto">
-            Everything you need to know about BoundarySpace and relationship health tracking.
+            Everything you need to know about BoundaryCore and relationship health tracking.
           </p>
         </div>
 
@@ -251,7 +251,7 @@ export default function FAQ() {
             Ready to Start Your Journey?
           </h2>
           <p className="text-indigo-100 mb-6 max-w-2xl mx-auto">
-            Join thousands of users building healthier, more fulfilling relationships with BoundarySpace.
+            Join thousands of users building healthier, more fulfilling relationships with BoundaryCore.
           </p>
           <div className="flex flex-col sm:flex-row items-center justify-center space-y-3 sm:space-y-0 sm:space-x-4">
             <Button 

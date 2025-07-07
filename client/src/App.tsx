@@ -13,7 +13,7 @@ import Profile from "@/pages/profile";
 import SettingsPage from "@/pages/settings";
 import Friends from "@/pages/friends";
 import Insights from "@/pages/insights";
-import FlagExamples from "@/pages/flag-examples";
+
 import BaselinePage from "@/pages/baseline";
 import Admin from "@/pages/admin";
 import Feedback from "@/pages/feedback";
@@ -51,7 +51,7 @@ function Router() {
           <Route path="/profile" component={Profile} />
           <Route path="/settings" component={SettingsPage} />
           <Route path="/insights" component={Insights} />
-          <Route path="/flags" component={FlagExamples} />
+
           <Route path="/feedback" component={Feedback} />
           <Route path="/admin" component={Admin} />
         </>

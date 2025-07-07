@@ -229,7 +229,7 @@ function AdminPage() {
     }));
     
     const timestamp = new Date().toISOString().split('T')[0];
-    exportToCSV(exportData, `boundaryspace-users-${timestamp}.csv`);
+    exportToCSV(exportData, `boundarycore-users-${timestamp}.csv`);
     
     toast({
       title: "Export Complete",
@@ -251,7 +251,7 @@ function AdminPage() {
     }];
     
     const timestamp = new Date().toISOString().split('T')[0];
-    exportToCSV(businessData, `boundaryspace-analytics-${timestamp}.csv`);
+    exportToCSV(businessData, `boundarycore-analytics-${timestamp}.csv`);
     
     toast({
       title: "Analytics Export Complete",

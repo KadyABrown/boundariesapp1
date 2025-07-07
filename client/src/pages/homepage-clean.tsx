@@ -13,7 +13,7 @@ export default function HomepageClean() {
               <div className="w-8 h-8 bg-primary rounded-lg flex items-center justify-center">
                 <Shield className="w-4 h-4 text-white" />
               </div>
-              <h1 className="text-xl font-semibold text-neutral-800">BoundarySpace</h1>
+              <h1 className="text-xl font-semibold text-neutral-800">BoundaryCore</h1>
             </div>
             
             <Button onClick={() => window.location.href = '/api/login'}>
@@ -123,7 +123,7 @@ export default function HomepageClean() {
         {/* How It Works Section */}
         <div className="mt-32">
           <h2 className="text-3xl font-bold text-center text-neutral-800 mb-16">
-            How BoundarySpace Works
+            How BoundaryCore Works
           </h2>
           <div className="grid grid-cols-1 md:grid-cols-3 gap-12">
             <div className="text-center">
@@ -162,7 +162,7 @@ export default function HomepageClean() {
             Ready to Transform Your Relationships?
           </h2>
           <p className="text-xl text-neutral-600 mb-8 max-w-2xl mx-auto">
-            Join thousands of users who have improved their relationship health and personal boundaries with BoundarySpace.
+            Join thousands of users who have improved their relationship health and personal boundaries with BoundaryCore.
           </p>
           <Button 
             size="lg" 
@@ -182,7 +182,7 @@ export default function HomepageClean() {
               <div className="w-8 h-8 bg-primary rounded-lg flex items-center justify-center">
                 <Shield className="w-4 h-4 text-white" />
               </div>
-              <h3 className="text-xl font-semibold text-white">BoundarySpace</h3>
+              <h3 className="text-xl font-semibold text-white">BoundaryCore</h3>
             </div>
             <p className="text-neutral-400">
               Empowering healthier relationships through boundary awareness.

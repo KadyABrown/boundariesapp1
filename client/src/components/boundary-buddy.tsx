@@ -72,7 +72,7 @@ const explanations = {
     ]
   },
   'general': {
-    title: "Welcome to BoundarySpace",
+    title: "Welcome to BoundaryCore",
     icon: HelpCircle,
     sections: [
       {

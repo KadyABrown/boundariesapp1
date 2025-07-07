@@ -18,7 +18,7 @@ export default function SubscriptionSuccess() {
             <CheckCircle className="w-8 h-8 text-green-600 dark:text-green-400" />
           </div>
           <CardTitle className="text-3xl font-bold text-green-800 dark:text-green-200">
-            Welcome to BoundarySpace!
+            Welcome to BoundaryCore!
           </CardTitle>
           <CardDescription className="text-lg mt-2">
             Your subscription is now active! We've created your account - just log in to start building healthier relationships.

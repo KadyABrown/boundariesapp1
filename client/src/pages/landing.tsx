@@ -14,7 +14,7 @@ export default function Landing() {
           <div className="flex justify-between items-center h-16">
             <div className="flex items-center">
               <Heart className="h-6 w-6 sm:h-8 sm:w-8 text-indigo-600" />
-              <span className="ml-2 text-lg sm:text-xl font-bold text-gray-900">BoundarySpace</span>
+              <span className="ml-2 text-lg sm:text-xl font-bold text-gray-900">BoundaryCore</span>
             </div>
             <div className="hidden md:flex items-center space-x-8">
               <a href="/" className="text-indigo-600 font-medium">Home</a>
@@ -59,7 +59,7 @@ export default function Landing() {
             </h1>
             <p className="text-lg sm:text-xl text-gray-600 mb-8 max-w-3xl mx-auto">
               Track emotional patterns, set healthy boundaries, and gain insights into your relationships. 
-              BoundarySpace helps you understand yourself and build stronger connections.
+              BoundaryCore helps you understand yourself and build stronger connections.
             </p>
             <div className="flex flex-col sm:flex-row items-center justify-center space-y-4 sm:space-y-0 sm:space-x-6">
               <Button 
@@ -188,7 +188,7 @@ export default function Landing() {
         <div className="max-w-7xl mx-auto">
           <div className="text-center mb-16">
             <h2 className="text-3xl sm:text-4xl font-bold text-gray-900 mb-4">
-              How BoundarySpace Works
+              How BoundaryCore Works
             </h2>
             <p className="text-lg text-gray-600 max-w-3xl mx-auto">
               A simple, three-step process to start building healthier relationships today.
@@ -245,7 +245,7 @@ export default function Landing() {
                   ))}
                 </div>
                 <p className="text-gray-600 mb-4">
-                  "BoundarySpace helped me recognize patterns I never saw before. My relationships have improved dramatically."
+                  "BoundaryCore helped me recognize patterns I never saw before. My relationships have improved dramatically."
                 </p>
                 <div className="font-medium text-gray-900">Sarah M.</div>
                 <div className="text-sm text-gray-500">Relationship Coach</div>
@@ -292,7 +292,7 @@ export default function Landing() {
             Ready to Transform Your Relationships?
           </h2>
           <p className="text-lg text-indigo-100 mb-8 max-w-2xl mx-auto">
-            Join thousands of users who are building healthier, more fulfilling relationships with BoundarySpace.
+            Join thousands of users who are building healthier, more fulfilling relationships with BoundaryCore.
           </p>
           <div className="flex flex-col sm:flex-row items-center justify-center space-y-4 sm:space-y-0 sm:space-x-6">
             <Button 
@@ -322,17 +322,17 @@ export default function Landing() {
           <div className="flex flex-col md:flex-row items-center justify-between">
             <div className="flex items-center mb-6 md:mb-0">
               <Heart className="h-8 w-8 text-indigo-400" />
-              <span className="ml-2 text-xl font-bold">BoundarySpace</span>
+              <span className="ml-2 text-xl font-bold">BoundaryCore</span>
             </div>
             <div className="flex flex-col sm:flex-row items-center space-y-4 sm:space-y-0 sm:space-x-8">
               <a href="/demo" className="text-gray-300 hover:text-white">Demo</a>
               <a href="/faq" className="text-gray-300 hover:text-white">FAQ</a>
               <a href="/pricing" className="text-gray-300 hover:text-white">Pricing</a>
-              <a href="mailto:support@boundaryspace.com" className="text-gray-300 hover:text-white">Support</a>
+              <a href="mailto:support@boundarycore.com" className="text-gray-300 hover:text-white">Support</a>
             </div>
           </div>
           <div className="border-t border-gray-800 mt-8 pt-8 text-center text-gray-400">
-            <p>&copy; 2025 BoundarySpace. All rights reserved. Built with care for healthier relationships.</p>
+            <p>&copy; 2025 BoundaryCore. All rights reserved. Built with care for healthier relationships.</p>
           </div>
         </div>
       </footer>

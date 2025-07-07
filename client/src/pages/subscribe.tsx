@@ -44,7 +44,7 @@ const SubscribeForm = () => {
     } else {
       toast({
         title: "Payment Successful",
-        description: "Welcome to BoundarySpace Pro!",
+        description: "Welcome to BoundaryCore Pro!",
       });
     }
 
@@ -117,7 +117,7 @@ export default function Subscribe() {
     <div className="min-h-screen bg-gradient-to-br from-blue-50 to-indigo-100 dark:from-gray-900 dark:to-gray-800 flex items-center justify-center p-4">
       <Card className="w-full max-w-md">
         <CardHeader className="text-center">
-          <CardTitle className="text-2xl font-bold">Subscribe to BoundarySpace</CardTitle>
+          <CardTitle className="text-2xl font-bold">Subscribe to BoundaryCore</CardTitle>
           <CardDescription>
             Get unlimited access to relationship tracking, analytics, and insights for just $12.99/month
           </CardDescription>

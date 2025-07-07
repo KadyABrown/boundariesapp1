@@ -1,8 +1,8 @@
-# BoundarySpace - Relationship Boundary Tracker
+# BoundaryCore - Relationship Boundary Tracker
 
 ## Overview
 
-BoundarySpace is a full-stack web application designed to help users define, track, and reflect on their personal boundaries. The application transforms a traditional boundary tracking journal into an interactive digital experience, enabling users to build healthier relationships through guided self-awareness tools.
+BoundaryCore is a full-stack web application designed to help users define, track, and reflect on their personal boundaries. The application transforms a traditional boundary tracking journal into an interactive digital experience, enabling users to build healthier relationships through guided self-awareness tools.
 
 The system is built as a modern React SPA with an Express.js backend, using PostgreSQL for data persistence and Replit's authentication system for user management.
 
@@ -325,7 +325,9 @@ Identifies when boundary violations and relationship issues are most likely to o
 - July 6, 2025. Created comprehensive public-facing marketing website with mobile-responsive design: landing page with "Know Your Boundaries" hero, interactive demo with pre-populated relationship data and working check-in functionality, detailed pricing page ($12.99/month), comprehensive FAQ with expandable sections, and public routes accessible without authentication
 - July 6, 2025. Perfected demo page layout and functionality: moved Relationship Insights & Analytics above Relationships Summary, integrated real EmotionalWeather and BoundaryBuddy components (removed fake UI), updated demo data structure with both flags.green/flags.red and greenFlags/redFlags properties for component compatibility, removed "Add New Relationship" button for simplicity. Demo now shows authentic app experience with working weather system that reflects actual relationship data. Note: Same EmotionalWeather data structure fix needed in main user app.
 - July 6, 2025. Completed subscription flow without authentication requirement: removed all free trial language from pricing and FAQ pages, added customer information collection form (email, first/last name), created new API endpoint `/api/create-subscription-with-account` that creates Stripe customer and subscription without authentication, updated FAQ to clarify cancellation policy ("can cancel anytime through account settings, no cancellation fees"), implemented two-step subscription process (customer info → payment form)
-- July 6, 2025. Fixed final subscription flow issues: removed "Pro" branding throughout app (now just "BoundarySpace"), corrected subscription success page to guide users to login rather than direct dashboard access, fixed admin user deletion error (corrected table name from friendRequests to friendships), confirmed logout functionality exists for testing subscription flow
+- July 6, 2025. Fixed final subscription flow issues: removed "Pro" branding throughout app (now just "BoundaryCore"), corrected subscription success page to guide users to login rather than direct dashboard access, fixed admin user deletion error (corrected table name from friendRequests to friendships), confirmed logout functionality exists for testing subscription flow
+- July 7, 2025. Successfully completed comprehensive rebrand from "BoundarySpace" to "BoundaryCore" throughout entire codebase: updated all React components, TypeScript files, marketing website, navigation systems, demo pages, FAQ content, pricing pages, server routes, Shopify integration, documentation files, mobile app specifications, and welcome email templates. All 100+ instances systematically replaced while preserving existing functionality, design, and user experience. Rebrand completed across frontend, backend, and documentation layers.
+- July 7, 2025. COMPLETED FINAL REBRAND CLEANUP: Performed systematic final cleanup of all remaining "BoundarySpace" instances across marketing pages (FAQ, landing, homepage), completing the 100% rebrand from "BoundarySpace" to "BoundaryCore" with bash verification confirming zero remaining instances in the active codebase.
 
 ## User Preferences
 

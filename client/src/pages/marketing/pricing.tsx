@@ -16,7 +16,7 @@ export default function PricingPage() {
           <div className="flex items-center justify-between">
             <div className="flex items-center gap-2 cursor-pointer" onClick={() => window.location.href = "/"}>
               <Shield className="h-8 w-8 text-purple-600" />
-              <span className="text-2xl font-bold text-gray-900">BoundarySpace</span>
+              <span className="text-2xl font-bold text-gray-900">BoundaryCore</span>
             </div>
             <div className="hidden md:flex items-center gap-6">
               <a href="/" className="text-gray-600 hover:text-purple-600 transition-colors">Home</a>
@@ -101,7 +101,7 @@ export default function PricingPage() {
         <div className="container mx-auto max-w-2xl">
           <Card className="border-2 border-purple-200 shadow-2xl">
             <CardHeader className="text-center py-12 bg-gradient-to-r from-purple-600 to-blue-600 text-white rounded-t-lg">
-              <CardTitle className="text-4xl font-bold mb-4">BoundarySpace Premium</CardTitle>
+              <CardTitle className="text-4xl font-bold mb-4">BoundaryCore Premium</CardTitle>
               <div className="text-6xl font-bold mb-4">$12.99</div>
               <p className="text-xl text-purple-100">per month</p>
             </CardHeader>
@@ -159,7 +159,7 @@ export default function PricingPage() {
       {/* Value Proposition Section */}
       <section className="py-20 px-4 bg-white">
         <div className="container mx-auto max-w-4xl text-center">
-          <h2 className="text-4xl font-bold text-gray-900 mb-8">Why Choose BoundarySpace?</h2>
+          <h2 className="text-4xl font-bold text-gray-900 mb-8">Why Choose BoundaryCore?</h2>
           <div className="grid md:grid-cols-3 gap-8 text-left">
             <div className="text-center">
               <div className="w-16 h-16 bg-purple-100 rounded-full flex items-center justify-center mx-auto mb-6">
@@ -208,12 +208,12 @@ export default function PricingPage() {
             <div className="bg-white p-8 rounded-lg shadow-sm">
               <h3 className="text-xl font-semibold mb-4">How do you keep the service running?</h3>
               <p className="text-gray-600">
-                BoundarySpace is currently funded by its creators who believe in making relationship 
+                BoundaryCore is currently funded by its creators who believe in making relationship 
                 health tools accessible to everyone. We operate efficiently and focus on sustainable growth.
               </p>
             </div>
             <div className="bg-white p-8 rounded-lg shadow-sm">
-              <h3 className="text-xl font-semibold mb-4">Can I support BoundarySpace?</h3>
+              <h3 className="text-xl font-semibold mb-4">Can I support BoundaryCore?</h3>
               <p className="text-gray-600">
                 The best way to support us is by using the platform, sharing it with others who 
                 might benefit, and providing feedback to help us improve. Word-of-mouth is our 
@@ -248,7 +248,7 @@ Try Demo
         <div className="container mx-auto max-w-4xl text-center">
           <div className="flex items-center justify-center gap-2 mb-6">
             <Shield className="h-6 w-6 text-purple-400" />
-            <span className="text-xl font-bold">BoundarySpace</span>
+            <span className="text-xl font-bold">BoundaryCore</span>
           </div>
           <p className="text-gray-400 mb-6">
             Empowering healthier relationships through data-driven insights.
@@ -260,7 +260,7 @@ Try Demo
             <a href="/faq" className="hover:text-white transition-colors">FAQ</a>
           </div>
           <div className="mt-8 pt-8 border-t border-gray-800 text-gray-500 text-sm">
-            © 2025 BoundarySpace. All rights reserved.
+            © 2025 BoundaryCore. All rights reserved.
           </div>
         </div>
       </footer>

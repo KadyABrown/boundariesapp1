@@ -110,7 +110,7 @@ export default function Demo() {
           <div className="flex justify-between items-center h-16">
             <div className="flex items-center space-x-4">
               <a href="/" className="text-xl font-bold text-indigo-600">
-                BoundarySpace
+                BoundaryCore
               </a>
               <Badge variant="outline" className="text-xs bg-yellow-50 text-yellow-800 border-yellow-200">
                 Demo Mode
@@ -292,7 +292,7 @@ export default function Demo() {
                   <Brain className="w-6 h-6 mr-3 text-indigo-600" />
                   Comprehensive Interaction Tracker (CIT) Demo
                 </CardTitle>
-                <p className="text-gray-600">See how BoundarySpace captures detailed before/after data to help you understand relationship patterns</p>
+                <p className="text-gray-600">See how BoundaryCore captures detailed before/after data to help you understand relationship patterns</p>
               </CardHeader>
               <CardContent>
                 <div className="grid md:grid-cols-2 gap-8">
@@ -466,7 +466,7 @@ export default function Demo() {
                 Ready to Track Your Own Relationships?
               </h3>
               <p className="text-gray-600 mb-6">
-                This demo shows just a glimpse of BoundarySpace's powerful relationship tracking features. 
+                This demo shows just a glimpse of BoundaryCore's powerful relationship tracking features. 
                 Start your free trial today to begin understanding your relationship patterns.
               </p>
               <div className="flex flex-col sm:flex-row gap-3 justify-center">
