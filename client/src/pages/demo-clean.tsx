@@ -518,7 +518,27 @@ export default function Demo() {
                             <p className="text-sm text-gray-600 mb-4">
                               Full interaction logging, pattern analysis, triggers tracking, and personalized insights
                             </p>
-                            <Button onClick={() => window.location.href = '/pricing'} size="sm">
+                            <Button 
+                              onClick={async () => {
+                                try {
+                                  const response = await fetch("/api/create-checkout-session", {
+                                    method: "POST",
+                                    headers: { "Content-Type": "application/json" },
+                                    body: JSON.stringify({
+                                      successUrl: `${window.location.origin}/subscription-success`,
+                                      cancelUrl: `${window.location.origin}/demo`
+                                    })
+                                  });
+                                  const data = await response.json();
+                                  if (data.checkoutUrl) {
+                                    window.location.href = data.checkoutUrl;
+                                  }
+                                } catch (error) {
+                                  console.error("Checkout error:", error);
+                                }
+                              }}
+                              size="sm"
+                            >
                               Upgrade to Full Access
                             </Button>
                           </div>
