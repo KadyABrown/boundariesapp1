@@ -16,7 +16,7 @@ import { Checkbox } from "@/components/ui/checkbox";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from "@/components/ui/collapsible";
 import { Badge } from "@/components/ui/badge";
-import { Plus, Edit2, Trash2, Heart, User, Calendar, MapPin, Flag, Brain, Target, Clock, TrendingUp, BarChart3 } from "lucide-react";
+import { Plus, Edit2, Trash2, Heart, User, Calendar, MapPin, Flag, Brain, Target, Clock, TrendingUp, BarChart3, Settings } from "lucide-react";
 import { Link } from "wouter";
 import ComprehensiveInteractionTracker from "@/components/comprehensive-interaction-tracker";
 import ComprehensiveInteractionsView from "@/components/comprehensive-interactions-view";
