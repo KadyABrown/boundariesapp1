@@ -51,6 +51,7 @@ function Router() {
           <Route path="/profile" component={Profile} />
           <Route path="/settings" component={SettingsPage} />
           <Route path="/insights" component={Insights} />
+          <Route path="/flags" component={FlagExamples} />
           <Route path="/feedback" component={Feedback} />
           <Route path="/admin" component={Admin} />
         </>
