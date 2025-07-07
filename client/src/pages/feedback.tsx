@@ -203,16 +203,31 @@ export default function Feedback() {
                 </div>
               )}
               
-              {/* Notification Button Note */}
-              <div className="mt-4 p-3 bg-blue-50 border border-blue-200 rounded-lg">
-                <div className="flex items-start gap-2">
-                  <div className="w-2 h-2 bg-blue-500 rounded-full mt-2 flex-shrink-0"></div>
-                  <div>
-                    <p className="text-sm text-blue-800 font-medium">Notification Button</p>
-                    <p className="text-xs text-blue-600 mt-1">
-                      The bell icon in the top navigation is a placeholder for future notification features. 
-                      It will be connected to email notifications and user settings in an upcoming update.
-                    </p>
+              {/* Developer Notes */}
+              <div className="mt-4 space-y-3">
+                <div className="p-3 bg-blue-50 border border-blue-200 rounded-lg">
+                  <div className="flex items-start gap-2">
+                    <div className="w-2 h-2 bg-blue-500 rounded-full mt-2 flex-shrink-0"></div>
+                    <div>
+                      <p className="text-sm text-blue-800 font-medium">Notification Button</p>
+                      <p className="text-xs text-blue-600 mt-1">
+                        The bell icon in the top navigation is a placeholder for future notification features. 
+                        It will be connected to email notifications and user settings in an upcoming update.
+                      </p>
+                    </div>
+                  </div>
+                </div>
+
+                <div className="p-3 bg-amber-50 border border-amber-200 rounded-lg">
+                  <div className="flex items-start gap-2">
+                    <div className="w-2 h-2 bg-amber-500 rounded-full mt-2 flex-shrink-0"></div>
+                    <div>
+                      <p className="text-sm text-amber-800 font-medium">"Bounce Back Stronger" Feature</p>
+                      <p className="text-xs text-amber-600 mt-1">
+                        The streak feature on the dashboard currently shows for all users. We're aware of this 
+                        and will update it to accurately reflect individual account activity soon.
+                      </p>
+                    </div>
                   </div>
                 </div>
               </div>
