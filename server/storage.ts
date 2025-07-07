@@ -1232,10 +1232,22 @@ export class DatabaseStorage implements IStorage {
     
     const totalCount = totalUsersQuery[0]?.count || 0;
     
+    // Get actual premium users (excluding test accounts)
+    const premiumUsersQuery = await db.select({ count: count() })
+      .from(users)
+      .where(
+        and(
+          not(inArray(users.email, testEmails)),
+          isNotNull(users.stripeSubscriptionId)
+        )
+      );
+    
+    const actualPremiumUsers = premiumUsersQuery[0]?.count || 0;
+    
     // Advanced admin stats (excluding test accounts)
     const stats = {
       totalUsers: totalCount,
-      premiumUsers: Math.floor(totalCount * 0.8), // Simulate premium conversion
+      premiumUsers: actualPremiumUsers, // Use actual premium user count
       activeUsers7d: Math.floor(totalCount * 0.7),
       atRiskUsers: Math.floor(totalCount * 0.15),
       churnRate: 8.5,
