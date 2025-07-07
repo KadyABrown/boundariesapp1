@@ -1967,6 +1967,29 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
+  // Update payment method - redirect to Stripe customer portal
+  app.post('/api/subscription/update-payment', isAuthenticated, async (req: any, res) => {
+    try {
+      const userId = req.user.claims.sub;
+      const user = await storage.getUser(userId);
+      
+      if (!user || !user.stripeCustomerId) {
+        return res.status(404).json({ message: "No customer found" });
+      }
+
+      // Create customer portal session
+      const session = await stripe.billingPortal.sessions.create({
+        customer: user.stripeCustomerId,
+        return_url: `${process.env.REPLIT_DOMAINS?.split(' ')[0] || 'http://localhost:5000'}/settings`,
+      });
+
+      res.json({ portalUrl: session.url });
+    } catch (error: any) {
+      console.error("Error creating customer portal session:", error);
+      res.status(500).json({ message: "Error opening customer portal: " + error.message });
+    }
+  });
+
   // Cancel subscription
   app.post('/api/subscription/cancel', isAuthenticated, async (req: any, res) => {
     try {
