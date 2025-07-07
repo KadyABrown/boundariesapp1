@@ -35,6 +35,7 @@ function Router() {
       <Route path="/demo" component={Demo} />
       <Route path="/faq" component={FAQ} />
       <Route path="/subscribe" component={Subscribe} />
+      <Route path="/checkout" component={Subscribe} />
       <Route path="/subscription-success" component={SubscriptionSuccess} />
       
       {isLoading || !isAuthenticated ? (
