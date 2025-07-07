@@ -1,6 +1,7 @@
 import { Construction, Calendar, Bell } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
+import { Link } from "wouter";
 import Navigation from "@/components/navigation";
 
 export default function FlagExamples() {
@@ -82,13 +83,14 @@ export default function FlagExamples() {
           </Card>
 
           {/* CTA Button */}
-          <Button 
-            className="bg-indigo-600 hover:bg-indigo-700 text-white px-8 py-3 text-lg rounded-lg shadow-lg"
-            onClick={() => window.location.href = '/dashboard'}
-          >
-            <Bell className="w-5 h-5 mr-2" />
-            Return to Dashboard
-          </Button>
+          <Link href="/dashboard">
+            <Button 
+              className="bg-indigo-600 hover:bg-indigo-700 text-white px-8 py-3 text-lg rounded-lg shadow-lg"
+            >
+              <Bell className="w-5 h-5 mr-2" />
+              Return to Dashboard
+            </Button>
+          </Link>
 
           {/* Status Message */}
           <p className="text-sm text-gray-500 dark:text-gray-400 mt-6">
