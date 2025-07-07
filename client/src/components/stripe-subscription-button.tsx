@@ -17,15 +17,17 @@ export function StripeSubscriptionButton({ className, children, disabled }: Stri
   const handleSubscription = async () => {
     setIsLoading(true);
     try {
-      const response = await apiRequest("POST", "/api/get-or-create-subscription");
+      const response = await apiRequest("POST", "/api/create-checkout-session", {
+        successUrl: `${window.location.origin}/subscription-success`,
+        cancelUrl: `${window.location.origin}/pricing`
+      });
       const data = await response.json();
       
-      if (data.clientSecret) {
-        // Store client secret in localStorage and navigate to subscribe page
-        localStorage.setItem('stripeClientSecret', data.clientSecret);
-        window.location.href = '/subscribe';
+      if (data.checkoutUrl) {
+        // Redirect directly to Stripe Checkout
+        window.location.href = data.checkoutUrl;
       } else {
-        throw new Error("Failed to create subscription");
+        throw new Error("Failed to create checkout session");
       }
     } catch (error) {
       console.error("Subscription error:", error);
@@ -34,7 +36,6 @@ export function StripeSubscriptionButton({ className, children, disabled }: Stri
         description: "Failed to start subscription. Please try again.",
         variant: "destructive",
       });
-    } finally {
       setIsLoading(false);
     }
   };

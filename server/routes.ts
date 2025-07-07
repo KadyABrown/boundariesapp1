@@ -1947,6 +1947,44 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
+  // Create Stripe Checkout session - direct redirect to Stripe
+  app.post('/api/create-checkout-session', async (req: any, res) => {
+    try {
+      const { successUrl, cancelUrl } = req.body;
+      
+      const session = await stripe.checkout.sessions.create({
+        payment_method_types: ['card'],
+        line_items: [{
+          price_data: {
+            currency: 'usd',
+            product_data: {
+              name: 'BoundaryCore Premium',
+              description: 'Monthly subscription to BoundaryCore relationship tracking platform',
+            },
+            unit_amount: 1299, // $12.99 in cents
+            recurring: {
+              interval: 'month',
+            },
+          },
+          quantity: 1,
+        }],
+        mode: 'subscription',
+        success_url: successUrl || `${req.get('origin')}/subscription-success`,
+        cancel_url: cancelUrl || `${req.get('origin')}/pricing`,
+        customer_creation: 'always',
+        billing_address_collection: 'required',
+      });
+
+      res.json({ 
+        checkoutUrl: session.url,
+        sessionId: session.id 
+      });
+    } catch (error: any) {
+      console.error("Error creating checkout session:", error);
+      res.status(500).json({ message: "Error creating checkout session: " + error.message });
+    }
+  });
+
   // Create subscription without authentication - creates account automatically
   app.post('/api/create-subscription-with-account', async (req: any, res) => {
     try {
