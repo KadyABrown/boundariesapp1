@@ -21,7 +21,7 @@ export default function Admin() {
   const [filterType, setFilterType] = useState("all");
   const [selectedUser, setSelectedUser] = useState<any>(null);
   const [userNote, setUserNote] = useState("");
-  const [activeTab, setActiveTab] = useState("overview");
+  const [activeTab, setActiveTab] = useState("users");
 
   // Check if user is admin
   if (!user || (user as any)?.email !== "hello@roxzmedia.com") {
@@ -160,10 +160,10 @@ export default function Admin() {
         ) : null}
 
         {/* Admin Tabs */}
-        <Tabs defaultValue="overview" className="w-full">
+        <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
           <TabsList className="grid w-full grid-cols-5">
-            <TabsTrigger value="overview">Overview</TabsTrigger>
             <TabsTrigger value="users">Users</TabsTrigger>
+            <TabsTrigger value="overview">Overview</TabsTrigger>
             <TabsTrigger value="analytics">Analytics</TabsTrigger>
             <TabsTrigger value="churn">Churn</TabsTrigger>
             <TabsTrigger value="feedback">Feedback</TabsTrigger>

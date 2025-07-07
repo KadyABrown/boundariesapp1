@@ -7,9 +7,18 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
-import { Heart, Brain, Calendar, TrendingUp, AlertTriangle, CheckCircle, Plus, Eye, Edit2, Flag, BarChart3, Clock, MapPin, Target, Trash2 } from "lucide-react";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { Progress } from "@/components/ui/progress";
+import { Heart, Brain, Calendar, TrendingUp, AlertTriangle, CheckCircle, Plus, Eye, Edit2, Flag, BarChart3, Clock, MapPin, Target, Trash2, Activity, Users, MessageSquare, Shield } from "lucide-react";
 
 export default function Demo() {
+  const [selectedProfile, setSelectedProfile] = useState<any>(null);
+  const [isDialogOpen, setIsDialogOpen] = useState(false);
+  const [newCheckIn, setNewCheckIn] = useState({
+    safetyRating: 5,
+    emotionalTone: "neutral",
+    notes: ""
+  });
 
   // Demo data - pre-populated relationship profiles
   const demoProfiles = [
@@ -179,8 +188,16 @@ export default function Demo() {
           </CardContent>
         </Card>
 
-        {/* Relationship Cards Grid - Exact App Layout */}
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+        {/* Main Demo Tabs */}
+        <Tabs defaultValue="relationships" className="space-y-8">
+          <TabsList className="grid w-full grid-cols-2">
+            <TabsTrigger value="relationships">Relationship Tracking</TabsTrigger>
+            <TabsTrigger value="interaction-tracker">Interaction Tracker Demo</TabsTrigger>
+          </TabsList>
+
+          <TabsContent value="relationships" className="space-y-6">
+            {/* Relationship Cards Grid - Exact App Layout */}
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
           {demoProfiles.map((profile) => (
             <Card key={profile.id} className="relative cursor-pointer hover:shadow-lg transition-shadow">
               <CardHeader>
@@ -261,13 +278,183 @@ export default function Demo() {
                       <div className="text-red-600">Red Flags</div>
                     </div>
                   </div>
-                  
-
                 </div>
               </CardContent>
             </Card>
           ))}
-        </div>
+            </div>
+          </TabsContent>
+
+          <TabsContent value="interaction-tracker" className="space-y-6">
+            <Card>
+              <CardHeader>
+                <CardTitle className="flex items-center">
+                  <Brain className="w-6 h-6 mr-3 text-indigo-600" />
+                  Comprehensive Interaction Tracker (CIT) Demo
+                </CardTitle>
+                <p className="text-gray-600">See how BoundarySpace captures detailed before/after data to help you understand relationship patterns</p>
+              </CardHeader>
+              <CardContent>
+                <div className="grid md:grid-cols-2 gap-8">
+                  {/* Before Interaction */}
+                  <div className="space-y-6">
+                    <div className="text-center">
+                      <h3 className="text-lg font-semibold text-gray-900 mb-2">Before Interaction</h3>
+                      <p className="text-sm text-gray-600">Your baseline state</p>
+                    </div>
+                    
+                    <div className="space-y-4">
+                      <div className="bg-gray-50 p-4 rounded-lg">
+                        <div className="flex justify-between items-center mb-2">
+                          <span className="font-medium text-gray-700">Energy Level</span>
+                          <span className="text-lg font-bold text-blue-600">7/10</span>
+                        </div>
+                        <Progress value={70} className="h-2" />
+                      </div>
+                      
+                      <div className="bg-gray-50 p-4 rounded-lg">
+                        <div className="flex justify-between items-center mb-2">
+                          <span className="font-medium text-gray-700">Anxiety Level</span>
+                          <span className="text-lg font-bold text-yellow-600">3/10</span>
+                        </div>
+                        <Progress value={30} className="h-2" />
+                      </div>
+                      
+                      <div className="bg-gray-50 p-4 rounded-lg">
+                        <div className="flex justify-between items-center mb-2">
+                          <span className="font-medium text-gray-700">Self-Worth</span>
+                          <span className="text-lg font-bold text-green-600">8/10</span>
+                        </div>
+                        <Progress value={80} className="h-2" />
+                      </div>
+                      
+                      <div className="bg-gray-50 p-4 rounded-lg">
+                        <h4 className="font-medium text-gray-700 mb-2">Mood & Warnings</h4>
+                        <div className="flex items-center space-x-2 mb-2">
+                          <span className="text-2xl">😊</span>
+                          <span className="text-sm text-gray-600">Optimistic</span>
+                        </div>
+                        <div className="text-xs text-gray-500">
+                          ⚠️ Feeling a bit tired today
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+
+                  {/* After Interaction */}
+                  <div className="space-y-6">
+                    <div className="text-center">
+                      <h3 className="text-lg font-semibold text-gray-900 mb-2">After Interaction</h3>
+                      <p className="text-sm text-gray-600">Impact & changes</p>
+                    </div>
+                    
+                    <div className="space-y-4">
+                      <div className="bg-red-50 p-4 rounded-lg border border-red-200">
+                        <div className="flex justify-between items-center mb-2">
+                          <span className="font-medium text-gray-700">Energy Level</span>
+                          <div className="flex items-center space-x-2">
+                            <span className="text-lg font-bold text-red-600">4/10</span>
+                            <span className="text-sm text-red-600">(-3)</span>
+                          </div>
+                        </div>
+                        <Progress value={40} className="h-2" />
+                      </div>
+                      
+                      <div className="bg-red-50 p-4 rounded-lg border border-red-200">
+                        <div className="flex justify-between items-center mb-2">
+                          <span className="font-medium text-gray-700">Anxiety Level</span>
+                          <div className="flex items-center space-x-2">
+                            <span className="text-lg font-bold text-red-600">7/10</span>
+                            <span className="text-sm text-red-600">(+4)</span>
+                          </div>
+                        </div>
+                        <Progress value={70} className="h-2" />
+                      </div>
+                      
+                      <div className="bg-yellow-50 p-4 rounded-lg border border-yellow-200">
+                        <div className="flex justify-between items-center mb-2">
+                          <span className="font-medium text-gray-700">Self-Worth</span>
+                          <div className="flex items-center space-x-2">
+                            <span className="text-lg font-bold text-yellow-600">6/10</span>
+                            <span className="text-sm text-yellow-600">(-2)</span>
+                          </div>
+                        </div>
+                        <Progress value={60} className="h-2" />
+                      </div>
+                      
+                      <div className="bg-red-50 p-4 rounded-lg border border-red-200">
+                        <h4 className="font-medium text-gray-700 mb-2">Physical Symptoms</h4>
+                        <div className="space-y-1 text-sm text-gray-600">
+                          <div className="flex items-center space-x-2">
+                            <div className="w-2 h-2 bg-red-500 rounded-full"></div>
+                            <span>Headache (mild)</span>
+                          </div>
+                          <div className="flex items-center space-x-2">
+                            <div className="w-2 h-2 bg-red-500 rounded-full"></div>
+                            <span>Muscle tension</span>
+                          </div>
+                          <div className="flex items-center space-x-2">
+                            <div className="w-2 h-2 bg-orange-500 rounded-full"></div>
+                            <span>Fatigue</span>
+                          </div>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+
+                {/* Recovery & Learning Insights */}
+                <div className="mt-8 grid md:grid-cols-2 gap-6">
+                  <Card className="bg-blue-50 border-blue-200">
+                    <CardHeader>
+                      <CardTitle className="text-blue-900 flex items-center">
+                        <Clock className="w-5 h-5 mr-2" />
+                        Recovery Analysis
+                      </CardTitle>
+                    </CardHeader>
+                    <CardContent className="text-sm">
+                      <div className="space-y-2">
+                        <div><strong>Recovery Time:</strong> 45 minutes to feel normal</div>
+                        <div><strong>What Helped:</strong> Deep breathing, walk outside</div>
+                        <div><strong>Made it Worse:</strong> Overthinking the conversation</div>
+                        <div><strong>Support Used:</strong> Called a trusted friend</div>
+                      </div>
+                    </CardContent>
+                  </Card>
+                  
+                  <Card className="bg-green-50 border-green-200">
+                    <CardHeader>
+                      <CardTitle className="text-green-900 flex items-center">
+                        <Target className="w-5 h-5 mr-2" />
+                        Key Insights
+                      </CardTitle>
+                    </CardHeader>
+                    <CardContent className="text-sm">
+                      <div className="space-y-2">
+                        <div><strong>Warning Signs:</strong> They seemed distracted, rushing</div>
+                        <div><strong>Boundary Maintained:</strong> Said no to last-minute plan change</div>
+                        <div><strong>Self-Advocacy:</strong> Asked for clarification when confused</div>
+                        <div><strong>Lesson Learned:</strong> Trust my gut about their mood</div>
+                      </div>
+                    </CardContent>
+                  </Card>
+                </div>
+
+                {/* Call to Action */}
+                <div className="mt-8 text-center bg-indigo-50 p-6 rounded-lg border border-indigo-200">
+                  <h3 className="text-lg font-semibold text-indigo-900 mb-2">Powerful Pattern Recognition</h3>
+                  <p className="text-indigo-700 mb-4">
+                    This detailed tracking helps you recognize patterns, triggers, and recovery strategies. 
+                    Over time, you'll see which relationships energize you and which ones drain you.
+                  </p>
+                  <Button onClick={() => window.location.href = '/pricing'} className="bg-indigo-600 hover:bg-indigo-700">
+                    Start Tracking Your Patterns
+                  </Button>
+                </div>
+              </CardContent>
+            </Card>
+          </TabsContent>
+        </Tabs>
 
 
 

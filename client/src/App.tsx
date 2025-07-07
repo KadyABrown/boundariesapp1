@@ -47,6 +47,7 @@ function Router() {
           <Route path="/baseline" component={BaselinePage} />
           <Route path="/friends" component={Friends} />
           <Route path="/profile" component={Profile} />
+          <Route path="/settings" component={Profile} />
           <Route path="/insights" component={Insights} />
           <Route path="/feedback" component={Feedback} />
           <Route path="/admin" component={Admin} />

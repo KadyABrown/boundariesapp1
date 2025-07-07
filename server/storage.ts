@@ -1196,7 +1196,7 @@ export class DatabaseStorage implements IStorage {
       await db.delete(behavioralFlags).where(eq(behavioralFlags.userId, userId));
       await db.delete(emotionalCheckIns).where(eq(emotionalCheckIns.userId, userId));
       await db.delete(relationshipProfiles).where(eq(relationshipProfiles.userId, userId));
-      await db.delete(friendRequests).where(or(eq(friendRequests.requesterId, userId), eq(friendRequests.receiverId, userId)));
+      await db.delete(friendships).where(or(eq(friendships.requesterId, userId), eq(friendships.receiverId, userId)));
       await db.delete(personalBaselines).where(eq(personalBaselines.userId, userId));
       await db.delete(users).where(eq(users.id, userId));
     } catch (error) {
