@@ -45,6 +45,23 @@ export default function Insights() {
     retry: false,
   });
 
+  // Transform relationships data to include both structures for component compatibility
+  const transformedRelationships = useMemo(() => {
+    if (!Array.isArray(relationships)) return [];
+    
+    return relationships.map((rel: any) => ({
+      ...rel,
+      greenFlags: rel.greenFlags || 0,
+      redFlags: rel.redFlags || 0,
+      flags: {
+        green: rel.greenFlags || 0,
+        red: rel.redFlags || 0
+      },
+      checkInCount: rel.checkInCount || 0,
+      averageSafetyRating: rel.averageSafetyRating || 5
+    }));
+  }, [relationships]);
+
   const { data: userProfile } = useQuery({
     queryKey: ["/api/profile"],
     retry: false,
@@ -417,7 +434,7 @@ export default function Insights() {
           </TabsContent>
 
           <TabsContent value="weather" className="space-y-6">
-            <EmotionalWeather userProfile={userProfile} relationships={relationships} />
+            <EmotionalWeather userProfile={userProfile} relationships={transformedRelationships} />
           </TabsContent>
 
           <TabsContent value="analytics" className="space-y-6">
