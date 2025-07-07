@@ -149,6 +149,29 @@ export default function Admin() {
     },
   });
 
+  // Delete test accounts mutation
+  const deleteTestAccountsMutation = useMutation({
+    mutationFn: async () => {
+      const response = await apiRequest("DELETE", "/api/admin/delete-test-accounts");
+      return response.json();
+    },
+    onSuccess: (data) => {
+      queryClient.invalidateQueries({ queryKey: ["/api/admin/users"] });
+      queryClient.invalidateQueries({ queryKey: ["/api/admin/stats"] });
+      toast({
+        title: "Success",
+        description: `Deleted ${data.deletedCount} test accounts`,
+      });
+    },
+    onError: () => {
+      toast({
+        title: "Error",
+        description: "Failed to delete test accounts",
+        variant: "destructive",
+      });
+    },
+  });
+
   // Filter users based on search and filter type
   const filteredUsers = allUsers ? (allUsers as any[]).filter((user: any) => {
     const matchesSearch = !searchTerm || 
@@ -236,6 +259,35 @@ export default function Admin() {
             </Card>
           </div>
         ) : null}
+
+        {/* Admin Actions */}
+        <div className="mb-6">
+          <Card>
+            <CardContent className="p-6">
+              <h3 className="text-lg font-medium text-neutral-900 mb-4">Admin Actions</h3>
+              <div className="flex gap-4">
+                <Button
+                  onClick={() => deleteTestAccountsMutation.mutate()}
+                  disabled={deleteTestAccountsMutation.isPending}
+                  variant="destructive"
+                  size="sm"
+                >
+                  {deleteTestAccountsMutation.isPending ? (
+                    <>
+                      <div className="animate-spin w-4 h-4 border-2 border-current border-t-transparent rounded-full mr-2" />
+                      Deleting...
+                    </>
+                  ) : (
+                    "Delete Test Accounts"
+                  )}
+                </Button>
+                <p className="text-sm text-neutral-600 flex items-center">
+                  Removes KadyABrown@gmail.com and KeturahBrown17@gmail.com accounts
+                </p>
+              </div>
+            </CardContent>
+          </Card>
+        </div>
 
         {/* Admin Tabs */}
         <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">

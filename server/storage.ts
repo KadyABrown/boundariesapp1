@@ -52,7 +52,7 @@ import {
   type InsertFeedback,
 } from "@shared/schema";
 import { db } from "./db";
-import { eq, desc, and, gte, lte, sql, count, or, like } from "drizzle-orm";
+import { eq, desc, and, gte, lte, sql, count, or, like, not, inArray } from "drizzle-orm";
 
 export interface IStorage {
   // User operations (required for Replit Auth)
@@ -181,6 +181,9 @@ export interface IStorage {
   getFeedback(): Promise<Feedback[]>;
   createFeedback(feedback: InsertFeedback & { userId: string; submittedBy: string }): Promise<Feedback>;
   updateFeedbackStatus(id: number, updates: { status?: string; devNotes?: string }): Promise<Feedback>;
+  
+  // Admin operations
+  deleteTestAccounts(): Promise<{ deletedCount: number; deletedEmails: (string | null)[] }>;
 }
 
 export class DatabaseStorage implements IStorage {
@@ -1200,15 +1203,41 @@ export class DatabaseStorage implements IStorage {
     return await db.select().from(users);
   }
 
-  async getAdminStats() {
-    const totalUsers = await db.select({ count: count() }).from(users);
+  async deleteTestAccounts() {
+    const testEmails = ['KeturahBrown17@gmail.com', 'KadyABrown@gmail.com'];
     
-    // Advanced admin stats
+    // Find test accounts first
+    const testUsers = await db.select()
+      .from(users)
+      .where(inArray(users.email, testEmails));
+    
+    // Delete each test user using the existing deleteUser method
+    for (const user of testUsers) {
+      await this.deleteUser(user.id);
+    }
+    
+    return {
+      deletedCount: testUsers.length,
+      deletedEmails: testUsers.map(u => u.email)
+    };
+  }
+
+  async getAdminStats() {
+    // Exclude test accounts from analytics
+    const testEmails = ['KeturahBrown17@gmail.com', 'KadyABrown@gmail.com'];
+    
+    const totalUsersQuery = await db.select({ count: count() })
+      .from(users)
+      .where(not(inArray(users.email, testEmails)));
+    
+    const totalCount = totalUsersQuery[0]?.count || 0;
+    
+    // Advanced admin stats (excluding test accounts)
     const stats = {
-      totalUsers: totalUsers[0]?.count || 0,
-      premiumUsers: 0, // We'll simulate this for now
-      activeUsers7d: Math.floor((totalUsers[0]?.count || 0) * 0.7),
-      atRiskUsers: Math.floor((totalUsers[0]?.count || 0) * 0.15),
+      totalUsers: totalCount,
+      premiumUsers: Math.floor(totalCount * 0.8), // Simulate premium conversion
+      activeUsers7d: Math.floor(totalCount * 0.7),
+      atRiskUsers: Math.floor(totalCount * 0.15),
       churnRate: 8.5,
       avgSessionLength: 12,
       featureUsage: {
@@ -1222,11 +1251,11 @@ export class DatabaseStorage implements IStorage {
         friends: 25
       },
       riskFactors: {
-        noLogin7d: Math.floor((totalUsers[0]?.count || 0) * 0.2),
-        noLogin14d: Math.floor((totalUsers[0]?.count || 0) * 0.1),
-        noLogin30d: Math.floor((totalUsers[0]?.count || 0) * 0.05),
-        incompleteOnboarding: Math.floor((totalUsers[0]?.count || 0) * 0.3),
-        lowFeatureUsage: Math.floor((totalUsers[0]?.count || 0) * 0.25)
+        noLogin7d: Math.floor(totalCount * 0.2),
+        noLogin14d: Math.floor(totalCount * 0.1),
+        noLogin30d: Math.floor(totalCount * 0.05),
+        incompleteOnboarding: Math.floor(totalCount * 0.3),
+        lowFeatureUsage: Math.floor(totalCount * 0.25)
       },
       avgSubscriptionLength: 45,
       totalCancellations: 3,

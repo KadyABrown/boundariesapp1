@@ -1744,6 +1744,27 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
+  // Delete test accounts endpoint
+  app.delete('/api/admin/delete-test-accounts', isAuthenticated, async (req: any, res) => {
+    try {
+      // Check if user is admin
+      const userEmail = req.user?.email || req.user?.claims?.email;
+      if (userEmail !== "hello@roxzmedia.com") {
+        return res.status(403).json({ message: "Access denied" });
+      }
+      
+      const result = await storage.deleteTestAccounts();
+      res.json({
+        success: true,
+        message: `Deleted ${result.deletedCount} test accounts`,
+        deletedEmails: result.deletedEmails
+      });
+    } catch (error) {
+      console.error("Error deleting test accounts:", error);
+      res.status(500).json({ message: "Failed to delete test accounts" });
+    }
+  });
+
   // Create premium user endpoint
   app.post('/api/admin/create-premium-user', isAuthenticated, async (req: any, res) => {
     try {
