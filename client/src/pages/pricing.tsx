@@ -116,21 +116,12 @@ export default function Pricing() {
                 ))}
               </div>
               
-              {user ? (
-                <Button 
-                  className="w-full bg-indigo-600 hover:bg-indigo-700 text-white py-3 text-lg"
-                  onClick={() => window.location.href = '/subscribe'}
-                >
-                  Start Your Subscription
-                </Button>
-              ) : (
-                <Button 
-                  className="w-full bg-indigo-600 hover:bg-indigo-700 text-white py-3 text-lg"
-                  onClick={() => window.location.href = '/api/login'}
-                >
-                  Get Started Now
-                </Button>
-              )}
+              <Button 
+                className="w-full bg-indigo-600 hover:bg-indigo-700 text-white py-3 text-lg"
+                onClick={() => window.location.href = '/subscribe'}
+              >
+                Subscribe Now
+              </Button>
               
               <div className="mt-4 text-center">
                 <p className="text-sm text-gray-500">
