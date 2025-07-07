@@ -45,11 +45,30 @@ export default function Insights() {
     retry: false,
   });
 
+  // Fetch stats for each relationship to get flag counts
+  const relationshipStatsQueries = useQuery({
+    queryKey: ["relationship-stats", relationships],
+    queryFn: async () => {
+      if (!Array.isArray(relationships) || relationships.length === 0) return [];
+      
+      const statsPromises = relationships.map((rel: any) =>
+        fetch(`/api/relationships/${rel.id}/stats`)
+          .then(res => res.json())
+          .then(stats => ({ ...rel, ...stats }))
+      );
+      
+      return Promise.all(statsPromises);
+    },
+    enabled: !!relationships && Array.isArray(relationships) && relationships.length > 0,
+    retry: false,
+  });
+
   // Transform relationships data to include both structures for component compatibility
   const transformedRelationships = useMemo(() => {
-    if (!Array.isArray(relationships)) return [];
+    const relationshipsWithStats = relationshipStatsQueries.data || [];
+    if (!Array.isArray(relationshipsWithStats)) return [];
     
-    return relationships.map((rel: any) => ({
+    return relationshipsWithStats.map((rel: any) => ({
       ...rel,
       greenFlags: rel.greenFlags || 0,
       redFlags: rel.redFlags || 0,
