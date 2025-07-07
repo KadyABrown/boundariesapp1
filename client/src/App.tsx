@@ -38,11 +38,16 @@ function Router() {
       <Route path="/checkout" component={Subscribe} />
       <Route path="/subscription-success" component={SubscriptionSuccess} />
       
+      {/* Route root based on authentication */}
       {isLoading || !isAuthenticated ? (
-        <Route path="/" component={Landing} />
+        <>
+          <Route path="/" component={Landing} />
+          <Route path="/dashboard" component={Landing} />
+        </>
       ) : (
         <>
           <Route path="/" component={Dashboard} />
+          <Route path="/dashboard" component={Dashboard} />
           <Route path="/boundaries" component={Boundaries} />
           <Route path="/relationships" component={Relationships} />
           <Route path="/relationships/:id" component={RelationshipDetail} />
