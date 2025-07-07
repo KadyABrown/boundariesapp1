@@ -1824,6 +1824,39 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
+  // Admin route to submit development updates 
+  app.post('/api/admin/development-update', isAuthenticated, async (req: any, res) => {
+    try {
+      const userEmail = req.user?.email || req.user?.claims?.email;
+      if (userEmail !== "hello@roxzmedia.com") {
+        return res.status(403).json({ message: "Access denied" });
+      }
+
+      const { title, description, status } = req.body;
+      
+      // Map admin status categories to feedback table statuses
+      const feedbackStatus = status === 'completed' ? 'completed' : 
+                           status === 'next' ? 'reported' : 'in_progress';
+      
+      const feedbackData = {
+        userId: req.user.id,
+        title,
+        description,
+        type: 'improvement' as const,
+        priority: 'medium' as const,
+        status: feedbackStatus,
+        submittedBy: 'Admin Development Team',
+        adminNotes: `Admin Update - Category: ${status}`
+      };
+
+      const feedback = await storage.createFeedback(feedbackData);
+      res.json(feedback);
+    } catch (error) {
+      console.error("Error creating development update:", error);
+      res.status(500).json({ message: "Failed to create development update" });
+    }
+  });
+
   // Stripe subscription routes
   app.post('/api/create-payment-intent', async (req: any, res) => {
     try {

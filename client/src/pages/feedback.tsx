@@ -198,8 +198,24 @@ export default function Feedback() {
                   ))}
                 </div>
               ) : (
-                <p className="text-gray-500 text-center py-8">No items currently in progress</p>
+                <div className="space-y-4">
+                  <p className="text-gray-500 text-center py-8">No items currently in progress</p>
+                </div>
               )}
+              
+              {/* Notification Button Note */}
+              <div className="mt-4 p-3 bg-blue-50 border border-blue-200 rounded-lg">
+                <div className="flex items-start gap-2">
+                  <div className="w-2 h-2 bg-blue-500 rounded-full mt-2 flex-shrink-0"></div>
+                  <div>
+                    <p className="text-sm text-blue-800 font-medium">Notification Button</p>
+                    <p className="text-xs text-blue-600 mt-1">
+                      The bell icon in the top navigation is a placeholder for future notification features. 
+                      It will be connected to email notifications and user settings in an upcoming update.
+                    </p>
+                  </div>
+                </div>
+              </div>
             </CardContent>
           </Card>
         </TabsContent>

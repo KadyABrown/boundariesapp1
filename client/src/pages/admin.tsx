@@ -724,9 +724,11 @@ function FeedbackManagement() {
                       </Badge>
                     </div>
                     <p className="text-sm text-gray-600 mb-2">{item.description}</p>
-                    <p className="text-xs text-gray-500">
-                      Submitted by: {item.submittedBy} on {new Date(item.createdAt).toLocaleDateString()}
-                    </p>
+                    <div className="text-xs text-gray-500 space-y-1">
+                      <p><strong>Submitted by:</strong> {item.submittedBy}</p>
+                      <p><strong>User ID:</strong> {item.userId}</p>
+                      <p><strong>Date:</strong> {new Date(item.createdAt).toLocaleDateString()}</p>
+                    </div>
                   </div>
                   <Select value={item.status}>
                     <SelectTrigger className="w-32">
@@ -747,7 +749,100 @@ function FeedbackManagement() {
             No feedback items found
           </div>
         )}
+        
+        {/* Admin Development Update Submission */}
+        <div className="mt-6 p-4 bg-green-50 border border-green-200 rounded-lg">
+          <h3 className="font-medium text-green-800 mb-3">Submit Development Update</h3>
+          <AdminUpdateForm />
+        </div>
       </CardContent>
     </Card>
+  );
+}
+
+// Admin Development Update Form Component
+function AdminUpdateForm() {
+  const [formData, setFormData] = useState({
+    title: '',
+    description: '',
+    status: 'in_progress' as 'in_progress' | 'next' | 'completed'
+  });
+  const [isSubmitting, setIsSubmitting] = useState(false);
+
+  const handleSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    setIsSubmitting(true);
+    
+    try {
+      const response = await fetch('/api/admin/development-update', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(formData)
+      });
+      
+      if (response.ok) {
+        // Clear form
+        setFormData({ title: '', description: '', status: 'in_progress' });
+        alert('Development update submitted successfully!');
+        // Refresh feedback data would happen here via query invalidation
+        window.location.reload();
+      } else {
+        alert('Failed to submit update');
+      }
+    } catch (error) {
+      console.error('Error submitting update:', error);
+      alert('Error submitting update');
+    } finally {
+      setIsSubmitting(false);
+    }
+  };
+
+  return (
+    <form onSubmit={handleSubmit} className="space-y-3">
+      <div>
+        <Label htmlFor="title" className="text-sm">Title</Label>
+        <input
+          id="title"
+          type="text"
+          value={formData.title}
+          onChange={(e) => setFormData(prev => ({ ...prev, title: e.target.value }))}
+          className="w-full p-2 border rounded text-sm"
+          placeholder="Brief update title..."
+          required
+        />
+      </div>
+      
+      <div>
+        <Label htmlFor="description" className="text-sm">Description</Label>
+        <textarea
+          id="description"
+          value={formData.description}
+          onChange={(e) => setFormData(prev => ({ ...prev, description: e.target.value }))}
+          className="w-full p-2 border rounded text-sm h-20"
+          placeholder="Detailed description of changes..."
+          required
+        />
+      </div>
+      
+      <div>
+        <Label htmlFor="status" className="text-sm">Status Category</Label>
+        <Select value={formData.status} onValueChange={(value: 'in_progress' | 'next' | 'completed') => 
+          setFormData(prev => ({ ...prev, status: value }))
+        }>
+          <SelectTrigger className="w-full">
+            <SelectValue />
+          </SelectTrigger>
+          <SelectContent>
+            <SelectItem value="in_progress">In Progress</SelectItem>
+            <SelectItem value="next">Next Update</SelectItem>
+            <SelectItem value="completed">Completed</SelectItem>
+          </SelectContent>
+        </Select>
+      </div>
+      
+      <Button type="submit" disabled={isSubmitting} className="w-full" size="sm">
+        {isSubmitting ? 'Submitting...' : 'Submit Development Update'}
+      </Button>
+    </form>
   );
 }
