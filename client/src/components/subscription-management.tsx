@@ -334,3 +334,5 @@ export function SubscriptionManagement() {
     </Card>
   );
 }
+
+export default SubscriptionManagement;

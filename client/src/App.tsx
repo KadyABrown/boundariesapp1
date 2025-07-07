@@ -10,6 +10,7 @@ import Boundaries from "@/pages/boundaries";
 import Relationships from "@/pages/relationships";
 import RelationshipDetail from "@/pages/relationship-detail";
 import Profile from "@/pages/profile";
+import SettingsPage from "@/pages/settings";
 import Friends from "@/pages/friends";
 import Insights from "@/pages/insights";
 import FlagExamples from "@/pages/flag-examples";
@@ -47,7 +48,7 @@ function Router() {
           <Route path="/baseline" component={BaselinePage} />
           <Route path="/friends" component={Friends} />
           <Route path="/profile" component={Profile} />
-          <Route path="/settings" component={Profile} />
+          <Route path="/settings" component={SettingsPage} />
           <Route path="/insights" component={Insights} />
           <Route path="/feedback" component={Feedback} />
           <Route path="/admin" component={Admin} />
