@@ -1,6 +1,7 @@
 import { useAuth } from "@/hooks/useAuth";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
+import { StripeSubscriptionButton } from "@/components/stripe-subscription-button";
 import { Lock, Crown } from "lucide-react";
 
 interface PaywallProps {

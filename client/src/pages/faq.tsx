@@ -1,6 +1,7 @@
 import { useState } from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
+import { StripeSubscriptionButton } from "@/components/stripe-subscription-button";
 import { Heart, ChevronDown, ChevronRight, Shield, Users, TrendingUp, MessageCircle } from "lucide-react";
 import { useAuth } from "@/hooks/useAuth";
 

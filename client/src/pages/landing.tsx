@@ -1,5 +1,6 @@
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
+import { StripeSubscriptionButton } from "@/components/stripe-subscription-button";
 import { Heart, Shield, TrendingUp, Users, CheckCircle, ArrowRight, Star } from "lucide-react";
 import { useAuth } from "@/hooks/useAuth";
 
@@ -62,13 +63,12 @@ export default function Landing() {
               BoundaryCore helps you understand yourself and build stronger connections.
             </p>
             <div className="flex flex-col sm:flex-row items-center justify-center space-y-4 sm:space-y-0 sm:space-x-6">
-              <Button 
+              <StripeSubscriptionButton 
                 className="bg-indigo-600 hover:bg-indigo-700 text-white px-8 py-4 text-lg rounded-lg shadow-lg w-full sm:w-auto"
-                onClick={() => window.location.href = '/subscribe'}
               >
                 Start Your Journey
                 <ArrowRight className="ml-2 h-5 w-5" />
-              </Button>
+              </StripeSubscriptionButton>
               <Button 
                 variant="outline" 
                 className="px-8 py-4 text-lg rounded-lg w-full sm:w-auto"
@@ -295,13 +295,12 @@ export default function Landing() {
             Join thousands of users who are building healthier, more fulfilling relationships with BoundaryCore.
           </p>
           <div className="flex flex-col sm:flex-row items-center justify-center space-y-4 sm:space-y-0 sm:space-x-6">
-            <Button 
+            <StripeSubscriptionButton 
               className="bg-white text-indigo-600 hover:bg-gray-100 px-8 py-4 text-lg rounded-lg shadow-lg w-full sm:w-auto"
-              onClick={() => window.location.href = '/subscribe'}
             >
               Start Your Journey
               <ArrowRight className="ml-2 h-5 w-5" />
-            </Button>
+            </StripeSubscriptionButton>
             <Button 
               variant="outline" 
               className="border-white text-white hover:bg-white hover:text-indigo-600 px-8 py-4 text-lg rounded-lg w-full sm:w-auto"

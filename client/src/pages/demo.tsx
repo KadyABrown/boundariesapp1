@@ -1,6 +1,7 @@
 import { useState } from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
+import { StripeSubscriptionButton } from "@/components/stripe-subscription-button";
 import { Badge } from "@/components/ui/badge";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
@@ -470,9 +471,9 @@ export default function Demo() {
                 Start your free trial today to begin understanding your relationship patterns.
               </p>
               <div className="flex flex-col sm:flex-row gap-3 justify-center">
-                <Button size="lg" onClick={() => window.location.href = '/subscribe'}>
+                <StripeSubscriptionButton className="w-full bg-indigo-600 hover:bg-indigo-700 text-white text-lg">
                   Start Your Journey - $12.99/month
-                </Button>
+                </StripeSubscriptionButton>
                 <Button variant="outline" size="lg" onClick={() => window.location.href = '/'}>
                   Learn More
                 </Button>

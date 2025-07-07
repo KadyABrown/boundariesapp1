@@ -2,6 +2,7 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Check, Star, Heart, Shield, TrendingUp } from "lucide-react";
 import { useAuth } from "@/hooks/useAuth";
+import { StripeSubscriptionButton } from "@/components/stripe-subscription-button";
 
 export default function Pricing() {
   const { user } = useAuth();
@@ -116,12 +117,11 @@ export default function Pricing() {
                 ))}
               </div>
               
-              <Button 
+              <StripeSubscriptionButton 
                 className="w-full bg-indigo-600 hover:bg-indigo-700 text-white py-3 text-lg"
-                onClick={() => window.location.href = '/subscribe'}
               >
                 Subscribe Now
-              </Button>
+              </StripeSubscriptionButton>
               
               <div className="mt-4 text-center">
                 <p className="text-sm text-gray-500">
