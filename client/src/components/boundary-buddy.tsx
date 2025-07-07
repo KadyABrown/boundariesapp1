@@ -3,8 +3,7 @@ import { motion, AnimatePresence } from "framer-motion";
 import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { AudioEffects } from "@/lib/audioEffects";
-import { X, HelpCircle, Lightbulb, TrendingUp, Cloud, MessageCircle, Bug } from "lucide-react";
-import { Link } from "wouter";
+import { X, HelpCircle, Lightbulb, TrendingUp, Cloud, MessageCircle } from "lucide-react";
 
 interface BoundaryBuddyProps {
   context: 'emotional-weather' | 'timeline' | 'achievements' | 'general';
@@ -72,7 +71,7 @@ const explanations = {
     ]
   },
   'general': {
-    title: "Welcome to BoundaryCore",
+    title: "Welcome to BoundarySpace",
     icon: HelpCircle,
     sections: [
       {

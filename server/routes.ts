@@ -6,7 +6,6 @@ import { db } from "./db";
 import { flagExamples } from "@shared/schema";
 import fs from 'fs';
 import path from 'path';
-import Stripe from "stripe";
 import {
   insertBoundarySchema,
   insertBoundaryEntrySchema,
@@ -20,17 +19,8 @@ import {
   insertFriendCircleSchema,
   insertComprehensiveInteractionSchema,
   insertPersonalBaselineSchema,
-  insertFeedbackSchema,
 } from "@shared/schema";
 import { z } from "zod";
-
-// Initialize Stripe
-if (!process.env.STRIPE_SECRET_KEY) {
-  throw new Error('Missing required Stripe secret: STRIPE_SECRET_KEY');
-}
-const stripe = new Stripe(process.env.STRIPE_SECRET_KEY, {
-  apiVersion: "2025-06-30.basil",
-});
 
 export async function registerRoutes(app: Express): Promise<Server> {
   // Auth middleware
@@ -733,9 +723,16 @@ export async function registerRoutes(app: Express): Promise<Server> {
   // Enhanced CSV parser for paired flag format
   app.post('/api/import-paired-csv', async (req: any, res) => {
     try {
-      const { csvData } = req.body;
+      let { csvData } = req.body;
+      
+      // If no CSV data provided, try to read from attached file
       if (!csvData) {
-        return res.status(400).json({ message: "CSV data is required" });
+        try {
+          const csvPath = path.join(process.cwd(), 'attached_assets', 'Final Data Training - Red and Green flag data base - Red & Green Flag example bank (1)_1751747397428.csv');
+          csvData = fs.readFileSync(csvPath, 'utf-8');
+        } catch (error) {
+          return res.status(400).json({ message: "CSV data is required and no attached file found" });
+        }
       }
 
       // Advanced CSV parser that handles multi-line cells and quoted content
@@ -743,8 +740,8 @@ export async function registerRoutes(app: Express): Promise<Server> {
         const lines = csvContent.split('\n');
         const flags = [];
         
-        // Skip header rows (first 2 lines)
-        let i = 2;
+        // Skip header row (first line only for new format)
+        let i = 1;
         while (i < lines.length) {
           let currentLine = lines[i];
           let fields = [];
@@ -778,9 +775,10 @@ export async function registerRoutes(app: Express): Promise<Server> {
             }
           }
           
-          // Process the parsed row if we have enough fields
-          if (fields.length >= 8) {
-            const [greenFlag, redFlag, behaviorDesc, example, impact, worthAddressing, actionSteps, theme] = fields;
+          // Process the parsed row if we have enough fields for new format:
+          // Theme, Behavior Description, Green flag, Red flag, Red flag Example, Unhealthy Impact, Action steps
+          if (fields.length >= 7) {
+            const [theme, behaviorDesc, greenFlag, redFlag, redExample, unhealthyImpact, actionSteps] = fields;
             
             // Create paired entry
             if (greenFlag && redFlag && theme) {
@@ -789,19 +787,16 @@ export async function registerRoutes(app: Express): Promise<Server> {
                 greenFlag: {
                   title: greenFlag.replace(/💚/g, '').trim(),
                   description: behaviorDesc,
-                  exampleScenario: example,
-                  emotionalImpact: impact,
-                  actionSteps: actionSteps
+                  exampleScenario: `Healthy approach: ${greenFlag}`,
+                  emotionalImpact: 'Builds trust and emotional safety',
+                  actionSteps: 'Continue this positive pattern'
                 },
                 redFlag: {
                   title: redFlag.replace(/🚩/g, '').trim(),
                   description: behaviorDesc,
-                  exampleScenario: example,
-                  emotionalImpact: impact,
-                  actionSteps: actionSteps,
-                  addressability: worthAddressing?.toLowerCase().includes('never') ? 'dealbreaker' :
-                                 worthAddressing?.toLowerCase().includes('always') ? 'always_worth_addressing' :
-                                 'sometimes_worth_addressing'
+                  exampleScenario: redExample || `Unhealthy approach: ${redFlag}`,
+                  emotionalImpact: unhealthyImpact || 'Creates emotional disconnection',
+                  actionSteps: actionSteps || 'Address this pattern directly'
                 }
               });
             }
@@ -1475,11 +1470,15 @@ export async function registerRoutes(app: Express): Promise<Server> {
         baseline = await storage.updatePersonalBaseline(userId, baselineData);
       } else {
         baseline = await storage.createPersonalBaseline(baselineData);
+        
+        // Auto-generate boundaries from baseline for new users
+        await storage.generateBoundariesFromBaseline(userId, baselineData);
       }
       
       res.json(baseline);
     } catch (error) {
       if (error instanceof z.ZodError) {
+        console.error("Baseline validation error:", error.errors);
         res.status(400).json({ message: "Invalid baseline data", errors: error.errors });
       } else {
         console.error("Error saving baseline:", error);
@@ -1640,504 +1639,86 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
-  // Admin endpoints
-  app.get('/api/admin/users', isAuthenticated, async (req: any, res) => {
-    try {
-      // Check if user is admin
-      const userEmail = req.user?.email || req.user?.claims?.email;
-      if (userEmail !== "hello@roxzmedia.com") {
-        return res.status(403).json({ message: "Access denied" });
-      }
-      
-      const users = await storage.getAllUsers();
-      res.json(users);
-    } catch (error) {
-      console.error("Error fetching users:", error);
-      res.status(500).json({ message: "Failed to fetch users" });
+  // Admin routes (protected)
+  const isAdmin = async (req: any, res: any, next: any) => {
+    const userId = req.user?.claims?.sub;
+    const userEmail = req.user?.claims?.email;
+    
+    // Check if user is admin (update with your admin email)
+    if (userEmail === "hello@roxzmedia.com" || userId === "44415082") {
+      next();
+    } else {
+      res.status(403).json({ message: "Admin access required" });
     }
-  });
+  };
 
-  app.get('/api/admin/stats', isAuthenticated, async (req: any, res) => {
+  app.get('/api/admin/stats', isAuthenticated, isAdmin, async (req: any, res) => {
     try {
-      // Check if user is admin
-      const userEmail = req.user?.email || req.user?.claims?.email;
-      if (userEmail !== "hello@roxzmedia.com") {
-        return res.status(403).json({ message: "Access denied" });
-      }
-      
+      // Get comprehensive admin statistics
       const stats = await storage.getAdminStats();
       res.json(stats);
     } catch (error) {
       console.error("Error fetching admin stats:", error);
-      res.status(500).json({ message: "Failed to fetch admin stats" });
+      res.status(500).json({ message: "Failed to fetch admin statistics" });
     }
   });
 
-  app.delete('/api/admin/users/:id', isAuthenticated, async (req: any, res) => {
+  app.get('/api/admin/users', isAuthenticated, isAdmin, async (req: any, res) => {
     try {
-      // Check if user is admin
-      const userEmail = req.user?.email || req.user?.claims?.email;
-      if (userEmail !== "hello@roxzmedia.com") {
-        return res.status(403).json({ message: "Access denied" });
-      }
-      
-      const userId = req.params.id;
-      await storage.deleteUser(userId);
-      res.json({ success: true });
+      // Get all users with their relationship counts and activity
+      const users = await storage.getAllUsersForAdmin();
+      res.json(users);
     } catch (error) {
-      console.error("Error deleting user:", error);
-      res.status(500).json({ message: "Failed to delete user" });
+      console.error("Error fetching users for admin:", error);
+      res.status(500).json({ message: "Failed to fetch users" });
     }
   });
 
-  // Suspend user account
-  app.patch('/api/admin/users/:id/suspend', isAuthenticated, async (req: any, res) => {
+  // User profile drill-down
+  app.get('/api/admin/user/:userId', isAuthenticated, isAdmin, async (req: any, res) => {
     try {
-      // Check if user is admin
-      const userEmail = req.user?.email || req.user?.claims?.email;
-      if (userEmail !== "hello@roxzmedia.com") {
-        return res.status(403).json({ message: "Access denied" });
-      }
-      
-      const userId = req.params.id;
-      await storage.suspendUser(userId);
-      res.json({ success: true });
+      const { userId } = req.params;
+      const userProfile = await storage.getUserProfile(userId);
+      res.json(userProfile);
     } catch (error) {
-      console.error("Error suspending user:", error);
-      res.status(500).json({ message: "Failed to suspend user" });
+      console.error("Error fetching user profile:", error);
+      res.status(500).json({ message: "Failed to fetch user profile" });
     }
   });
 
-  // Schedule user for deletion
-  app.patch('/api/admin/users/:id/schedule-deletion', isAuthenticated, async (req: any, res) => {
+  // Feature usage analytics
+  app.get('/api/admin/feature-usage', isAuthenticated, isAdmin, async (req: any, res) => {
     try {
-      // Check if user is admin
-      const userEmail = req.user?.email || req.user?.claims?.email;
-      if (userEmail !== "hello@roxzmedia.com") {
-        return res.status(403).json({ message: "Access denied" });
-      }
-      
-      const userId = req.params.id;
-      await storage.scheduleUserForDeletion(userId);
-      res.json({ success: true });
+      const featureUsage = await storage.getFeatureUsageStats();
+      res.json(featureUsage);
     } catch (error) {
-      console.error("Error scheduling user for deletion:", error);
-      res.status(500).json({ message: "Failed to schedule user for deletion" });
+      console.error("Error fetching feature usage:", error);
+      res.status(500).json({ message: "Failed to fetch feature usage" });
     }
   });
 
-  // Reactivate user account
-  app.patch('/api/admin/users/:id/reactivate', isAuthenticated, async (req: any, res) => {
+  // Churn analytics
+  app.get('/api/admin/churn', isAuthenticated, isAdmin, async (req: any, res) => {
     try {
-      // Check if user is admin
-      const userEmail = req.user?.email || req.user?.claims?.email;
-      if (userEmail !== "hello@roxzmedia.com") {
-        return res.status(403).json({ message: "Access denied" });
-      }
-      
-      const userId = req.params.id;
-      await storage.reactivateUser(userId);
-      res.json({ success: true });
+      const churnData = await storage.getChurnAnalytics();
+      res.json(churnData);
     } catch (error) {
-      console.error("Error reactivating user:", error);
-      res.status(500).json({ message: "Failed to reactivate user" });
+      console.error("Error fetching churn data:", error);
+      res.status(500).json({ message: "Failed to fetch churn data" });
     }
   });
 
-  // Delete test accounts endpoint
-  app.delete('/api/admin/delete-test-accounts', isAuthenticated, async (req: any, res) => {
+  // User management actions
+  app.patch('/api/admin/user/:userId/action', isAuthenticated, isAdmin, async (req: any, res) => {
     try {
-      // Check if user is admin
-      const userEmail = req.user?.email || req.user?.claims?.email;
-      if (userEmail !== "hello@roxzmedia.com") {
-        return res.status(403).json({ message: "Access denied" });
-      }
+      const { userId } = req.params;
+      const { action, value } = req.body;
       
-      const result = await storage.deleteTestAccounts();
-      res.json({
-        success: true,
-        message: `Deleted ${result.deletedCount} test accounts`,
-        deletedEmails: result.deletedEmails
-      });
+      const result = await storage.performUserAction(userId, action, value);
+      res.json(result);
     } catch (error) {
-      console.error("Error deleting test accounts:", error);
-      res.status(500).json({ message: "Failed to delete test accounts" });
-    }
-  });
-
-  // Create premium user endpoint
-  app.post('/api/admin/create-premium-user', isAuthenticated, async (req: any, res) => {
-    try {
-      // Check if user is admin
-      const userEmail = req.user?.email || req.user?.claims?.email;
-      if (userEmail !== "hello@roxzmedia.com") {
-        return res.status(403).json({ message: "Access denied" });
-      }
-      
-      const { email, firstName, lastName, phoneNumber } = req.body;
-      
-      if (!email) {
-        return res.status(400).json({ message: "Email is required" });
-      }
-
-      // Check if user already exists
-      const existingUser = await storage.getUserByEmail(email);
-      if (existingUser) {
-        return res.status(400).json({ message: "User with this email already exists" });
-      }
-
-      // Create Stripe customer
-      const customer = await stripe.customers.create({
-        email: email,
-        name: firstName && lastName ? `${firstName} ${lastName}` : firstName || lastName,
-        phone: phoneNumber || undefined,
-      });
-
-      // Create active subscription without payment method (manual admin creation)
-      const subscription = await stripe.subscriptions.create({
-        customer: customer.id,
-        items: [{
-          price: process.env.STRIPE_PRICE_ID,
-        }],
-        collection_method: 'charge_automatically',
-        // Remove default_payment_method for live mode - admin grants access manually
-      });
-
-      // Generate a unique user ID (similar to how Replit does it)
-      const userId = `admin-${Date.now()}-${Math.random().toString(36).substring(2, 15)}`;
-      
-      // Create user in database with premium status
-      const newUser = await storage.createUser({
-        id: userId,
-        email: email,
-        firstName: firstName || null,
-        lastName: lastName || null,
-        phoneNumber: phoneNumber || null,
-        username: email.split('@')[0], // Use email prefix as username
-        stripeCustomerId: customer.id,
-        stripeSubscriptionId: subscription.id,
-        subscriptionStatus: 'active',
-        userRole: 'user',
-        profileImageUrl: null,
-      });
-
-      res.json({
-        success: true,
-        user: {
-          id: newUser.id,
-          email: newUser.email,
-          firstName: newUser.firstName,
-          lastName: newUser.lastName,
-          phoneNumber: newUser.phoneNumber,
-          subscriptionStatus: 'active',
-        },
-        message: `Premium user created successfully for ${email}`,
-      });
-    } catch (error: any) {
-      console.error("Error creating premium user:", error);
-      res.status(500).json({ 
-        message: "Failed to create premium user", 
-        error: error.message 
-      });
-    }
-  });
-
-  // Feedback routes
-  app.get('/api/feedback', isAuthenticated, async (req: any, res) => {
-    try {
-      const feedback = await storage.getFeedback();
-      res.json(feedback);
-    } catch (error) {
-      console.error("Error fetching feedback:", error);
-      res.status(500).json({ message: "Failed to fetch feedback" });
-    }
-  });
-
-  app.post('/api/feedback', isAuthenticated, async (req: any, res) => {
-    try {
-      const validatedData = insertFeedbackSchema.parse(req.body);
-      const user = req.user;
-      
-      const feedbackData = {
-        ...validatedData,
-        userId: user.id,
-        submittedBy: user.username || user.email || 'Anonymous',
-      };
-
-      const feedback = await storage.createFeedback(feedbackData);
-      res.json(feedback);
-    } catch (error) {
-      console.error("Error creating feedback:", error);
-      if (error instanceof z.ZodError) {
-        res.status(400).json({ message: "Invalid feedback data", errors: error.errors });
-      } else {
-        res.status(500).json({ message: "Failed to create feedback" });
-      }
-    }
-  });
-
-  // Admin route to update feedback status
-  app.patch('/api/admin/feedback/:id', isAuthenticated, async (req: any, res) => {
-    try {
-      const userEmail = req.user?.email || req.user?.claims?.email;
-      if (userEmail !== "hello@roxzmedia.com") {
-        return res.status(403).json({ message: "Access denied" });
-      }
-
-      const feedbackId = parseInt(req.params.id);
-      const { status, devNotes } = req.body;
-      
-      const feedback = await storage.updateFeedbackStatus(feedbackId, { status, devNotes });
-      res.json(feedback);
-    } catch (error) {
-      console.error("Error updating feedback:", error);
-      res.status(500).json({ message: "Failed to update feedback" });
-    }
-  });
-
-  // Admin route to submit development updates 
-  app.post('/api/admin/development-update', isAuthenticated, async (req: any, res) => {
-    try {
-      const userEmail = req.user?.email || req.user?.claims?.email;
-      if (userEmail !== "hello@roxzmedia.com") {
-        return res.status(403).json({ message: "Access denied" });
-      }
-
-      const { title, description, status } = req.body;
-      
-      // Map admin status categories to feedback table statuses
-      const feedbackStatus = status === 'completed' ? 'completed' : 
-                           status === 'next' ? 'reported' : 'in_progress';
-      
-      const feedbackData = {
-        userId: req.user.id,
-        title,
-        description,
-        type: 'improvement' as const,
-        priority: 'medium' as const,
-        status: feedbackStatus,
-        submittedBy: 'Admin Development Team',
-        adminNotes: `Admin Update - Category: ${status}`
-      };
-
-      const feedback = await storage.createFeedback(feedbackData);
-      res.json(feedback);
-    } catch (error) {
-      console.error("Error creating development update:", error);
-      res.status(500).json({ message: "Failed to create development update" });
-    }
-  });
-
-  // Stripe subscription routes
-  app.post('/api/create-payment-intent', async (req: any, res) => {
-    try {
-      const { amount } = req.body;
-      const paymentIntent = await stripe.paymentIntents.create({
-        amount: Math.round(amount * 100), // Convert to cents
-        currency: "usd",
-      });
-      res.json({ clientSecret: paymentIntent.client_secret });
-    } catch (error: any) {
-      console.error("Error creating payment intent:", error);
-      res.status(500).json({ message: "Error creating payment intent: " + error.message });
-    }
-  });
-
-  // Create Stripe Checkout session - direct redirect to Stripe
-  app.post('/api/create-checkout-session', async (req: any, res) => {
-    try {
-      const { successUrl, cancelUrl } = req.body;
-      
-      const session = await stripe.checkout.sessions.create({
-        payment_method_types: ['card'],
-        line_items: [{
-          price_data: {
-            currency: 'usd',
-            product_data: {
-              name: 'BoundaryCore Premium',
-              description: 'Monthly subscription to BoundaryCore relationship tracking platform',
-            },
-            unit_amount: 1299, // $12.99 in cents
-            recurring: {
-              interval: 'month',
-            },
-          },
-          quantity: 1,
-        }],
-        mode: 'subscription',
-        success_url: successUrl || `${req.get('origin')}/subscription-success`,
-        cancel_url: cancelUrl || `${req.get('origin')}/pricing`,
-        billing_address_collection: 'required',
-      });
-
-      res.json({ 
-        checkoutUrl: session.url,
-        sessionId: session.id 
-      });
-    } catch (error: any) {
-      console.error("Error creating checkout session:", error);
-      res.status(500).json({ message: "Error creating checkout session: " + error.message });
-    }
-  });
-
-
-
-  // Simple webhook endpoint (placeholder for future implementation)
-  app.post('/api/stripe-webhook', async (req: any, res) => {
-    res.json({ received: true });
-  });
-
-  app.post('/api/get-or-create-subscription', isAuthenticated, async (req: any, res) => {
-    try {
-      const userId = req.user.claims.sub;
-      let user = await storage.getUser(userId);
-      
-      if (!user) {
-        return res.status(404).json({ message: "User not found" });
-      }
-
-      // Check if user already has an active subscription
-      if (user.stripeSubscriptionId) {
-        try {
-          const subscription = await stripe.subscriptions.retrieve(user.stripeSubscriptionId);
-          
-          if (subscription.status === 'active') {
-            return res.json({
-              subscriptionId: subscription.id,
-              status: subscription.status,
-              clientSecret: subscription.latest_invoice?.payment_intent?.client_secret,
-            });
-          }
-        } catch (error) {
-          console.log("Subscription not found, creating new one");
-        }
-      }
-
-      if (!user.email) {
-        return res.status(400).json({ message: 'User email is required for subscription' });
-      }
-
-      // Create or get Stripe customer
-      let customer;
-      if (user.stripeCustomerId) {
-        try {
-          customer = await stripe.customers.retrieve(user.stripeCustomerId);
-        } catch (error) {
-          console.log("Customer not found, creating new one");
-        }
-      }
-
-      if (!customer) {
-        customer = await stripe.customers.create({
-          email: user.email || undefined,
-          name: user.firstName && user.lastName ? `${user.firstName} ${user.lastName}` : user.username || undefined,
-        });
-
-        // Update user with Stripe customer ID
-        await storage.updateUser(userId, { stripeCustomerId: customer.id });
-      }
-
-      // For now, let's create a simple payment intent for $12.99
-      const paymentIntent = await stripe.paymentIntents.create({
-        amount: 1299, // $12.99 in cents
-        currency: 'usd',
-        customer: customer.id,
-        metadata: {
-          type: 'subscription',
-          userId: userId,
-        },
-      });
-
-      // Update user with subscription info (mock for now)
-      await storage.updateUser(userId, {
-        stripeCustomerId: customer.id,
-        subscriptionStatus: 'pending',
-      });
-
-      res.json({
-        clientSecret: paymentIntent.client_secret,
-        paymentIntentId: paymentIntent.id,
-      });
-    } catch (error: any) {
-      console.error("Error creating subscription:", error);
-      res.status(500).json({ message: "Error creating subscription: " + error.message });
-    }
-  });
-
-
-
-  // Check subscription status
-  app.get('/api/subscription/status', isAuthenticated, async (req: any, res) => {
-    try {
-      const userId = req.user.claims.sub;
-      const user = await storage.getUser(userId);
-      
-      if (!user || !user.stripeSubscriptionId) {
-        return res.json({ status: 'inactive', hasAccess: false });
-      }
-
-      const subscription = await stripe.subscriptions.retrieve(user.stripeSubscriptionId);
-      
-      // Update user subscription status
-      await storage.updateUser(userId, {
-        subscriptionStatus: subscription.status,
-      });
-
-      res.json({
-        status: subscription.status,
-        hasAccess: subscription.status === 'active',
-        currentPeriodEnd: subscription.current_period_end,
-      });
-    } catch (error: any) {
-      console.error("Error checking subscription status:", error);
-      res.status(500).json({ message: "Error checking subscription status: " + error.message });
-    }
-  });
-
-  // Update payment method - redirect to Stripe customer portal
-  app.post('/api/subscription/update-payment', isAuthenticated, async (req: any, res) => {
-    try {
-      const userId = req.user.claims.sub;
-      const user = await storage.getUser(userId);
-      
-      if (!user || !user.stripeCustomerId) {
-        return res.status(404).json({ message: "No customer found" });
-      }
-
-      // Create customer portal session
-      const session = await stripe.billingPortal.sessions.create({
-        customer: user.stripeCustomerId,
-        return_url: `${process.env.REPLIT_DOMAINS?.split(' ')[0] || 'http://localhost:5000'}/settings`,
-      });
-
-      res.json({ portalUrl: session.url });
-    } catch (error: any) {
-      console.error("Error creating customer portal session:", error);
-      res.status(500).json({ message: "Error opening customer portal: " + error.message });
-    }
-  });
-
-  // Cancel subscription
-  app.post('/api/subscription/cancel', isAuthenticated, async (req: any, res) => {
-    try {
-      const userId = req.user.claims.sub;
-      const user = await storage.getUser(userId);
-      
-      if (!user || !user.stripeSubscriptionId) {
-        return res.status(404).json({ message: "No subscription found" });
-      }
-
-      const subscription = await stripe.subscriptions.cancel(user.stripeSubscriptionId);
-      
-      // Update user subscription status
-      await storage.updateUser(userId, {
-        subscriptionStatus: 'cancelled',
-      });
-
-      res.json({ message: "Subscription cancelled successfully" });
-    } catch (error: any) {
-      console.error("Error cancelling subscription:", error);
-      res.status(500).json({ message: "Error cancelling subscription: " + error.message });
+      console.error("Error performing user action:", error);
+      res.status(500).json({ message: "Failed to perform user action" });
     }
   });
 

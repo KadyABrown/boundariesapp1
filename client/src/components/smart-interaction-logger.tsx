@@ -1,488 +1,542 @@
 import { useState, useEffect } from "react";
+import { useQuery } from "@tanstack/react-query";
 import { motion, AnimatePresence } from "framer-motion";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import { Slider } from "@/components/ui/slider";
+import { Checkbox } from "@/components/ui/checkbox";
 import { Badge } from "@/components/ui/badge";
-import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
-import MoodEnergyTracker from "@/components/mood-energy-tracker";
+import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import { useToast } from "@/hooks/use-toast";
+import { apiRequest } from "@/lib/queryClient";
 import { 
-  Zap, 
-  MessageSquare, 
-  AlertTriangle, 
+  Battery, 
   Heart, 
-  Clock, 
-  MapPin, 
-  Users, 
-  Mic,
-  Camera,
-  Calendar,
+  Brain, 
+  AlertTriangle, 
+  TrendingUp, 
   TrendingDown,
-  TrendingUp,
-  Shield,
+  Clock,
   Target,
-  Plus,
-  X
+  Shield,
+  Zap,
+  MessageCircle,
+  CheckCircle,
+  XCircle,
+  Calculator
 } from "lucide-react";
 
-interface QuickLogTemplate {
-  id: string;
-  title: string;
-  description: string;
-  flagType: 'red' | 'green';
-  category: string;
-  icon: any;
-  color: string;
-  commonTriggers?: string[];
-  suggestedResponses?: string[];
-  severity: 'low' | 'medium' | 'high';
+interface SmartInteractionData {
+  // Basic info
+  relationshipId: number;
+  timestamp: string;
+  
+  // Pre-interaction state
+  preEnergyLevel: number; // 1-10
+  preAnxietyLevel: number; // 1-10
+  preSelfWorth: number; // 1-10
+  preMood: string;
+  
+  // Interaction context
+  interactionType: string;
+  durationMinutes: number;
+  locationSetting: string;
+  witnessesPresent: boolean;
+  
+  // Smart baseline comparison
+  communicationStyleUsed: string; // How they communicated with you
+  validationReceived: string[]; // Types of validation you received
+  triggersEncountered: string[]; // Triggers from baseline that occurred
+  
+  // Post-interaction impact
+  postEnergyLevel: number;
+  postAnxietyLevel: number;
+  postSelfWorth: number;
+  physicalSymptoms: string[];
+  emotionalStates: string[];
+  
+  // Recovery
+  recoveryTimeMinutes: number;
+  
+  // Auto-calculated scores
+  communicationAlignmentScore?: number; // 0-100 based on baseline preferences
+  validationScore?: number; // 0-100 based on validation needs
+  triggerImpactScore?: number; // 0-100 based on triggers encountered
+  overallCompatibilityScore?: number; // Combined score
 }
 
 interface SmartInteractionLoggerProps {
   relationshipId: number;
   relationshipName: string;
-  onSubmit: (data: any) => void;
   isOpen: boolean;
   onClose: () => void;
+  onSave: (data: SmartInteractionData) => void;
 }
-
-const quickLogTemplates: QuickLogTemplate[] = [
-  // Red Flags
-  {
-    id: 'interruption',
-    title: 'Interrupted/Talked Over',
-    description: 'They consistently interrupt or dismiss what I\'m saying',
-    flagType: 'red',
-    category: 'Communication',
-    icon: MessageSquare,
-    color: 'from-red-500 to-red-600',
-    severity: 'medium',
-    commonTriggers: ['Important conversation', 'Sharing feelings', 'Setting boundaries'],
-    suggestedResponses: ['Stop, I was still talking', 'Please let me finish', 'I need you to listen']
-  },
-  {
-    id: 'guilt-trip',
-    title: 'Guilt-Tripping',
-    description: 'Made me feel guilty for having boundaries or saying no',
-    flagType: 'red',
-    category: 'Emotional Manipulation',
-    icon: AlertTriangle,
-    color: 'from-orange-500 to-red-600',
-    severity: 'high',
-    commonTriggers: ['Saying no', 'Setting limits', 'Prioritizing myself'],
-    suggestedResponses: ['I won\'t feel guilty for taking care of myself', 'This is what works for me', 'I\'m not responsible for your feelings about my boundaries']
-  },
-  {
-    id: 'ignored-no',
-    title: 'Ignored My "No"',
-    description: 'Pushed after I clearly said no or set a boundary',
-    flagType: 'red',
-    category: 'Boundary Violation',
-    icon: Shield,
-    color: 'from-red-600 to-red-700',
-    severity: 'high',
-    commonTriggers: ['Clear boundary setting', 'Saying no', 'Declining requests'],
-    suggestedResponses: ['I already said no', 'I need you to respect my decision', 'This conversation is over']
-  },
-  {
-    id: 'emotional-outburst',
-    title: 'Emotional Outburst',
-    description: 'Yelled, raged, or had disproportionate emotional reaction',
-    flagType: 'red',
-    category: 'Emotional Regulation',
-    icon: TrendingDown,
-    color: 'from-red-500 to-red-700',
-    severity: 'high',
-    commonTriggers: ['Disagreement', 'Not getting their way', 'Being held accountable'],
-    suggestedResponses: ['I need you to calm down', 'We can talk when you\'re ready to be respectful', 'I\'m leaving until you can regulate yourself']
-  },
-
-  // Green Flags  
-  {
-    id: 'respected-boundary',
-    title: 'Respected My Boundary',
-    description: 'Accepted my limits without pushback or guilt-tripping',
-    flagType: 'green',
-    category: 'Boundary Respect',
-    icon: Shield,
-    color: 'from-green-500 to-green-600',
-    severity: 'low',
-  },
-  {
-    id: 'active-listening',
-    title: 'Really Listened',
-    description: 'Gave me their full attention and responded thoughtfully',
-    flagType: 'green',
-    category: 'Communication',
-    icon: Heart,
-    color: 'from-green-500 to-blue-500',
-    severity: 'low',
-  },
-  {
-    id: 'took-accountability',
-    title: 'Took Accountability',
-    description: 'Owned their mistake without deflecting or making excuses',
-    flagType: 'green',
-    category: 'Accountability',
-    icon: Target,
-    color: 'from-blue-500 to-green-600',
-    severity: 'low',
-  },
-  {
-    id: 'checked-in',
-    title: 'Checked In on Me',
-    description: 'Asked how I\'m doing and genuinely cared about the answer',
-    flagType: 'green',
-    category: 'Emotional Support',
-    icon: Heart,
-    color: 'from-pink-500 to-green-500',
-    severity: 'low',
-  }
-];
 
 export default function SmartInteractionLogger({
   relationshipId,
   relationshipName,
-  onSubmit,
   isOpen,
-  onClose
+  onClose,
+  onSave
 }: SmartInteractionLoggerProps) {
-  const [step, setStep] = useState<'mood-before' | 'template' | 'details' | 'mood-after' | 'recovery'>('mood-before');
-  const [selectedTemplate, setSelectedTemplate] = useState<QuickLogTemplate | null>(null);
-  const [customDetails, setCustomDetails] = useState('');
-  const [emotionalImpact, setEmotionalImpact] = useState<string>('');
-  const [contextualData, setContextualData] = useState({
-    location: '',
-    timeOfDay: '',
-    witnesses: '',
-    trigger: '',
-    duration: '',
-    myEnergyBefore: '',
-    myEnergyAfter: ''
+  const { toast } = useToast();
+  const [currentStep, setCurrentStep] = useState(1);
+  const [data, setData] = useState<SmartInteractionData>({
+    relationshipId,
+    timestamp: new Date().toISOString(),
+    preEnergyLevel: 5,
+    preAnxietyLevel: 5,
+    preSelfWorth: 5,
+    preMood: 'neutral',
+    interactionType: '',
+    durationMinutes: 30,
+    locationSetting: '',
+    witnessesPresent: false,
+    communicationStyleUsed: '',
+    validationReceived: [],
+    triggersEncountered: [],
+    postEnergyLevel: 5,
+    postAnxietyLevel: 5,
+    postSelfWorth: 5,
+    physicalSymptoms: [],
+    emotionalStates: [],
+    recoveryTimeMinutes: 0
   });
-  const [moodData, setMoodData] = useState<any>({});
-  const [isRecording, setIsRecording] = useState(false);
 
-  useEffect(() => {
-    if (!isOpen) {
-      // Reset form when dialog closes
-      setSelectedTemplate(null);
-      setCustomDetails('');
-      setEmotionalImpact('');
-      setContextualData({
-        location: '',
-        timeOfDay: '',
-        witnesses: '',
-        trigger: '',
-        duration: '',
-        myEnergyBefore: '',
-        myEnergyAfter: ''
-      });
-    }
-  }, [isOpen]);
+  // Load user's baseline for automatic comparison
+  const { data: baseline } = useQuery({
+    queryKey: ['/api/baseline'],
+    enabled: isOpen,
+  });
 
-  const handleTemplateSelect = (template: QuickLogTemplate) => {
-    setSelectedTemplate(template);
-  };
+  // Calculate scores based on baseline comparison
+  const calculateScores = () => {
+    if (!baseline) return;
 
-  const handleSubmit = () => {
-    if (!selectedTemplate) return;
-
-    const logData = {
-      relationshipId,
-      templateId: selectedTemplate.id,
-      flagType: selectedTemplate.flagType,
-      category: selectedTemplate.category,
-      title: selectedTemplate.title,
-      description: selectedTemplate.description,
-      customDetails,
-      emotionalImpact,
-      severity: selectedTemplate.severity,
-      contextualData,
-      timestamp: new Date().toISOString(),
-      // Include suggested responses for red flags
-      suggestedResponses: selectedTemplate.suggestedResponses || []
+    const scores = {
+      communicationAlignmentScore: 50, // Default neutral
+      validationScore: 50,
+      triggerImpactScore: 50,
+      overallCompatibilityScore: 50
     };
 
-    onSubmit(logData);
-    onClose();
+    // Communication Alignment Score (0-100)
+    if (data.communicationStyleUsed && baseline.communicationStyleRanking && baseline.communicationStyleRanking.length > 0) {
+      // Find position of used style in user's ranking (0-based index)
+      const stylePosition = baseline.communicationStyleRanking.indexOf(data.communicationStyleUsed);
+      
+      if (stylePosition !== -1) {
+        // Automatically assign weights: 1st = 10, 2nd = 8, 3rd = 6, 4th = 4
+        const weight = 10 - (stylePosition * 2);
+        scores.communicationAlignmentScore = Math.max(0, (weight / 10) * 100);
+      }
+    }
+
+    // Validation Score (0-100)
+    if (data.validationReceived.length > 0 && baseline.validationStyle) {
+      const validationMatch = data.validationReceived.filter(v => 
+        baseline.validationStyle.includes(v)
+      ).length;
+      const totalNeeded = baseline.validationStyle.length;
+      scores.validationScore = Math.round((validationMatch / Math.max(1, totalNeeded)) * 100);
+    }
+
+    // Trigger Impact Score (0-100, lower is worse)
+    if (data.triggersEncountered.length > 0 && baseline.triggers) {
+      const triggerCount = data.triggersEncountered.filter(t => 
+        baseline.triggers.includes(t)
+      ).length;
+      // More triggers = lower score
+      scores.triggerImpactScore = Math.max(0, 100 - (triggerCount * 25));
+    }
+
+    // Overall Compatibility Score (weighted average)
+    scores.overallCompatibilityScore = Math.round(
+      (scores.communicationAlignmentScore * 0.4) +
+      (scores.validationScore * 0.3) +
+      (scores.triggerImpactScore * 0.3)
+    );
+
+    setData(prev => ({ ...prev, ...scores }));
   };
 
-  const getTemplatesByType = (type: 'red' | 'green') => {
-    return quickLogTemplates.filter(t => t.flagType === type);
+  useEffect(() => {
+    calculateScores();
+  }, [data.communicationStyleUsed, data.validationReceived, data.triggersEncountered, baseline]);
+
+  const updateData = (key: keyof SmartInteractionData, value: any) => {
+    setData(prev => ({ ...prev, [key]: value }));
   };
 
-  return (
-    <Dialog open={isOpen} onOpenChange={onClose}>
-      <DialogContent className="max-w-4xl max-h-[90vh] overflow-y-auto">
-        <DialogHeader>
-          <DialogTitle className="flex items-center gap-2">
-            <Zap className="w-5 h-5 text-blue-600" />
-            Log Interaction with {relationshipName}
-          </DialogTitle>
-        </DialogHeader>
+  const handleSave = async () => {
+    try {
+      await apiRequest('/api/interactions', 'POST', data);
+      toast({
+        title: "Interaction Logged",
+        description: `Smart analysis complete. Compatibility score: ${data.overallCompatibilityScore}%`,
+      });
+      onSave(data);
+      onClose();
+    } catch (error) {
+      console.error('Error saving interaction:', error);
+      toast({
+        title: "Error",
+        description: "Failed to save interaction. Please try again.",
+        variant: "destructive",
+      });
+    }
+  };
 
-        <div className="space-y-6">
-          {!selectedTemplate ? (
-            // Template Selection Phase
-            <div className="space-y-6">
-              <div className="text-center">
-                <p className="text-gray-600 mb-4">
-                  Choose the interaction type that best describes what happened:
-                </p>
-              </div>
+  const renderStep = () => {
+    switch (currentStep) {
+      case 1:
+        return (
+          <div className="space-y-6">
+            <div className="text-center mb-6">
+              <Battery className="w-12 h-12 mx-auto mb-3 text-blue-500" />
+              <h3 className="text-xl font-semibold">Before the Interaction</h3>
+              <p className="text-gray-600">How were you feeling before talking with {relationshipName}?</p>
+            </div>
 
-              {/* Red Flags Section */}
+            <div className="space-y-4">
               <div>
-                <h3 className="text-lg font-semibold text-red-700 mb-4 flex items-center gap-2">
-                  <AlertTriangle className="w-5 h-5" />
-                  Concerning Behaviors
-                </h3>
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
-                  {getTemplatesByType('red').map((template) => (
-                    <motion.div
-                      key={template.id}
-                      whileHover={{ scale: 1.02 }}
-                      whileTap={{ scale: 0.98 }}
-                      onClick={() => handleTemplateSelect(template)}
-                      className="cursor-pointer p-4 border-2 border-red-200 rounded-lg hover:border-red-300 bg-red-50 transition-all"
-                    >
-                      <div className="flex items-start gap-3">
-                        <div className={`p-2 rounded-lg bg-gradient-to-br ${template.color}`}>
-                          <template.icon className="w-5 h-5 text-white" />
-                        </div>
-                        <div className="flex-1">
-                          <h4 className="font-medium text-gray-800 mb-1">{template.title}</h4>
-                          <p className="text-sm text-gray-600 mb-2">{template.description}</p>
-                          <div className="flex items-center gap-2">
-                            <Badge variant="outline" className="text-xs">{template.category}</Badge>
-                            <Badge 
-                              variant="outline" 
-                              className={`text-xs ${
-                                template.severity === 'high' ? 'border-red-400 text-red-700' :
-                                template.severity === 'medium' ? 'border-orange-400 text-orange-700' :
-                                'border-yellow-400 text-yellow-700'
-                              }`}
-                            >
-                              {template.severity}
-                            </Badge>
-                          </div>
-                        </div>
-                      </div>
-                    </motion.div>
-                  ))}
-                </div>
+                <Label>Energy Level (1 = exhausted, 10 = energized)</Label>
+                <Slider
+                  value={[data.preEnergyLevel]}
+                  onValueChange={(value) => updateData('preEnergyLevel', value[0])}
+                  max={10}
+                  min={1}
+                  step={1}
+                  className="mt-2"
+                />
+                <div className="text-center text-sm text-gray-600 mt-1">{data.preEnergyLevel}/10</div>
               </div>
 
-              {/* Green Flags Section */}
               <div>
-                <h3 className="text-lg font-semibold text-green-700 mb-4 flex items-center gap-2">
-                  <Heart className="w-5 h-5" />
-                  Positive Behaviors
-                </h3>
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
-                  {getTemplatesByType('green').map((template) => (
-                    <motion.div
-                      key={template.id}
-                      whileHover={{ scale: 1.02 }}
-                      whileTap={{ scale: 0.98 }}
-                      onClick={() => handleTemplateSelect(template)}
-                      className="cursor-pointer p-4 border-2 border-green-200 rounded-lg hover:border-green-300 bg-green-50 transition-all"
-                    >
-                      <div className="flex items-start gap-3">
-                        <div className={`p-2 rounded-lg bg-gradient-to-br ${template.color}`}>
-                          <template.icon className="w-5 h-5 text-white" />
-                        </div>
-                        <div className="flex-1">
-                          <h4 className="font-medium text-gray-800 mb-1">{template.title}</h4>
-                          <p className="text-sm text-gray-600 mb-2">{template.description}</p>
-                          <Badge variant="outline" className="text-xs">{template.category}</Badge>
-                        </div>
-                      </div>
-                    </motion.div>
-                  ))}
-                </div>
+                <Label>Anxiety Level (1 = calm, 10 = very anxious)</Label>
+                <Slider
+                  value={[data.preAnxietyLevel]}
+                  onValueChange={(value) => updateData('preAnxietyLevel', value[0])}
+                  max={10}
+                  min={1}
+                  step={1}
+                  className="mt-2"
+                />
+                <div className="text-center text-sm text-gray-600 mt-1">{data.preAnxietyLevel}/10</div>
               </div>
 
-              {/* Custom Entry Option */}
-              <div className="pt-4 border-t">
-                <Button 
-                  variant="outline" 
-                  className="w-full"
-                  onClick={() => setSelectedTemplate({
-                    id: 'custom',
-                    title: 'Custom Entry',
-                    description: 'Describe the interaction in your own words',
-                    flagType: 'green', // Will be changed in form
-                    category: 'General',
-                    icon: Plus,
-                    color: 'from-gray-500 to-gray-600',
-                    severity: 'medium'
-                  })}
+              <div>
+                <Label>Self-Worth (1 = low, 10 = confident)</Label>
+                <Slider
+                  value={[data.preSelfWorth]}
+                  onValueChange={(value) => updateData('preSelfWorth', value[0])}
+                  max={10}
+                  min={1}
+                  step={1}
+                  className="mt-2"
+                />
+                <div className="text-center text-sm text-gray-600 mt-1">{data.preSelfWorth}/10</div>
+              </div>
+
+              <div>
+                <Label>Overall Mood</Label>
+                <RadioGroup
+                  value={data.preMood}
+                  onValueChange={(value) => updateData('preMood', value)}
+                  className="mt-2"
                 >
-                  <Plus className="w-4 h-4 mr-2" />
-                  Create Custom Entry
-                </Button>
+                  <div className="flex items-center space-x-2">
+                    <RadioGroupItem value="very-negative" id="very-negative" />
+                    <Label htmlFor="very-negative">😰 Very Low</Label>
+                  </div>
+                  <div className="flex items-center space-x-2">
+                    <RadioGroupItem value="negative" id="negative" />
+                    <Label htmlFor="negative">😟 Low</Label>
+                  </div>
+                  <div className="flex items-center space-x-2">
+                    <RadioGroupItem value="neutral" id="neutral" />
+                    <Label htmlFor="neutral">😐 Neutral</Label>
+                  </div>
+                  <div className="flex items-center space-x-2">
+                    <RadioGroupItem value="positive" id="positive" />
+                    <Label htmlFor="positive">😊 Good</Label>
+                  </div>
+                  <div className="flex items-center space-x-2">
+                    <RadioGroupItem value="very-positive" id="very-positive" />
+                    <Label htmlFor="very-positive">😄 Very Good</Label>
+                  </div>
+                </RadioGroup>
               </div>
             </div>
-          ) : (
-            // Detail Entry Phase
-            <div className="space-y-6">
-              {/* Selected Template Header */}
-              <div className="flex items-center justify-between p-4 bg-gray-50 rounded-lg">
-                <div className="flex items-center gap-3">
-                  <div className={`p-2 rounded-lg bg-gradient-to-br ${selectedTemplate.color}`}>
-                    <selectedTemplate.icon className="w-5 h-5 text-white" />
+          </div>
+        );
+
+      case 2:
+        return (
+          <div className="space-y-6">
+            <div className="text-center mb-6">
+              <MessageCircle className="w-12 h-12 mx-auto mb-3 text-green-500" />
+              <h3 className="text-xl font-semibold">Smart Communication Analysis</h3>
+              <p className="text-gray-600">How did they communicate? (Auto-scored against your preferences)</p>
+            </div>
+
+            <div className="space-y-4">
+              <div>
+                <Label>How did {relationshipName} communicate with you?</Label>
+                <RadioGroup
+                  value={data.communicationStyleUsed}
+                  onValueChange={(value) => updateData('communicationStyleUsed', value)}
+                  className="mt-2"
+                >
+                  <div className="flex items-center justify-between p-2 border rounded">
+                    <div className="flex items-center space-x-2">
+                      <RadioGroupItem value="direct" id="comm-direct" />
+                      <Label htmlFor="comm-direct">Direct and straightforward</Label>
+                    </div>
+                    <Badge variant="outline">Weight: 10</Badge>
                   </div>
-                  <div>
-                    <h3 className="font-medium text-gray-800">{selectedTemplate.title}</h3>
-                    <p className="text-sm text-gray-600">{selectedTemplate.description}</p>
+                  <div className="flex items-center justify-between p-2 border rounded">
+                    <div className="flex items-center space-x-2">
+                      <RadioGroupItem value="gentle" id="comm-gentle" />
+                      <Label htmlFor="comm-gentle">Gentle and diplomatic</Label>
+                    </div>
+                    <Badge variant="outline">Weight: 8</Badge>
                   </div>
-                </div>
-                <Button variant="ghost" size="sm" onClick={() => setSelectedTemplate(null)}>
-                  <X className="w-4 h-4" />
-                </Button>
+                  <div className="flex items-center justify-between p-2 border rounded">
+                    <div className="flex items-center space-x-2">
+                      <RadioGroupItem value="collaborative" id="comm-collab" />
+                      <Label htmlFor="comm-collab">Collaborative discussion</Label>
+                    </div>
+                    <Badge variant="outline">Weight: 6</Badge>
+                  </div>
+                  <div className="flex items-center justify-between p-2 border rounded">
+                    <div className="flex items-center space-x-2">
+                      <RadioGroupItem value="assertive" id="comm-assert" />
+                      <Label htmlFor="comm-assert">Assertive but respectful</Label>
+                    </div>
+                    <Badge variant="outline">Weight: 4</Badge>
+                  </div>
+                </RadioGroup>
               </div>
 
-              {/* Custom Details */}
-              <div className="space-y-3">
-                <Label>Additional Details</Label>
-                <Textarea
-                  value={customDetails}
-                  onChange={(e) => setCustomDetails(e.target.value)}
-                  placeholder="Describe what exactly happened, what was said, how it made you feel..."
-                  className="min-h-[100px]"
-                />
-                
-                {/* Voice Input Option */}
-                <div className="flex gap-2">
-                  <Button
-                    variant="outline"
-                    size="sm"
-                    onClick={() => setIsRecording(!isRecording)}
-                    className={isRecording ? 'bg-red-100 border-red-300' : ''}
-                  >
-                    <Mic className={`w-4 h-4 mr-2 ${isRecording ? 'text-red-600' : ''}`} />
-                    {isRecording ? 'Stop Recording' : 'Voice Input'}
-                  </Button>
-                  <Button variant="outline" size="sm">
-                    <Camera className="w-4 h-4 mr-2" />
-                    Add Photo
-                  </Button>
-                </div>
-              </div>
-
-              {/* Emotional Impact */}
-              <div className="space-y-3">
-                <Label>How did this affect you emotionally?</Label>
-                <Select value={emotionalImpact} onValueChange={setEmotionalImpact}>
-                  <SelectTrigger>
-                    <SelectValue placeholder="Select emotional impact" />
-                  </SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value="very-positive">Very Positive - Felt appreciated and supported</SelectItem>
-                    <SelectItem value="positive">Positive - Felt good about the interaction</SelectItem>
-                    <SelectItem value="neutral">Neutral - No strong emotional impact</SelectItem>
-                    <SelectItem value="negative">Negative - Felt frustrated or upset</SelectItem>
-                    <SelectItem value="very-negative">Very Negative - Felt hurt, angry, or drained</SelectItem>
-                  </SelectContent>
-                </Select>
-              </div>
-
-              {/* Contextual Data */}
-              <div className="grid grid-cols-2 gap-4">
-                <div className="space-y-2">
-                  <Label className="text-sm">Energy Before (1-10)</Label>
-                  <Input
-                    type="number"
-                    min="1"
-                    max="10"
-                    value={contextualData.myEnergyBefore}
-                    onChange={(e) => setContextualData(prev => ({ ...prev, myEnergyBefore: e.target.value }))}
-                    placeholder="8"
-                  />
-                </div>
-                <div className="space-y-2">
-                  <Label className="text-sm">Energy After (1-10)</Label>
-                  <Input
-                    type="number"
-                    min="1"
-                    max="10"
-                    value={contextualData.myEnergyAfter}
-                    onChange={(e) => setContextualData(prev => ({ ...prev, myEnergyAfter: e.target.value }))}
-                    placeholder="3"
-                  />
-                </div>
-              </div>
-
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                <div className="space-y-2">
-                  <Label className="text-sm flex items-center gap-2">
-                    <MapPin className="w-4 h-4" />
-                    Location/Setting
-                  </Label>
-                  <Input
-                    value={contextualData.location}
-                    onChange={(e) => setContextualData(prev => ({ ...prev, location: e.target.value }))}
-                    placeholder="Home, work, public place..."
-                  />
-                </div>
-                <div className="space-y-2">
-                  <Label className="text-sm flex items-center gap-2">
-                    <Clock className="w-4 h-4" />
-                    Duration
-                  </Label>
-                  <Input
-                    value={contextualData.duration}
-                    onChange={(e) => setContextualData(prev => ({ ...prev, duration: e.target.value }))}
-                    placeholder="5 minutes, 2 hours..."
-                  />
-                </div>
-              </div>
-
-              <div className="space-y-2">
-                <Label className="text-sm flex items-center gap-2">
-                  <Users className="w-4 h-4" />
-                  Who else was present?
-                </Label>
-                <Input
-                  value={contextualData.witnesses}
-                  onChange={(e) => setContextualData(prev => ({ ...prev, witnesses: e.target.value }))}
-                  placeholder="Just us, their friends, my family..."
-                />
-              </div>
-
-              {/* Suggested Responses for Red Flags */}
-              {selectedTemplate.flagType === 'red' && selectedTemplate.suggestedResponses && (
-                <div className="p-4 bg-blue-50 rounded-lg border border-blue-200">
-                  <h4 className="font-medium text-blue-800 mb-2">💡 Suggested Responses for Next Time:</h4>
-                  <ul className="text-sm text-blue-700 space-y-1">
-                    {selectedTemplate.suggestedResponses.map((response, index) => (
-                      <li key={index} className="flex items-start gap-2">
-                        <span className="text-blue-500">•</span>
-                        <span>"{response}"</span>
-                      </li>
+              {baseline?.validationStyle && (
+                <div>
+                  <Label>What emotional validation did you receive?</Label>
+                  <div className="mt-2 space-y-2">
+                    {baseline.validationStyle.map((validation: string) => (
+                      <div key={validation} className="flex items-center space-x-2">
+                        <Checkbox
+                          id={validation}
+                          checked={data.validationReceived.includes(validation)}
+                          onCheckedChange={(checked) => {
+                            if (checked) {
+                              updateData('validationReceived', [...data.validationReceived, validation]);
+                            } else {
+                              updateData('validationReceived', data.validationReceived.filter(v => v !== validation));
+                            }
+                          }}
+                        />
+                        <Label htmlFor={validation} className="text-sm">{validation}</Label>
+                      </div>
                     ))}
-                  </ul>
+                  </div>
                 </div>
               )}
 
-              {/* Submit Button */}
-              <div className="flex gap-3 pt-4">
-                <Button onClick={handleSubmit} className="flex-1">
-                  Log Interaction
-                </Button>
-                <Button variant="outline" onClick={() => setSelectedTemplate(null)}>
-                  Back
-                </Button>
+              {baseline?.triggers && (
+                <div>
+                  <Label>Which of your triggers occurred? (Auto-counted for impact)</Label>
+                  <div className="mt-2 space-y-2">
+                    {baseline.triggers.map((trigger: string) => (
+                      <div key={trigger} className="flex items-center space-x-2">
+                        <Checkbox
+                          id={trigger}
+                          checked={data.triggersEncountered.includes(trigger)}
+                          onCheckedChange={(checked) => {
+                            if (checked) {
+                              updateData('triggersEncountered', [...data.triggersEncountered, trigger]);
+                            } else {
+                              updateData('triggersEncountered', data.triggersEncountered.filter(t => t !== trigger));
+                            }
+                          }}
+                        />
+                        <Label htmlFor={trigger} className="text-sm text-red-600">{trigger}</Label>
+                      </div>
+                    ))}
+                  </div>
+                  <p className="text-xs text-gray-500 mt-2">Each trigger reduces compatibility score by 25 points</p>
+                </div>
+              )}
+
+              {/* Auto-calculated scores display */}
+              {data.communicationAlignmentScore !== undefined && (
+                <Card className="bg-blue-50">
+                  <CardContent className="p-4">
+                    <div className="flex items-center gap-2 mb-2">
+                      <Calculator className="w-4 h-4 text-blue-600" />
+                      <span className="font-medium text-blue-800">Auto-Calculated Scores</span>
+                    </div>
+                    <div className="space-y-1 text-sm">
+                      <div className="flex justify-between">
+                        <span>Communication Alignment:</span>
+                        <span className="font-medium">{data.communicationAlignmentScore}%</span>
+                      </div>
+                      <div className="flex justify-between">
+                        <span>Validation Score:</span>
+                        <span className="font-medium">{data.validationScore}%</span>
+                      </div>
+                      <div className="flex justify-between">
+                        <span>Trigger Impact:</span>
+                        <span className="font-medium">{data.triggerImpactScore}%</span>
+                      </div>
+                      <hr className="my-1" />
+                      <div className="flex justify-between font-medium">
+                        <span>Overall Compatibility:</span>
+                        <span className={`${data.overallCompatibilityScore! >= 70 ? 'text-green-600' : data.overallCompatibilityScore! >= 50 ? 'text-yellow-600' : 'text-red-600'}`}>
+                          {data.overallCompatibilityScore}%
+                        </span>
+                      </div>
+                    </div>
+                  </CardContent>
+                </Card>
+              )}
+            </div>
+          </div>
+        );
+
+      case 3:
+        return (
+          <div className="space-y-6">
+            <div className="text-center mb-6">
+              <Heart className="w-12 h-12 mx-auto mb-3 text-red-500" />
+              <h3 className="text-xl font-semibold">After the Interaction</h3>
+              <p className="text-gray-600">How did you feel after talking with {relationshipName}?</p>
+            </div>
+
+            <div className="space-y-4">
+              <div>
+                <Label>Energy Level After (1 = exhausted, 10 = energized)</Label>
+                <Slider
+                  value={[data.postEnergyLevel]}
+                  onValueChange={(value) => updateData('postEnergyLevel', value[0])}
+                  max={10}
+                  min={1}
+                  step={1}
+                  className="mt-2"
+                />
+                <div className="flex justify-between text-sm text-gray-600 mt-1">
+                  <span>{data.postEnergyLevel}/10</span>
+                  <span className={`font-medium ${data.postEnergyLevel > data.preEnergyLevel ? 'text-green-600' : data.postEnergyLevel < data.preEnergyLevel ? 'text-red-600' : 'text-gray-600'}`}>
+                    {data.postEnergyLevel > data.preEnergyLevel ? `+${data.postEnergyLevel - data.preEnergyLevel}` : 
+                     data.postEnergyLevel < data.preEnergyLevel ? `${data.postEnergyLevel - data.preEnergyLevel}` : 'No change'}
+                  </span>
+                </div>
+              </div>
+
+              <div>
+                <Label>Recovery Time (minutes to feel normal again)</Label>
+                <Input
+                  type="number"
+                  value={data.recoveryTimeMinutes}
+                  onChange={(e) => updateData('recoveryTimeMinutes', parseInt(e.target.value) || 0)}
+                  className="mt-2"
+                  placeholder="0"
+                />
+              </div>
+
+              <div>
+                <Label>Physical symptoms experienced</Label>
+                <div className="mt-2 grid grid-cols-2 gap-2">
+                  {[
+                    'Headache', 'Tension', 'Fatigue', 'Nausea',
+                    'Heart racing', 'Stomach upset', 'Muscle pain', 'Insomnia'
+                  ].map(symptom => (
+                    <div key={symptom} className="flex items-center space-x-2">
+                      <Checkbox
+                        id={symptom}
+                        checked={data.physicalSymptoms.includes(symptom)}
+                        onCheckedChange={(checked) => {
+                          if (checked) {
+                            updateData('physicalSymptoms', [...data.physicalSymptoms, symptom]);
+                          } else {
+                            updateData('physicalSymptoms', data.physicalSymptoms.filter(s => s !== symptom));
+                          }
+                        }}
+                      />
+                      <Label htmlFor={symptom} className="text-sm">{symptom}</Label>
+                    </div>
+                  ))}
+                </div>
+              </div>
+
+              <div className="text-center p-4 bg-gray-50 rounded-lg">
+                <h4 className="font-medium mb-2">Smart Analysis Summary</h4>
+                <div className="text-sm text-gray-600">
+                  <p>Triggers encountered: <span className="font-medium text-red-600">{data.triggersEncountered.length}</span></p>
+                  <p>Baseline compatibility: <span className={`font-medium ${data.overallCompatibilityScore! >= 70 ? 'text-green-600' : data.overallCompatibilityScore! >= 50 ? 'text-yellow-600' : 'text-red-600'}`}>{data.overallCompatibilityScore}%</span></p>
+                  <p>Energy impact: <span className={`font-medium ${data.postEnergyLevel > data.preEnergyLevel ? 'text-green-600' : data.postEnergyLevel < data.preEnergyLevel ? 'text-red-600' : 'text-gray-600'}`}>
+                    {data.postEnergyLevel > data.preEnergyLevel ? 'Energizing' : 
+                     data.postEnergyLevel < data.preEnergyLevel ? 'Draining' : 'Neutral'}
+                  </span></p>
+                </div>
               </div>
             </div>
-          )}
+          </div>
+        );
+
+      default:
+        return null;
+    }
+  };
+
+  if (!isOpen) return null;
+
+  return (
+    <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
+      <div className="bg-white rounded-lg max-w-2xl w-full max-h-[90vh] overflow-y-auto">
+        <div className="sticky top-0 bg-white border-b p-4">
+          <div className="flex items-center justify-between">
+            <div>
+              <h2 className="text-xl font-semibold">Smart Interaction Logger</h2>
+              <p className="text-gray-600">Step {currentStep} of 3 - {relationshipName}</p>
+            </div>
+            <Button variant="ghost" onClick={onClose} className="text-xl">×</Button>
+          </div>
+
+          <div className="mt-4">
+            <div className="w-full bg-gray-200 rounded-full h-2">
+              <div 
+                className="bg-blue-600 h-2 rounded-full transition-all duration-300"
+                style={{ width: `${(currentStep / 3) * 100}%` }}
+              />
+            </div>
+          </div>
         </div>
-      </DialogContent>
-    </Dialog>
+
+        <div className="p-6">
+          {renderStep()}
+
+          <div className="flex justify-between mt-8">
+            <Button 
+              variant="outline" 
+              onClick={currentStep === 1 ? onClose : () => setCurrentStep(currentStep - 1)}
+              disabled={currentStep === 1}
+            >
+              {currentStep === 1 ? 'Cancel' : 'Back'}
+            </Button>
+            <Button 
+              onClick={currentStep === 3 ? handleSave : () => setCurrentStep(currentStep + 1)}
+            >
+              {currentStep === 3 ? 'Save & Analyze' : 'Next'}
+            </Button>
+          </div>
+        </div>
+      </div>
+    </div>
   );
 }

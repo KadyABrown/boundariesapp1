@@ -10,18 +10,11 @@ import Boundaries from "@/pages/boundaries";
 import Relationships from "@/pages/relationships";
 import RelationshipDetail from "@/pages/relationship-detail";
 import Profile from "@/pages/profile";
-import SettingsPage from "@/pages/settings";
 import Friends from "@/pages/friends";
 import Insights from "@/pages/insights";
-
+import FlagExamples from "@/pages/flag-examples";
 import BaselinePage from "@/pages/baseline";
-import Admin from "@/pages/admin";
-import Feedback from "@/pages/feedback";
-import Pricing from "@/pages/pricing";
-import Demo from "@/pages/demo-clean";
-import FAQ from "@/pages/faq";
-import Subscribe from "@/pages/subscribe";
-import SubscriptionSuccess from "@/pages/subscription-success";
+import AdminPage from "@/pages/admin";
 
 import NotFound from "@/pages/not-found";
 
@@ -30,35 +23,21 @@ function Router() {
 
   return (
     <Switch>
-      {/* Public routes accessible without authentication */}
-      <Route path="/pricing" component={Pricing} />
-      <Route path="/demo" component={Demo} />
-      <Route path="/faq" component={FAQ} />
-      <Route path="/subscribe" component={Subscribe} />
-      <Route path="/checkout" component={Subscribe} />
-      <Route path="/subscription-success" component={SubscriptionSuccess} />
-      
-      {/* Route root based on authentication */}
       {isLoading || !isAuthenticated ? (
-        <>
-          <Route path="/" component={Landing} />
-          <Route path="/dashboard" component={Landing} />
-        </>
+        <Route path="/" component={Landing} />
       ) : (
         <>
           <Route path="/" component={Dashboard} />
-          <Route path="/dashboard" component={Dashboard} />
           <Route path="/boundaries" component={Boundaries} />
           <Route path="/relationships" component={Relationships} />
           <Route path="/relationships/:id" component={RelationshipDetail} />
           <Route path="/baseline" component={BaselinePage} />
           <Route path="/friends" component={Friends} />
           <Route path="/profile" component={Profile} />
-          <Route path="/settings" component={SettingsPage} />
           <Route path="/insights" component={Insights} />
+          <Route path="/flag-examples" component={FlagExamples} />
+          <Route path="/admin" component={AdminPage} />
 
-          <Route path="/feedback" component={Feedback} />
-          <Route path="/admin" component={Admin} />
         </>
       )}
       <Route component={NotFound} />

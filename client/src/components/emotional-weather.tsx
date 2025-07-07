@@ -140,7 +140,6 @@ export default function EmotionalWeather({ relationships, userProfile, showForec
     }
   };
 
-  // Always show weather display - if no data, useEffect will populate with sample data
   if (currentWeather.length === 0) {
     return (
       <Card>
@@ -151,9 +150,7 @@ export default function EmotionalWeather({ relationships, userProfile, showForec
           </CardTitle>
         </CardHeader>
         <CardContent>
-          <div className="flex items-center justify-center p-8">
-            <div className="animate-spin w-8 h-8 border-4 border-primary border-t-transparent rounded-full" />
-          </div>
+          <p className="text-muted-foreground">No relationship data available for weather analysis.</p>
         </CardContent>
       </Card>
     );
