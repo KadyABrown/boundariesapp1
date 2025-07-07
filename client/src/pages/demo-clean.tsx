@@ -83,7 +83,27 @@ export default function Demo() {
               <Button variant="outline" onClick={() => window.location.href = '/'} size="sm">
                 Home
               </Button>
-              <Button onClick={() => window.location.href = '/pricing'} size="sm">
+              <Button 
+                onClick={async () => {
+                  try {
+                    const response = await fetch("/api/create-checkout-session", {
+                      method: "POST",
+                      headers: { "Content-Type": "application/json" },
+                      body: JSON.stringify({
+                        successUrl: `${window.location.origin}/subscription-success`,
+                        cancelUrl: `${window.location.origin}/demo`
+                      })
+                    });
+                    const data = await response.json();
+                    if (data.checkoutUrl) {
+                      window.location.href = data.checkoutUrl;
+                    }
+                  } catch (error) {
+                    console.error("Checkout error:", error);
+                  }
+                }}
+                size="sm"
+              >
                 Upgrade to Full Access
               </Button>
             </div>
@@ -375,7 +395,26 @@ export default function Demo() {
                 Sign up to start tracking your own relationships with privacy controls and detailed analytics.
               </p>
               <div className="flex flex-col sm:flex-row gap-3 justify-center">
-                <Button onClick={() => window.location.href = '/pricing'}>
+                <Button 
+                  onClick={async () => {
+                    try {
+                      const response = await fetch("/api/create-checkout-session", {
+                        method: "POST",
+                        headers: { "Content-Type": "application/json" },
+                        body: JSON.stringify({
+                          successUrl: `${window.location.origin}/subscription-success`,
+                          cancelUrl: `${window.location.origin}/demo`
+                        })
+                      });
+                      const data = await response.json();
+                      if (data.checkoutUrl) {
+                        window.location.href = data.checkoutUrl;
+                      }
+                    } catch (error) {
+                      console.error("Checkout error:", error);
+                    }
+                  }}
+                >
                   Start Your Journey - $12.99/month
                 </Button>
                 <Button variant="outline" onClick={() => window.location.href = '/faq'}>
