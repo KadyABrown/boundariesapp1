@@ -1237,57 +1237,7 @@ export class DatabaseStorage implements IStorage {
     return stats;
   }
 
-  async deleteUser(userId: string) {
-    // Delete user data in correct order due to foreign key constraints
-    try {
-      // First get all relationship IDs for this user to delete related data
-      const userRelationships = await db.select({ id: relationshipProfiles.id })
-        .from(relationshipProfiles)
-        .where(eq(relationshipProfiles.userId, userId));
-      
-      const relationshipIds = userRelationships.map(r => r.id);
 
-      // Delete all data that references relationship profiles first
-      for (const relId of relationshipIds) {
-        await db.delete(comprehensiveInteractions).where(eq(comprehensiveInteractions.relationshipId, relId));
-        await db.delete(behavioralFlags).where(eq(behavioralFlags.relationshipId, relId));
-        await db.delete(emotionalCheckIns).where(eq(emotionalCheckIns.relationshipId, relId));
-      }
-
-      // Delete boundary-related data
-      await db.delete(boundaryEntries).where(eq(boundaryEntries.userId, userId));
-      await db.delete(boundaries).where(eq(boundaries.userId, userId));
-      
-      // Delete goal-related data
-      const userGoals = await db.select({ id: boundaryGoals.id })
-        .from(boundaryGoals)
-        .where(eq(boundaryGoals.userId, userId));
-      
-      for (const goal of userGoals) {
-        await db.delete(goalCheckIns).where(eq(goalCheckIns.goalId, goal.id));
-      }
-      await db.delete(boundaryGoals).where(eq(boundaryGoals.userId, userId));
-
-      // Delete relationship profiles
-      await db.delete(relationshipProfiles).where(eq(relationshipProfiles.userId, userId));
-      
-      // Delete friend-related data
-      await db.delete(friendCircles).where(eq(friendCircles.userId, userId));
-      await db.delete(friendships).where(or(eq(friendships.requesterId, userId), eq(friendships.receiverId, userId)));
-      
-      // Delete personal baselines and other user data
-      await db.delete(personalBaselines).where(eq(personalBaselines.userId, userId));
-      await db.delete(userSavedFlags).where(eq(userSavedFlags.userId, userId));
-      await db.delete(reflectionEntries).where(eq(reflectionEntries.userId, userId));
-      await db.delete(userSettings).where(eq(userSettings.userId, userId));
-      
-      // Finally delete the user
-      await db.delete(users).where(eq(users.id, userId));
-    } catch (error) {
-      console.error('Error deleting user:', error);
-      throw error;
-    }
-  }
 
   // Feedback operations
   async getFeedback(): Promise<Feedback[]> {
