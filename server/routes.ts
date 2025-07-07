@@ -1971,8 +1971,8 @@ export async function registerRoutes(app: Express): Promise<Server> {
         mode: 'subscription',
         success_url: successUrl || `${req.get('origin')}/subscription-success`,
         cancel_url: cancelUrl || `${req.get('origin')}/pricing`,
-        customer_creation: 'always',
         billing_address_collection: 'required',
+        customer_email: req.body.email || undefined,
       });
 
       res.json({ 
