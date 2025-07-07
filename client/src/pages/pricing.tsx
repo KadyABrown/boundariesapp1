@@ -134,7 +134,7 @@ export default function Pricing() {
               
               <div className="mt-4 text-center">
                 <p className="text-sm text-gray-500">
-                  Cancel anytime • No setup fees
+                  Cancel anytime
                 </p>
               </div>
             </CardContent>
