@@ -1690,6 +1690,87 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
+  // Create premium user endpoint
+  app.post('/api/admin/create-premium-user', isAuthenticated, async (req: any, res) => {
+    try {
+      // Check if user is admin
+      const userEmail = req.user?.email || req.user?.claims?.email;
+      if (userEmail !== "hello@roxzmedia.com") {
+        return res.status(403).json({ message: "Access denied" });
+      }
+      
+      const { email, firstName, lastName, phoneNumber } = req.body;
+      
+      if (!email) {
+        return res.status(400).json({ message: "Email is required" });
+      }
+
+      // Check if user already exists
+      const existingUser = await storage.getUserByEmail(email);
+      if (existingUser) {
+        return res.status(400).json({ message: "User with this email already exists" });
+      }
+
+      // Create Stripe customer
+      const customer = await stripe.customers.create({
+        email: email,
+        name: firstName && lastName ? `${firstName} ${lastName}` : firstName || lastName,
+        phone: phoneNumber || undefined,
+      });
+
+      // Create active subscription
+      const subscription = await stripe.subscriptions.create({
+        customer: customer.id,
+        items: [{
+          price: process.env.STRIPE_PRICE_ID,
+        }],
+        collection_method: 'charge_automatically',
+        default_payment_method: 'pm_card_visa', // Test payment method for manual creation
+      });
+
+      // Generate a unique user ID (similar to how Replit does it)
+      const userId = `admin-${Date.now()}-${Math.random().toString(36).substring(2, 15)}`;
+      
+      // Create user in database with premium status
+      const newUser = await storage.createUser({
+        id: userId,
+        email: email,
+        firstName: firstName || null,
+        lastName: lastName || null,
+        phoneNumber: phoneNumber || null,
+        username: email.split('@')[0], // Use email prefix as username
+        stripeCustomerId: customer.id,
+        stripeSubscriptionId: subscription.id,
+        subscriptionStatus: 'active',
+        isPremium: true,
+        userRole: 'user',
+        profileImageUrl: null,
+        createdAt: new Date(),
+        updatedAt: new Date(),
+      });
+
+      res.json({
+        success: true,
+        user: {
+          id: newUser.id,
+          email: newUser.email,
+          firstName: newUser.firstName,
+          lastName: newUser.lastName,
+          phoneNumber: newUser.phoneNumber,
+          subscriptionStatus: 'active',
+          isPremium: true,
+        },
+        message: `Premium user created successfully for ${email}`,
+      });
+    } catch (error: any) {
+      console.error("Error creating premium user:", error);
+      res.status(500).json({ 
+        message: "Failed to create premium user", 
+        error: error.message 
+      });
+    }
+  });
+
   // Feedback routes
   app.get('/api/feedback', isAuthenticated, async (req: any, res) => {
     try {

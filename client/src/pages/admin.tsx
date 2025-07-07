@@ -12,7 +12,8 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
 import { Textarea } from "@/components/ui/textarea";
-import { Users, DollarSign, TrendingUp, Search, Trash2, UserCheck, Activity, Calendar, AlertTriangle, Eye, MessageSquare, Settings, BarChart3, RefreshCw } from "lucide-react";
+import { Label } from "@/components/ui/label";
+import { Users, DollarSign, TrendingUp, Search, Trash2, UserCheck, Activity, Calendar, AlertTriangle, Eye, MessageSquare, Settings, BarChart3, RefreshCw, UserPlus } from "lucide-react";
 
 export default function Admin() {
   const { toast } = useToast();
@@ -22,6 +23,13 @@ export default function Admin() {
   const [selectedUser, setSelectedUser] = useState<any>(null);
   const [userNote, setUserNote] = useState("");
   const [activeTab, setActiveTab] = useState("users");
+  const [showCreateUserDialog, setShowCreateUserDialog] = useState(false);
+  const [newUserData, setNewUserData] = useState({
+    email: "",
+    firstName: "",
+    lastName: "",
+    phoneNumber: ""
+  });
 
   // Check if user is admin
   if (!user || (user as any)?.email !== "hello@roxzmedia.com") {
@@ -47,6 +55,31 @@ export default function Admin() {
   const { data: stats, isLoading: statsLoading } = useQuery({
     queryKey: ["/api/admin/stats"],
     retry: false,
+  });
+
+  // Create premium user mutation
+  const createPremiumUserMutation = useMutation({
+    mutationFn: async (userData: any) => {
+      const response = await apiRequest("POST", "/api/admin/create-premium-user", userData);
+      return response.json();
+    },
+    onSuccess: (data) => {
+      toast({
+        title: "Premium User Created",
+        description: `Successfully created premium account for ${newUserData.email}`,
+      });
+      setShowCreateUserDialog(false);
+      setNewUserData({ email: "", firstName: "", lastName: "", phoneNumber: "" });
+      queryClient.invalidateQueries({ queryKey: ["/api/admin/users"] });
+      queryClient.invalidateQueries({ queryKey: ["/api/admin/stats"] });
+    },
+    onError: (error: any) => {
+      toast({
+        title: "Failed to Create User",
+        description: error.message || "An error occurred while creating the user",
+        variant: "destructive",
+      });
+    },
   });
 
   // Delete user mutation
@@ -226,7 +259,82 @@ export default function Admin() {
           <TabsContent value="users" className="space-y-6">
             <Card>
               <CardHeader>
-                <CardTitle>User Management & Profile Drill-Down</CardTitle>
+                <div className="flex justify-between items-start">
+                  <CardTitle>User Management & Profile Drill-Down</CardTitle>
+                  <Dialog open={showCreateUserDialog} onOpenChange={setShowCreateUserDialog}>
+                    <DialogTrigger asChild>
+                      <Button variant="outline" size="sm" className="flex items-center gap-2">
+                        <UserPlus className="w-4 h-4" />
+                        Create Premium User
+                      </Button>
+                    </DialogTrigger>
+                    <DialogContent className="sm:max-w-[425px]">
+                      <DialogHeader>
+                        <DialogTitle>Create Premium User Account</DialogTitle>
+                        <p className="text-sm text-neutral-600">
+                          Create a new user account with immediate premium access. This bypasses the subscription flow.
+                        </p>
+                      </DialogHeader>
+                      <div className="grid gap-4 py-4">
+                        <div className="grid gap-2">
+                          <Label htmlFor="email">Email *</Label>
+                          <Input
+                            id="email"
+                            type="email"
+                            placeholder="user@example.com"
+                            value={newUserData.email}
+                            onChange={(e) => setNewUserData(prev => ({ ...prev, email: e.target.value }))}
+                            required
+                          />
+                        </div>
+                        <div className="grid grid-cols-2 gap-4">
+                          <div className="grid gap-2">
+                            <Label htmlFor="firstName">First Name</Label>
+                            <Input
+                              id="firstName"
+                              placeholder="John"
+                              value={newUserData.firstName}
+                              onChange={(e) => setNewUserData(prev => ({ ...prev, firstName: e.target.value }))}
+                            />
+                          </div>
+                          <div className="grid gap-2">
+                            <Label htmlFor="lastName">Last Name</Label>
+                            <Input
+                              id="lastName"
+                              placeholder="Doe"
+                              value={newUserData.lastName}
+                              onChange={(e) => setNewUserData(prev => ({ ...prev, lastName: e.target.value }))}
+                            />
+                          </div>
+                        </div>
+                        <div className="grid gap-2">
+                          <Label htmlFor="phoneNumber">Phone Number</Label>
+                          <Input
+                            id="phoneNumber"
+                            placeholder="+1 (555) 123-4567"
+                            value={newUserData.phoneNumber}
+                            onChange={(e) => setNewUserData(prev => ({ ...prev, phoneNumber: e.target.value }))}
+                          />
+                        </div>
+                      </div>
+                      <div className="flex justify-end gap-3">
+                        <Button 
+                          variant="outline" 
+                          onClick={() => setShowCreateUserDialog(false)}
+                          disabled={createPremiumUserMutation.isPending}
+                        >
+                          Cancel
+                        </Button>
+                        <Button 
+                          onClick={() => createPremiumUserMutation.mutate(newUserData)}
+                          disabled={!newUserData.email || createPremiumUserMutation.isPending}
+                        >
+                          {createPremiumUserMutation.isPending ? "Creating..." : "Create Premium User"}
+                        </Button>
+                      </div>
+                    </DialogContent>
+                  </Dialog>
+                </div>
                 <div className="flex flex-col sm:flex-row gap-4">
                   <div className="flex items-center space-x-2 flex-1">
                     <Search className="w-4 h-4 text-neutral-400" />

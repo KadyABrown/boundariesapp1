@@ -57,8 +57,11 @@ import { eq, desc, and, gte, lte, sql, count, or, like } from "drizzle-orm";
 export interface IStorage {
   // User operations (required for Replit Auth)
   getUser(id: string): Promise<User | undefined>;
+  getUserByEmail(email: string): Promise<User | undefined>;
+  createUser(user: Partial<User> & { id: string; email: string }): Promise<User>;
   upsertUser(user: UpsertUser): Promise<User>;
   updateUser(id: string, updates: Partial<User>): Promise<User>;
+  deleteUser(id: string): Promise<void>;
   
   // Boundary operations
   createBoundary(boundary: InsertBoundary): Promise<Boundary>;
@@ -209,6 +212,52 @@ export class DatabaseStorage implements IStorage {
       .where(eq(users.id, id))
       .returning();
     return updated;
+  }
+
+  async getUserByEmail(email: string): Promise<User | undefined> {
+    const [user] = await db.select().from(users).where(eq(users.email, email));
+    return user;
+  }
+
+  async createUser(userData: Partial<User> & { id: string; email: string }): Promise<User> {
+    const [user] = await db
+      .insert(users)
+      .values({
+        ...userData,
+        createdAt: new Date(),
+        updatedAt: new Date(),
+      })
+      .returning();
+    return user;
+  }
+
+  async deleteUser(id: string): Promise<void> {
+    // Delete all related data first to avoid foreign key constraints
+    const userRelationships = await db.select().from(relationshipProfiles).where(eq(relationshipProfiles.userId, id));
+    
+    // Delete comprehensive interactions for each relationship
+    for (const relationship of userRelationships) {
+      await db.delete(comprehensiveInteractions).where(eq(comprehensiveInteractions.relationshipId, relationship.id));
+    }
+    
+    // Delete all other related data
+    await db.delete(behavioralFlags).where(eq(behavioralFlags.userId, id));
+    await db.delete(emotionalCheckIns).where(eq(emotionalCheckIns.userId, id));
+    await db.delete(relationshipProfiles).where(eq(relationshipProfiles.userId, id));
+    await db.delete(userSavedFlags).where(eq(userSavedFlags.userId, id));
+    await db.delete(friendships).where(or(eq(friendships.requesterId, id), eq(friendships.receiverId, id)));
+    await db.delete(friendCircles).where(eq(friendCircles.userId, id));
+    await db.delete(personalBaselines).where(eq(personalBaselines.userId, id));
+    await db.delete(boundaryGoals).where(eq(boundaryGoals.userId, id));
+    await db.delete(goalCheckIns).where(eq(goalCheckIns.userId, id));
+    await db.delete(boundaryEntries).where(eq(boundaryEntries.userId, id));
+    await db.delete(boundaries).where(eq(boundaries.userId, id));
+    await db.delete(reflectionEntries).where(eq(reflectionEntries.userId, id));
+    await db.delete(userSettings).where(eq(userSettings.userId, id));
+    await db.delete(feedback).where(eq(feedback.userId, id));
+    
+    // Finally delete the user
+    await db.delete(users).where(eq(users.id, id));
   }
 
   // Boundary operations
