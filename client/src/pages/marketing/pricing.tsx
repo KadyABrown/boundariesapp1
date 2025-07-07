@@ -3,7 +3,7 @@ import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Sheet, SheetContent, SheetTrigger } from "@/components/ui/sheet";
 import { Shield, Check, Menu } from "lucide-react";
-import ShopifyPaymentButton from "@/components/shopify-payment-button";
+import StripeSubscriptionButton from "@/components/stripe-subscription-button";
 
 export default function PricingPage() {
   const [isOpen, setIsOpen] = useState(false);
@@ -142,11 +142,11 @@ export default function PricingPage() {
               </div>
               
               <div className="mt-12 text-center">
-                <ShopifyPaymentButton 
+                <StripeSubscriptionButton 
                   className="bg-purple-600 hover:bg-purple-700 text-lg px-12 py-4 w-full text-white"
                 >
                   Subscribe Now
-                </ShopifyPaymentButton>
+                </StripeSubscriptionButton>
                 <p className="text-sm text-gray-500 mt-4">
                   Credit card required • Cancel anytime • No hidden fees
                 </p>
