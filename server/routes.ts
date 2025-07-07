@@ -2128,6 +2128,8 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
+
+
   // Check subscription status
   app.get('/api/subscription/status', isAuthenticated, async (req: any, res) => {
     try {

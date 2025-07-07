@@ -13,38 +13,9 @@ export function ShopifyPaymentButton({ className, children, disabled }: ShopifyP
   const [isLoading, setIsLoading] = useState(false);
   const { toast } = useToast();
 
-  const handlePayment = async () => {
-    setIsLoading(true);
-    
-    try {
-      // Create checkout session
-      const response = await fetch('/api/subscription/checkout', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        credentials: 'include',
-      });
-
-      const data = await response.json();
-
-      if (!response.ok) {
-        throw new Error(data.message || 'Failed to create checkout session');
-      }
-
-      // Redirect to Shopify checkout
-      window.location.href = data.checkoutUrl;
-      
-    } catch (error) {
-      console.error('Payment error:', error);
-      toast({
-        title: "Payment Error",
-        description: error instanceof Error ? error.message : "Failed to start checkout process",
-        variant: "destructive",
-      });
-    } finally {
-      setIsLoading(false);
-    }
+  const handlePayment = () => {
+    // Redirect to the marketing pricing page for subscription signup
+    window.location.href = '/pricing';
   };
 
   return (
