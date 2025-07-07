@@ -32,7 +32,7 @@ export function Paywall({ children, feature = "this feature" }: PaywallProps) {
         <p className="text-gray-600">
           {feature} is available with a BoundarySpace subscription.
         </p>
-        <Button className="w-full" onClick={() => window.location.href = '/upgrade'}>
+        <Button className="w-full" onClick={() => window.location.href = '/subscribe'}>
           <Crown className="w-4 h-4 mr-2" />
           Upgrade to Premium
         </Button>

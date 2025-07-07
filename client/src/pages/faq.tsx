@@ -256,7 +256,7 @@ export default function FAQ() {
           <div className="flex flex-col sm:flex-row items-center justify-center space-y-3 sm:space-y-0 sm:space-x-4">
             <Button 
               className="bg-white text-indigo-600 hover:bg-gray-100 px-8 py-3 text-lg w-full sm:w-auto"
-              onClick={() => window.location.href = '/pricing'}
+              onClick={() => window.location.href = '/subscribe'}
             >
               Subscribe Now
             </Button>

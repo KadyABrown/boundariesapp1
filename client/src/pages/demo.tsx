@@ -118,7 +118,7 @@ export default function Demo() {
             </div>
             <div className="flex items-center space-x-4">
               <span className="text-sm text-gray-600">Demo User</span>
-              <Button onClick={() => window.location.href = '/pricing'} size="sm">
+              <Button onClick={() => window.location.href = '/subscribe'} size="sm">
                 Upgrade to Full Access
               </Button>
             </div>
@@ -447,7 +447,7 @@ export default function Demo() {
                     This detailed tracking helps you recognize patterns, triggers, and recovery strategies. 
                     Over time, you'll see which relationships energize you and which ones drain you.
                   </p>
-                  <Button onClick={() => window.location.href = '/pricing'} className="bg-indigo-600 hover:bg-indigo-700">
+                  <Button onClick={() => window.location.href = '/subscribe'} className="bg-indigo-600 hover:bg-indigo-700">
                     Start Tracking Your Patterns
                   </Button>
                 </div>
@@ -470,8 +470,8 @@ export default function Demo() {
                 Start your free trial today to begin understanding your relationship patterns.
               </p>
               <div className="flex flex-col sm:flex-row gap-3 justify-center">
-                <Button size="lg" onClick={() => window.location.href = '/pricing'}>
-                  Start Free Trial
+                <Button size="lg" onClick={() => window.location.href = '/subscribe'}>
+                  Start Your Journey - $12.99/month
                 </Button>
                 <Button variant="outline" size="lg" onClick={() => window.location.href = '/'}>
                   Learn More
