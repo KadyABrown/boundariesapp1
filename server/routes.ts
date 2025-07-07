@@ -1793,14 +1793,14 @@ export async function registerRoutes(app: Express): Promise<Server> {
         phone: phoneNumber || undefined,
       });
 
-      // Create active subscription
+      // Create active subscription without payment method (manual admin creation)
       const subscription = await stripe.subscriptions.create({
         customer: customer.id,
         items: [{
           price: process.env.STRIPE_PRICE_ID,
         }],
         collection_method: 'charge_automatically',
-        default_payment_method: 'pm_card_visa', // Test payment method for manual creation
+        // Remove default_payment_method for live mode - admin grants access manually
       });
 
       // Generate a unique user ID (similar to how Replit does it)
@@ -1817,11 +1817,8 @@ export async function registerRoutes(app: Express): Promise<Server> {
         stripeCustomerId: customer.id,
         stripeSubscriptionId: subscription.id,
         subscriptionStatus: 'active',
-        isPremium: true,
         userRole: 'user',
         profileImageUrl: null,
-        createdAt: new Date(),
-        updatedAt: new Date(),
       });
 
       res.json({
@@ -1833,7 +1830,6 @@ export async function registerRoutes(app: Express): Promise<Server> {
           lastName: newUser.lastName,
           phoneNumber: newUser.phoneNumber,
           subscriptionStatus: 'active',
-          isPremium: true,
         },
         message: `Premium user created successfully for ${email}`,
       });
