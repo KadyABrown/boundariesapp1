@@ -11,6 +11,7 @@ import BoundaryBuddy from "@/components/boundary-buddy";
 import DailyChallenges from "@/components/daily-challenges";
 import BoundaryQuotes from "@/components/boundary-quotes";
 import StreakRecovery from "@/components/streak-recovery";
+import { DashboardPaywall } from "@/components/paywall";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { CheckCircle, AlertTriangle, Smile, Plus, BookOpen, TrendingUp, Heart, Users } from "lucide-react";
@@ -62,7 +63,7 @@ function RelationshipSummaryCard({ relationship }: { relationship: any }) {
   );
 }
 
-export default function Dashboard() {
+function DashboardContent() {
   const { toast } = useToast();
   const { isAuthenticated, isLoading } = useAuth();
 
@@ -328,5 +329,13 @@ export default function Dashboard() {
         <BoundaryBuddy context="general" position="floating" />
       </div>
     </div>
+  );
+}
+
+export default function Dashboard() {
+  return (
+    <DashboardPaywall>
+      <DashboardContent />
+    </DashboardPaywall>
   );
 }
