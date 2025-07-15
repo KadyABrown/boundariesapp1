@@ -1470,15 +1470,11 @@ export async function registerRoutes(app: Express): Promise<Server> {
         baseline = await storage.updatePersonalBaseline(userId, baselineData);
       } else {
         baseline = await storage.createPersonalBaseline(baselineData);
-        
-        // Auto-generate boundaries from baseline for new users
-        await storage.generateBoundariesFromBaseline(userId, baselineData);
       }
       
       res.json(baseline);
     } catch (error) {
       if (error instanceof z.ZodError) {
-        console.error("Baseline validation error:", error.errors);
         res.status(400).json({ message: "Invalid baseline data", errors: error.errors });
       } else {
         console.error("Error saving baseline:", error);

@@ -135,26 +135,6 @@ export default function AdminPage() {
     }
   };
 
-  const getAccountTypeBadge = (userId: string, email: string) => {
-    // Check if user is admin (same logic as isAdmin check)
-    const isUserAdmin = email === "hello@roxzmedia.com" || userId === "44415082";
-    
-    if (isUserAdmin) {
-      return (
-        <Badge className="bg-purple-100 text-purple-800 border-purple-200 flex items-center gap-1">
-          <Crown className="w-3 h-3" />
-          Admin
-        </Badge>
-      );
-    }
-    
-    return (
-      <Badge variant="outline" className="bg-gray-50 text-gray-600">
-        User
-      </Badge>
-    );
-  };
-
   const exportToCSV = (data: any[], filename: string) => {
     if (!data.length) return;
     
@@ -459,7 +439,6 @@ export default function AdminPage() {
                   <tr className="border-b">
                     <th className="text-left py-3 px-4">User</th>
                     <th className="text-left py-3 px-4">Email</th>
-                    <th className="text-left py-3 px-4">Account Type</th>
                     <th className="text-left py-3 px-4">Status</th>
                     <th className="text-left py-3 px-4">Joined</th>
                     <th className="text-left py-3 px-4">Relationships</th>
@@ -495,9 +474,6 @@ export default function AdminPage() {
                           <Mail className="w-4 h-4 text-gray-400" />
                           <span className="text-sm">{user.email || 'No email'}</span>
                         </div>
-                      </td>
-                      <td className="py-3 px-4">
-                        {getAccountTypeBadge(user.id, user.email)}
                       </td>
                       <td className="py-3 px-4">
                         {getStatusBadge(user.subscriptionStatus || 'free')}

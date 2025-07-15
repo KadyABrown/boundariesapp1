@@ -24,29 +24,18 @@ export default function PersonalBaselineAssessment({
 }: PersonalBaselineAssessmentProps) {
   const { toast } = useToast();
   const [currentStep, setCurrentStep] = useState(1);
-  
-  // Initialize communication styles in default order
-  const [communicationStyles, setCommunicationStyles] = useState([
-    { value: "direct", label: "Direct and straightforward" },
-    { value: "gentle", label: "Gentle and diplomatic" },
-    { value: "collaborative", label: "Collaborative and discussion-focused" },
-    { value: "assertive", label: "Assertive but respectful" }
-  ]);
   const [baselineData, setBaselineData] = useState({
     // Communication Preferences
     communicationStyle: existingBaseline?.communicationStyle || '',
-    communicationStyleRanking: existingBaseline?.communicationStyleRanking || [],
-    conflictResolution: existingBaseline?.conflictResolution || '',
+    conflictResolutionStyle: existingBaseline?.conflictResolutionStyle || '',
     listeningNeeds: existingBaseline?.listeningNeeds || [],
     feedbackPreference: existingBaseline?.feedbackPreference || '',
     
     // Emotional Needs
-    emotionalSupport: existingBaseline?.emotionalSupport || '',
-    emotionalValidationNeeds: existingBaseline?.emotionalValidationNeeds || '',
-    validationStyle: existingBaseline?.validationStyle || [],
+    emotionalSupportLevel: existingBaseline?.emotionalSupportLevel || '',
     affectionStyle: existingBaseline?.affectionStyle || [],
     validationNeeds: existingBaseline?.validationNeeds || '',
-    emotionalProcessingTime: existingBaseline?.emotionalProcessingTime || 0,
+    processingTimeNeeds: existingBaseline?.processingTimeNeeds || '',
     triggers: existingBaseline?.triggers || [],
     comfortingSources: existingBaseline?.comfortingSources || [],
     
@@ -86,7 +75,7 @@ export default function PersonalBaselineAssessment({
 
   const handleSubmit = async () => {
     try {
-      const result = await apiRequest('/api/baseline', 'POST', baselineData);
+      const result = await apiRequest('/api/personal-baseline', 'POST', baselineData);
       toast({
         title: "Baseline Assessment Complete",
         description: "Your personal baseline has been saved and will be used to analyze relationship patterns.",
@@ -133,64 +122,38 @@ export default function PersonalBaselineAssessment({
               <p className="text-gray-600">How do you prefer to communicate and handle conflicts?</p>
             </div>
 
-            <div className="space-y-6">
-              {/* Communication Style Ranking */}
+            <div className="space-y-4">
               <div>
-                <Label className="text-base font-medium">Rank your communication preferences from most to least preferred:</Label>
-                <p className="text-sm text-gray-600 mt-1 mb-3">Drag to reorder. The system will automatically assign weights based on your ranking.</p>
-                <div className="mt-3 space-y-2">
-                  {communicationStyles.map((style, index) => (
-                    <div 
-                      key={style.value} 
-                      className="flex items-center gap-3 p-3 border rounded-lg bg-white cursor-move hover:bg-gray-50 transition-colors"
-                      draggable
-                      onDragStart={(e) => {
-                        e.dataTransfer.setData('text/plain', index.toString());
-                        e.currentTarget.classList.add('opacity-50');
-                      }}
-                      onDragEnd={(e) => {
-                        e.currentTarget.classList.remove('opacity-50');
-                      }}
-                      onDragOver={(e) => {
-                        e.preventDefault();
-                      }}
-                      onDrop={(e) => {
-                        e.preventDefault();
-                        const draggedIndex = parseInt(e.dataTransfer.getData('text/plain'));
-                        const targetIndex = index;
-                        
-                        if (draggedIndex !== targetIndex) {
-                          const newStyles = [...communicationStyles];
-                          const draggedItem = newStyles[draggedIndex];
-                          newStyles.splice(draggedIndex, 1);
-                          newStyles.splice(targetIndex, 0, draggedItem);
-                          setCommunicationStyles(newStyles);
-                          
-                          // Update baselineData with new ranking
-                          const ranking = newStyles.map(s => s.value);
-                          updateData('communicationStyleRanking', ranking);
-                        }
-                      }}
-                    >
-                      <div className="flex items-center gap-2">
-                        <div className="w-6 h-6 bg-blue-100 rounded-full flex items-center justify-center text-sm font-medium text-blue-600">
-                          {index + 1}
-                        </div>
-                        <span className="text-xs text-gray-500">≡</span>
-                      </div>
-                      <Label className="flex-1 cursor-move">{style.label}</Label>
-
-                    </div>
-                  ))}
-                </div>
-                <p className="text-sm text-gray-600 mt-2">This ranking helps the system automatically score how well others communicate with your preferences.</p>
+                <Label className="text-base font-medium">My communication style is:</Label>
+                <RadioGroup 
+                  value={baselineData.communicationStyle} 
+                  onValueChange={(value) => updateData('communicationStyle', value)}
+                  className="mt-2"
+                >
+                  <div className="flex items-center space-x-2">
+                    <RadioGroupItem value="direct" id="direct" />
+                    <Label htmlFor="direct">Direct and straightforward</Label>
+                  </div>
+                  <div className="flex items-center space-x-2">
+                    <RadioGroupItem value="gentle" id="gentle" />
+                    <Label htmlFor="gentle">Gentle and diplomatic</Label>
+                  </div>
+                  <div className="flex items-center space-x-2">
+                    <RadioGroupItem value="collaborative" id="collaborative" />
+                    <Label htmlFor="collaborative">Collaborative and discussion-focused</Label>
+                  </div>
+                  <div className="flex items-center space-x-2">
+                    <RadioGroupItem value="assertive" id="assertive" />
+                    <Label htmlFor="assertive">Assertive but respectful</Label>
+                  </div>
+                </RadioGroup>
               </div>
 
               <div>
                 <Label className="text-base font-medium">When there's conflict, I prefer to:</Label>
                 <RadioGroup 
-                  value={baselineData.conflictResolution} 
-                  onValueChange={(value) => updateData('conflictResolution', value)}
+                  value={baselineData.conflictResolutionStyle} 
+                  onValueChange={(value) => updateData('conflictResolutionStyle', value)}
                   className="mt-2"
                 >
                   <div className="flex items-center space-x-2">
@@ -228,8 +191,8 @@ export default function PersonalBaselineAssessment({
               <div>
                 <Label className="text-base font-medium">I need this level of emotional support:</Label>
                 <RadioGroup 
-                  value={baselineData.emotionalSupport} 
-                  onValueChange={(value) => updateData('emotionalSupport', value)}
+                  value={baselineData.emotionalSupportLevel} 
+                  onValueChange={(value) => updateData('emotionalSupportLevel', value)}
                   className="mt-2"
                 >
                   <div className="flex items-center space-x-2">
@@ -251,71 +214,12 @@ export default function PersonalBaselineAssessment({
                 </RadioGroup>
               </div>
 
-              {/* Emotional Validation Needs */}
-              <div>
-                <Label className="text-base font-medium">I need emotional validation through:</Label>
-                <div className="mt-2 space-y-2">
-                  {[
-                    "Verbal acknowledgment of my feelings",
-                    "Active listening without trying to fix",
-                    "Being asked how I'm feeling",
-                    "Having my perspective acknowledged",
-                    "Receiving empathy when I'm struggling",
-                    "Being told my feelings are valid",
-                    "Having someone sit with me in difficult emotions",
-                    "Being reassured that I'm understood"
-                  ].map((validation) => (
-                    <div key={validation} className="flex items-center space-x-2">
-                      <Checkbox
-                        id={validation}
-                        checked={baselineData.validationStyle.includes(validation)}
-                        onCheckedChange={(checked) => {
-                          if (checked) {
-                            addToArray('validationStyle', validation);
-                          } else {
-                            const index = baselineData.validationStyle.indexOf(validation);
-                            if (index > -1) removeFromArray('validationStyle', index);
-                          }
-                        }}
-                      />
-                      <Label htmlFor={validation} className="text-sm">{validation}</Label>
-                    </div>
-                  ))}
-                </div>
-              </div>
-
-              <div>
-                <Label className="text-base font-medium">When I need emotional validation, I prefer:</Label>
-                <RadioGroup 
-                  value={baselineData.emotionalValidationNeeds} 
-                  onValueChange={(value) => updateData('emotionalValidationNeeds', value)}
-                  className="mt-2"
-                >
-                  <div className="flex items-center space-x-2">
-                    <RadioGroupItem value="immediate" id="immediate-validation" />
-                    <Label htmlFor="immediate-validation">Immediate acknowledgment and support</Label>
-                  </div>
-                  <div className="flex items-center space-x-2">
-                    <RadioGroupItem value="gentle" id="gentle-validation" />
-                    <Label htmlFor="gentle-validation">Gentle, patient validation at my pace</Label>
-                  </div>
-                  <div className="flex items-center space-x-2">
-                    <RadioGroupItem value="space-first" id="space-first-validation" />
-                    <Label htmlFor="space-first-validation">Space to process, then validation when I ask</Label>
-                  </div>
-                  <div className="flex items-center space-x-2">
-                    <RadioGroupItem value="minimal" id="minimal-validation" />
-                    <Label htmlFor="minimal-validation">Minimal validation - I process internally</Label>
-                  </div>
-                </RadioGroup>
-              </div>
-
               <div>
                 <Label className="text-base font-medium">My emotional triggers include:</Label>
                 <div className="mt-2 grid grid-cols-2 gap-2">
                   {[
                     'Being dismissed or ignored',
-                    'Raised voices or yelling', 
+                    'Raised voices or yelling',
                     'Being interrupted',
                     'Feeling criticized',
                     'Being rushed or pressured',
@@ -325,11 +229,7 @@ export default function PersonalBaselineAssessment({
                     'Feeling misunderstood',
                     'Being lied to',
                     'Having decisions made for me',
-                    'Being compared to others',
-                    'Passive-aggressive comments',
-                    'Dismissive tone or language',
-                    'Silent treatment',
-                    'Sarcasm during serious conversations'
+                    'Being compared to others'
                   ].map(trigger => (
                     <div key={trigger} className="flex items-center space-x-2">
                       <Checkbox
@@ -525,7 +425,7 @@ export default function PersonalBaselineAssessment({
                 </CardHeader>
                 <CardContent>
                   <p><strong>Style:</strong> {baselineData.communicationStyle}</p>
-                  <p><strong>Conflict Resolution:</strong> {baselineData.conflictResolution}</p>
+                  <p><strong>Conflict Resolution:</strong> {baselineData.conflictResolutionStyle}</p>
                 </CardContent>
               </Card>
 
@@ -534,7 +434,7 @@ export default function PersonalBaselineAssessment({
                   <CardTitle className="text-lg">Emotional Needs</CardTitle>
                 </CardHeader>
                 <CardContent>
-                  <p><strong>Support Level:</strong> {baselineData.emotionalSupport}</p>
+                  <p><strong>Support Level:</strong> {baselineData.emotionalSupportLevel}</p>
                   {baselineData.triggers.length > 0 && (
                     <div>
                       <strong>Triggers:</strong> {baselineData.triggers.join(', ')}

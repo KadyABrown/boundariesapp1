@@ -1,7 +1,7 @@
-# BoundaryCore Mobile App - Complete Design Specification
+# BoundarySpace Mobile App - Complete Design Specification
 
 ## App Overview
-BoundaryCore is a relationship health tracking app that automatically analyzes how well relationships align with a user's personal baseline values and needs. The app transforms subjective relationship feelings into objective data by comparing real interaction impacts against established personal needs and values.
+BoundarySpace is a relationship health tracking app that automatically analyzes how well relationships align with a user's personal baseline values and needs. The app transforms subjective relationship feelings into objective data by comparing real interaction impacts against established personal needs and values.
 
 ## Core Function Flow
 1. **Personal Baseline Assessment** → User establishes communication style, emotional needs, boundary requirements, triggers, and core values

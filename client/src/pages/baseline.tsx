@@ -171,9 +171,9 @@ export default function BaselinePage() {
 
         {/* Baseline Assessment */}
         <PersonalBaselineAssessment
-          existingBaseline={userBaseline || undefined}
-          onComplete={handleSaveBaseline}
-          onCancel={() => window.location.href = '/dashboard'}
+          baseline={userBaseline || undefined}
+          onSaveBaseline={handleSaveBaseline}
+          relationshipData={Array.isArray(relationshipStats) ? relationshipStats : (Array.isArray(relationships) ? relationships : [])}
         />
       </div>
     </div>

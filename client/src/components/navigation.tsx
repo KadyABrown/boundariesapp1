@@ -20,6 +20,7 @@ export default function Navigation() {
     { name: "Relationships", href: "/relationships", icon: Heart, current: location === "/relationships" || location.startsWith("/relationships/") },
     { name: "My Baseline", href: "/baseline", icon: Brain, current: location === "/baseline" },
     { name: "Friends", href: "/friends", icon: Users, current: location === "/friends" },
+    { name: "Flag Examples", href: "/flag-examples", icon: Flag, current: location === "/flag-examples" },
     { name: "Insights", href: "/insights", icon: BarChart3, current: location === "/insights" },
     ...(isAdmin ? [{ name: "Admin", href: "/admin", icon: Crown, current: location === "/admin" }] : []),
   ];

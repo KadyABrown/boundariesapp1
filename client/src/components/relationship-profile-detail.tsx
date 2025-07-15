@@ -199,10 +199,11 @@ export default function RelationshipProfileDetail({ relationship, onClose }: Rel
           <div className="flex-1 overflow-hidden">
             <Tabs defaultValue="overview" className="h-full flex flex-col">
               <div className="px-6 pt-4">
-                <TabsList className="grid w-full grid-cols-4">
+                <TabsList className="grid w-full grid-cols-5">
                   <TabsTrigger value="overview">Overview</TabsTrigger>
                   <TabsTrigger value="interactions">Interactions</TabsTrigger>
                   <TabsTrigger value="log-new">Log New</TabsTrigger>
+                  <TabsTrigger value="flags">Flags & Check-ins</TabsTrigger>
                   <TabsTrigger value="analysis">Analysis</TabsTrigger>
                 </TabsList>
               </div>
@@ -427,7 +428,182 @@ export default function RelationshipProfileDetail({ relationship, onClose }: Rel
                   </div>
                 </TabsContent>
 
-
+                <TabsContent value="flags" className="p-6 space-y-6">
+                  <Card>
+                    <CardHeader>
+                      <CardTitle className="flex items-center gap-2">
+                        <Target className="w-5 h-5 text-blue-500" />
+                        Baseline Compatibility Health Score
+                      </CardTitle>
+                    </CardHeader>
+                    <CardContent>
+                      {(() => {
+                        // Get CIT interactions for this relationship
+                        const { data: interactions } = useQuery({
+                          queryKey: ['/api/interactions', relationship.id],
+                          refetchOnWindowFocus: false,
+                        });
+                        
+                        if (!interactions || interactions.length === 0) {
+                          return (
+                            <div className="text-center py-8">
+                              <Brain className="w-12 h-12 mx-auto mb-4 text-gray-400" />
+                              <h3 className="text-lg font-semibold mb-2">No Interaction Data Yet</h3>
+                              <p className="text-gray-600 mb-4">
+                                Use the Comprehensive Interaction Tracker to start analyzing compatibility with your baseline values.
+                              </p>
+                              <Button onClick={() => setShowCIT(true)} className="mt-4">
+                                Start First CIT Session
+                              </Button>
+                            </div>
+                          );
+                        }
+                        
+                        // Calculate health metrics from CIT data
+                        const totalInteractions = interactions.length;
+                        const communicationRespected = interactions.filter((i: any) => i.communicationStyleRespected).length;
+                        const boundariesRespected = interactions.filter((i: any) => i.boundariesRespected).length;
+                        const triggersAvoided = interactions.filter((i: any) => i.triggersAvoided).length;
+                        const valuesAligned = interactions.filter((i: any) => i.coreValuesAligned).length;
+                        const dealBreakers = interactions.filter((i: any) => i.dealBreakersPresent).length;
+                        
+                        const avgEnergyChange = interactions.reduce((sum: number, i: any) => 
+                          sum + ((i.energyAfter || 5) - (i.energyBefore || 5)), 0) / totalInteractions;
+                        const avgSelfWorthChange = interactions.reduce((sum: number, i: any) => 
+                          sum + ((i.selfWorthAfter || 5) - (i.selfWorthBefore || 5)), 0) / totalInteractions;
+                        
+                        // Calculate overall health score based on baseline compatibility
+                        const healthScore = Math.round(
+                          ((communicationRespected / totalInteractions) * 20) +
+                          ((boundariesRespected / totalInteractions) * 25) +
+                          ((triggersAvoided / totalInteractions) * 20) +
+                          ((valuesAligned / totalInteractions) * 15) +
+                          (Math.max(0, (5 + avgEnergyChange) / 10) * 10) +
+                          (Math.max(0, (5 + avgSelfWorthChange) / 10) * 10) -
+                          ((dealBreakers / totalInteractions) * 25)
+                        );
+                        
+                        const finalScore = Math.max(0, Math.min(100, healthScore));
+                        
+                        return (
+                          <div className="space-y-6">
+                            <div className="text-center">
+                              <div className="text-4xl font-bold mb-2 text-blue-600">
+                                {finalScore}%
+                              </div>
+                              <Badge 
+                                variant={finalScore >= 80 ? 'default' : finalScore >= 60 ? 'secondary' : 'destructive'}
+                                className="text-sm"
+                              >
+                                {finalScore >= 80 ? 'Highly Compatible with Your Baseline' : 
+                                 finalScore >= 60 ? 'Moderately Compatible' : 
+                                 finalScore >= 40 ? 'Some Compatibility Issues' : 'Low Baseline Compatibility'}
+                              </Badge>
+                              <p className="text-sm text-gray-600 mt-2">
+                                Based on {totalInteractions} interaction{totalInteractions !== 1 ? 's' : ''}
+                              </p>
+                            </div>
+                            
+                            <div className="grid grid-cols-2 gap-4 text-sm">
+                              <div className="space-y-3">
+                                <div className="flex justify-between items-center">
+                                  <span className="text-gray-600">Communication Respected:</span>
+                                  <div className="flex items-center gap-2">
+                                    <div className="w-16 bg-gray-200 rounded-full h-2">
+                                      <div 
+                                        className="bg-blue-500 h-2 rounded-full"
+                                        style={{ width: `${(communicationRespected / totalInteractions) * 100}%` }}
+                                      />
+                                    </div>
+                                    <span className="font-medium w-8">{Math.round((communicationRespected / totalInteractions) * 100)}%</span>
+                                  </div>
+                                </div>
+                                <div className="flex justify-between items-center">
+                                  <span className="text-gray-600">Boundaries Respected:</span>
+                                  <div className="flex items-center gap-2">
+                                    <div className="w-16 bg-gray-200 rounded-full h-2">
+                                      <div 
+                                        className="bg-green-500 h-2 rounded-full"
+                                        style={{ width: `${(boundariesRespected / totalInteractions) * 100}%` }}
+                                      />
+                                    </div>
+                                    <span className="font-medium w-8">{Math.round((boundariesRespected / totalInteractions) * 100)}%</span>
+                                  </div>
+                                </div>
+                                <div className="flex justify-between items-center">
+                                  <span className="text-gray-600">Triggers Avoided:</span>
+                                  <div className="flex items-center gap-2">
+                                    <div className="w-16 bg-gray-200 rounded-full h-2">
+                                      <div 
+                                        className="bg-yellow-500 h-2 rounded-full"
+                                        style={{ width: `${(triggersAvoided / totalInteractions) * 100}%` }}
+                                      />
+                                    </div>
+                                    <span className="font-medium w-8">{Math.round((triggersAvoided / totalInteractions) * 100)}%</span>
+                                  </div>
+                                </div>
+                              </div>
+                              <div className="space-y-3">
+                                <div className="flex justify-between items-center">
+                                  <span className="text-gray-600">Values Aligned:</span>
+                                  <div className="flex items-center gap-2">
+                                    <div className="w-16 bg-gray-200 rounded-full h-2">
+                                      <div 
+                                        className="bg-purple-500 h-2 rounded-full"
+                                        style={{ width: `${(valuesAligned / totalInteractions) * 100}%` }}
+                                      />
+                                    </div>
+                                    <span className="font-medium w-8">{Math.round((valuesAligned / totalInteractions) * 100)}%</span>
+                                  </div>
+                                </div>
+                                <div className="flex justify-between items-center">
+                                  <span className="text-gray-600">Avg Energy Impact:</span>
+                                  <span className={`font-medium ${avgEnergyChange >= 0 ? 'text-green-600' : 'text-red-600'}`}>
+                                    {avgEnergyChange >= 0 ? '+' : ''}{avgEnergyChange.toFixed(1)}
+                                  </span>
+                                </div>
+                                <div className="flex justify-between items-center">
+                                  <span className="text-gray-600">Avg Self-Worth Impact:</span>
+                                  <span className={`font-medium ${avgSelfWorthChange >= 0 ? 'text-green-600' : 'text-red-600'}`}>
+                                    {avgSelfWorthChange >= 0 ? '+' : ''}{avgSelfWorthChange.toFixed(1)}
+                                  </span>
+                                </div>
+                              </div>
+                            </div>
+                            
+                            {dealBreakers > 0 && (
+                              <div className="bg-red-50 border border-red-200 rounded-lg p-4">
+                                <div className="flex items-center gap-2">
+                                  <AlertTriangle className="w-5 h-5 text-red-600" />
+                                  <span className="text-sm font-medium text-red-800">
+                                    Deal-breakers present in {dealBreakers} of {totalInteractions} interactions
+                                  </span>
+                                </div>
+                                <p className="text-xs text-red-700 mt-1">
+                                  This indicates serious compatibility issues that need immediate attention.
+                                </p>
+                              </div>
+                            )}
+                            
+                            {finalScore < 60 && (
+                              <div className="bg-yellow-50 border border-yellow-200 rounded-lg p-4">
+                                <div className="flex items-center gap-2">
+                                  <AlertTriangle className="w-5 h-5 text-yellow-600" />
+                                  <span className="text-sm font-medium text-yellow-800">
+                                    Low baseline compatibility detected
+                                  </span>
+                                </div>
+                                <p className="text-xs text-yellow-700 mt-1">
+                                  Consider discussing your core needs and boundaries with {relationship.name}.
+                                </p>
+                              </div>
+                            )}
+                          </div>
+                        );
+                      })()}
+                    </CardContent>
+                  </Card>
+                </TabsContent>
 
                 <TabsContent value="analysis" className="p-6">
                   <div className="space-y-6">
