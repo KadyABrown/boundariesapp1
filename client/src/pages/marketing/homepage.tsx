@@ -116,7 +116,7 @@ export default function MarketingHomepage() {
             <Button 
               size="lg" 
               className="bg-purple-600 hover:bg-purple-700 text-lg px-8 py-3"
-              onClick={() => window.location.href = "/api/login"}
+              onClick={() => window.location.href = "/demo"}
             >
               Try BoundaryCore <ArrowRight className="ml-2 h-5 w-5" />
             </Button>
@@ -124,7 +124,7 @@ export default function MarketingHomepage() {
               size="lg" 
               variant="outline" 
               className="text-lg px-8 py-3"
-              onClick={() => document.getElementById('demo')?.scrollIntoView({ behavior: 'smooth' })}
+              onClick={() => window.location.href = "/demo"}
             >
               Watch Demo
             </Button>
@@ -236,7 +236,7 @@ export default function MarketingHomepage() {
           <Button 
             size="lg" 
             className="bg-purple-600 hover:bg-purple-700 text-lg px-12 py-4"
-            onClick={() => window.location.href = "/api/login"}
+            onClick={() => window.location.href = "/demo"}
           >
             Try Demo
           </Button>
