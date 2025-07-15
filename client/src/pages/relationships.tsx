@@ -18,7 +18,6 @@ import { Collapsible, CollapsibleContent, CollapsibleTrigger } from "@/component
 import { Badge } from "@/components/ui/badge";
 import { Plus, Edit2, Trash2, Heart, User, Calendar, MapPin, Flag, Brain, Target, Clock, TrendingUp, BarChart3 } from "lucide-react";
 import { Link } from "wouter";
-import { Premium } from "@/components/paywall";
 import ComprehensiveInteractionTracker from "@/components/comprehensive-interaction-tracker";
 import ComprehensiveInteractionsView from "@/components/comprehensive-interactions-view";
 import RelationshipProfileDetail from "@/components/relationship-profile-detail";
@@ -706,15 +705,14 @@ export default function Relationships() {
 
         {/* Relationship Quality Summary */}
         {profiles && Array.isArray(profiles) && profiles.length > 0 && (
-          <Premium feature="Advanced Analytics Dashboard">
-            <Card className="mb-6">
-              <CardHeader>
-                <CardTitle className="flex items-center gap-2">
-                  <BarChart3 className="w-5 h-5 text-primary" />
-                  Relationship Quality Overview
-                </CardTitle>
-              </CardHeader>
-              <CardContent>
+          <Card className="mb-6">
+            <CardHeader>
+              <CardTitle className="flex items-center gap-2">
+                <BarChart3 className="w-5 h-5 text-primary" />
+                Relationship Quality Overview
+              </CardTitle>
+            </CardHeader>
+            <CardContent>
               <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
                 <div className="text-center p-4 bg-green-50 rounded-lg">
                   <div className="text-2xl font-bold text-green-700">
@@ -762,7 +760,6 @@ export default function Relationships() {
               </div>
             </CardContent>
           </Card>
-          </Premium>
         )}
 
         {profilesLoading ? (
@@ -784,7 +781,7 @@ export default function Relationships() {
           </div>
         ) : profiles && profiles.length > 0 ? (
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-            {profiles.slice(0, 1).map((profile: any) => (
+            {profiles.map((profile: any) => (
               <Card key={profile.id} className="relative cursor-pointer hover:shadow-lg transition-shadow">
                 <CardHeader>
                   <div className="flex items-start justify-between">
@@ -867,13 +864,6 @@ export default function Relationships() {
                 </CardContent>
               </Card>
             ))}
-            
-            {/* Additional relationships paywall */}
-            {profiles.length > 1 && (
-              <Premium feature="Multiple Relationship Tracking">
-                <div></div>
-              </Premium>
-            )}
           </div>
         ) : (
           <Card className="text-center py-12">

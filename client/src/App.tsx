@@ -14,7 +14,6 @@ import Friends from "@/pages/friends";
 import Insights from "@/pages/insights";
 import FlagExamples from "@/pages/flag-examples";
 import BaselinePage from "@/pages/baseline";
-import AdminPage from "@/pages/admin";
 
 import NotFound from "@/pages/not-found";
 
@@ -36,7 +35,6 @@ function Router() {
           <Route path="/profile" component={Profile} />
           <Route path="/insights" component={Insights} />
           <Route path="/flag-examples" component={FlagExamples} />
-          <Route path="/admin" component={AdminPage} />
 
         </>
       )}
