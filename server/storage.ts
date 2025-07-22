@@ -1436,7 +1436,7 @@ export class DatabaseStorage implements IStorage {
       .where(
         and(
           not(inArray(users.email, testEmails)),
-          isNotNull(users.stripeSubscriptionId)
+          eq(users.subscriptionStatus, 'active')
         )
       );
     
