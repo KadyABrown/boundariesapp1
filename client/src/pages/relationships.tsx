@@ -669,7 +669,7 @@ export default function Relationships() {
         </div>
 
         {/* Relationships Summary */}
-        {profiles && profiles.length > 0 && (
+        {Array.isArray(profiles) && profiles.length > 0 && (
           <Card className="mb-8">
             <CardHeader>
               <CardTitle className="flex items-center">
@@ -708,7 +708,7 @@ export default function Relationships() {
                 <h4 className="text-sm font-medium text-neutral-700 mb-3">Relationship Status Distribution</h4>
                 <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-2">
                   {['dating', 'talking', 'interested', 'friendship', 'family', 'over'].map(status => {
-                    const count = profiles.filter((p: any) => p.relationshipStatus === status).length;
+                    const count = Array.isArray(profiles) ? profiles.filter((p: any) => p.relationshipStatus === status).length : 0;
                     if (count === 0) return null;
                     return (
                       <div key={status} className="text-center p-2 bg-neutral-100 rounded">
@@ -740,7 +740,7 @@ export default function Relationships() {
               </Card>
             ))}
           </div>
-        ) : profiles && profiles.length > 0 ? (
+        ) : Array.isArray(profiles) && profiles.length > 0 ? (
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
             {profiles.map((profile: any) => (
               <Card key={profile.id} className="relative cursor-pointer hover:shadow-lg transition-shadow">

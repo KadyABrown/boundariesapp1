@@ -741,9 +741,9 @@ export class DatabaseStorage implements IStorage {
     const pairedFlags: Array<{ theme: string; greenFlag?: FlagExample; redFlag?: FlagExample }> = [];
     
     // For each theme, try to pair green and red flags
-    for (const [theme, flags] of flagsByTheme.entries()) {
-      const greenFlags = flags.filter(f => f.flagType === 'green');
-      const redFlags = flags.filter(f => f.flagType === 'red');
+    for (const [theme, flags] of Array.from(flagsByTheme.entries())) {
+      const greenFlags = flags.filter((f: any) => f.flagType === 'green');
+      const redFlags = flags.filter((f: any) => f.flagType === 'red');
       
       // If we have both green and red flags for this theme, pair them
       if (greenFlags.length > 0 && redFlags.length > 0) {
