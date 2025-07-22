@@ -6,7 +6,6 @@ import { db } from "./db";
 import { flagExamples } from "@shared/schema";
 import fs from 'fs';
 import path from 'path';
-import Stripe from "stripe";
 import {
   insertBoundarySchema,
   insertBoundaryEntrySchema,
@@ -23,14 +22,6 @@ import {
   insertFeedbackSchema,
 } from "@shared/schema";
 import { z } from "zod";
-
-// Initialize Stripe
-if (!process.env.STRIPE_SECRET_KEY) {
-  throw new Error('Missing required Stripe secret: STRIPE_SECRET_KEY');
-}
-const stripe = new Stripe(process.env.STRIPE_SECRET_KEY, {
-  apiVersion: "2025-06-30.basil",
-});
 
 export async function registerRoutes(app: Express): Promise<Server> {
   // Auth middleware
