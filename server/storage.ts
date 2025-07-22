@@ -633,13 +633,22 @@ export class DatabaseStorage implements IStorage {
     const totalGreenFlags = baseGreenFlags + emotionalNeedsMetCount;
     const totalRedFlags = baseRedFlags + triggersOccurredCount;
 
+    // Get the user ID from the relationship profile
+    const relationshipProfile = await db
+      .select({ userId: relationshipProfiles.userId })
+      .from(relationshipProfiles)
+      .where(eq(relationshipProfiles.id, profileId))
+      .limit(1);
+    
+    const userId = relationshipProfile[0]?.userId;
+    
     // Get user's personal baseline for compatibility scoring
-    const baseline = await db
+    const baseline = userId ? await db
       .select()
       .from(personalBaselines)
-      .where(eq(personalBaselines.userId, 'current_user_placeholder')) // TODO: Get actual user ID
+      .where(eq(personalBaselines.userId, userId))
       .orderBy(desc(personalBaselines.createdAt))
-      .limit(1);
+      .limit(1) : [];
 
     // Enhanced health calculation incorporating baseline compatibility
     const flagScore = totalGreenFlags > 0 
