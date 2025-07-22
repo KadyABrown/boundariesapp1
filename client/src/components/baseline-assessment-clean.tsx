@@ -51,6 +51,10 @@ export default function BaselineAssessmentClean({ onComplete, onCancel }: Baseli
     socialEnergyLevel: '',
     recoveryTimeNeeded: 0,
     
+    // Social Energy Impact
+    socialEnergyPreference: '',
+    socialRecoveryTime: '',
+    
     // Growth
     personalGrowthPriorities: [],
     relationshipGoals: [],
@@ -179,6 +183,58 @@ export default function BaselineAssessmentClean({ onComplete, onCancel }: Baseli
             placeholder="How many hours do you need to process emotions?"
           />
         </div>
+
+        <div>
+          <Label>How do social interactions typically affect your energy levels?</Label>
+          <RadioGroup value={formData.socialEnergyPreference} onValueChange={(value) => updateField('socialEnergyPreference', value)}>
+            <div className="flex items-center space-x-2">
+              <RadioGroupItem value="large-groups-energizing" id="large-groups" />
+              <Label htmlFor="large-groups">Large groups energize me</Label>
+            </div>
+            <div className="flex items-center space-x-2">
+              <RadioGroupItem value="small-groups-ideal" id="small-groups" />
+              <Label htmlFor="small-groups">Small groups are ideal for me</Label>
+            </div>
+            <div className="flex items-center space-x-2">
+              <RadioGroupItem value="one-on-one-energizing" id="one-on-one" />
+              <Label htmlFor="one-on-one">One-on-one conversations energize me most</Label>
+            </div>
+            <div className="flex items-center space-x-2">
+              <RadioGroupItem value="quiet-activities" id="quiet-activities" />
+              <Label htmlFor="quiet-activities">I prefer quiet activities to recharge</Label>
+            </div>
+            <div className="flex items-center space-x-2">
+              <RadioGroupItem value="significant-alone-time" id="alone-time" />
+              <Label htmlFor="alone-time">I need significant alone time after social events</Label>
+            </div>
+          </RadioGroup>
+        </div>
+
+        <div>
+          <Label>After spending time with people, how much recovery time do you typically need?</Label>
+          <RadioGroup value={formData.socialRecoveryTime} onValueChange={(value) => updateField('socialRecoveryTime', value)}>
+            <div className="flex items-center space-x-2">
+              <RadioGroupItem value="no-recovery-needed" id="no-recovery" />
+              <Label htmlFor="no-recovery">No recovery needed - I feel more energized</Label>
+            </div>
+            <div className="flex items-center space-x-2">
+              <RadioGroupItem value="thirty-minutes" id="thirty-min" />
+              <Label htmlFor="thirty-min">30 minutes to reset</Label>
+            </div>
+            <div className="flex items-center space-x-2">
+              <RadioGroupItem value="one-to-two-hours" id="one-two-hours" />
+              <Label htmlFor="one-two-hours">1-2 hours of quiet time</Label>
+            </div>
+            <div className="flex items-center space-x-2">
+              <RadioGroupItem value="several-hours" id="several-hours" />
+              <Label htmlFor="several-hours">Several hours of alone time</Label>
+            </div>
+            <div className="flex items-center space-x-2">
+              <RadioGroupItem value="full-day" id="full-day" />
+              <Label htmlFor="full-day">A full day to recharge</Label>
+            </div>
+          </RadioGroup>
+        </div>
       </CardContent>
     </Card>
   );
@@ -237,6 +293,12 @@ export default function BaselineAssessmentClean({ onComplete, onCancel }: Baseli
         </div>
         <div>
           <strong>Personal Space:</strong> {formData.personalSpaceNeeds}
+        </div>
+        <div>
+          <strong>Social Energy Preference:</strong> {formData.socialEnergyPreference?.replace(/-/g, ' ')}
+        </div>
+        <div>
+          <strong>Social Recovery Time:</strong> {formData.socialRecoveryTime?.replace(/-/g, ' ')}
         </div>
         <div>
           <Label>Additional notes (optional)</Label>

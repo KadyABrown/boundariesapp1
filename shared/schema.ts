@@ -294,6 +294,10 @@ export const personalBaselines = pgTable("personal_baselines", {
   socialEnergyLevel: varchar("social_energy_level"), // high, medium, low
   recoveryTimeNeeded: integer("recovery_time_needed"), // hours
   
+  // Social Energy Impact Assessment
+  socialEnergyPreference: varchar("social_energy_preference"), // large-groups-energizing, small-groups-ideal, one-on-one-energizing, quiet-activities, significant-alone-time
+  socialRecoveryTime: varchar("social_recovery_time"), // no-recovery-needed, thirty-minutes, one-to-two-hours, several-hours, full-day
+  
   // Growth and Values
   personalGrowthPriorities: text("personal_growth_priorities").array(),
   relationshipGoals: text("relationship_goals").array(),
