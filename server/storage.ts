@@ -633,7 +633,15 @@ export class DatabaseStorage implements IStorage {
     const totalGreenFlags = baseGreenFlags + emotionalNeedsMetCount;
     const totalRedFlags = baseRedFlags + triggersOccurredCount;
 
-    // Calculate health score
+    // Get user's personal baseline for compatibility scoring
+    const baseline = await db
+      .select()
+      .from(personalBaselines)
+      .where(eq(personalBaselines.userId, 'current_user_placeholder')) // TODO: Get actual user ID
+      .orderBy(desc(personalBaselines.createdAt))
+      .limit(1);
+
+    // Enhanced health calculation incorporating baseline compatibility
     const flagScore = totalGreenFlags > 0 
       ? Math.round((totalGreenFlags / (totalGreenFlags + totalRedFlags)) * 100)
       : 0;
@@ -641,7 +649,36 @@ export class DatabaseStorage implements IStorage {
     const avgSafety = safetyData[0]?.avg || 5;
     const safetyScore = avgSafety * 20; // Convert 1-5 scale to 0-100
     
-    const healthScore = Math.round((flagScore * 0.7) + (safetyScore * 0.3));
+    let compatibilityScore = 50; // Default if no baseline
+    
+    if (baseline.length > 0 && interactions.length > 0) {
+      const userBaseline = baseline[0];
+      
+      // Calculate compatibility metrics based on interaction patterns
+      const communicationRespected = this.calculateCommunicationCompatibility(interactions, userBaseline);
+      const boundariesRespected = this.calculateBoundaryCompatibility(interactions, userBaseline);
+      const triggersAvoided = this.calculateTriggerAvoidance(interactions, userBaseline);
+      const valuesAligned = this.calculateValuesAlignment(interactions, userBaseline);
+      const energyImpact = this.calculateEnergyImpact(interactions, userBaseline);
+      const selfWorthImpact = this.calculateSelfWorthImpact(interactions, userBaseline);
+      
+      // Apply the sophisticated scoring algorithm
+      compatibilityScore = Math.round(
+        (communicationRespected * 0.20) +
+        (boundariesRespected * 0.25) +
+        (triggersAvoided * 0.20) +
+        (valuesAligned * 0.15) +
+        (energyImpact * 0.10) +
+        (selfWorthImpact * 0.10)
+      );
+      
+      // Apply deal-breaker penalties
+      const dealBreakerPenalty = this.calculateDealBreakerPenalty(interactions, userBaseline);
+      compatibilityScore = Math.max(0, compatibilityScore - dealBreakerPenalty);
+    }
+    
+    // Combine traditional health metrics with compatibility analysis
+    const healthScore = Math.round((flagScore * 0.4) + (safetyScore * 0.3) + (compatibilityScore * 0.3));
 
     console.log(`Health calculation for relationship ${profileId}:`, {
       baseGreenFlags,
