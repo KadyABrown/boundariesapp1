@@ -1420,7 +1420,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
   app.get('/api/boundaries/cit-options', isAuthenticated, async (req: any, res) => {
     try {
       const userId = req.user.claims.sub;
-      const boundaries = await storage.getBoundaryEntries(userId);
+      const boundaries = await storage.getBoundaryEntriesByUser(userId);
       
       // Organize boundaries by category for CIT use
       const citOptions = {

@@ -235,18 +235,13 @@ export default function PersonalBaselineAssessment({
             </div>
 
             {/* Communication Deal Breakers */}
-            <div className="space-y-3">
-              <Label className="text-base font-medium">Communication deal breakers (list specific behaviors)</Label>
-              <Textarea
-                value={formData.communicationDealBreakers.join('\n')}
-                onChange={(e) => setFormData(prev => ({ 
-                  ...prev, 
-                  communicationDealBreakers: e.target.value.split('\n').filter(Boolean) 
-                }))}
-                placeholder="e.g., Yelling or raising voice&#10;Interrupting constantly&#10;Name calling or insults"
-                className="min-h-[100px]"
-              />
-            </div>
+            <TagInput
+              label="Communication deal breakers (specific behaviors)"
+              placeholder="e.g., Yelling or raising voice"
+              value={formData.communicationDealBreakers}
+              onChange={(communicationDealBreakers) => setFormData(prev => ({ ...prev, communicationDealBreakers }))}
+              maxTags={8}
+            />
           </div>
         );
 

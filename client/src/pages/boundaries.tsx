@@ -318,13 +318,25 @@ export default function Boundaries() {
           </TabsList>
 
           <TabsContent value="boundaries" className="mt-6">
-            {/* Baseline Integration */}
+            {/* Boundary-Baseline Alignment */}
             <BaselineIntegration 
               boundaries={Array.isArray(boundaries) ? boundaries : []}
               className="mb-8"
             />
 
-            {boundariesLoading ? (
+            {/* Manual Boundaries */}
+            <Card className="mb-6">
+              <CardHeader>
+                <CardTitle className="flex items-center gap-2">
+                  <Shield className="h-5 w-5 text-blue-600" />
+                  Manual Boundaries
+                </CardTitle>
+                <p className="text-sm text-gray-600">
+                  Custom boundaries you've added manually, separate from your baseline assessment.
+                </p>
+              </CardHeader>
+              <CardContent>
+                {boundariesLoading ? (
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
             {[...Array(6)].map((_, i) => (
               <Card key={i} className="animate-pulse">
@@ -410,7 +422,9 @@ export default function Boundaries() {
               </Button>
             </CardContent>
           </Card>
-        )}
+                )}
+              </CardContent>
+            </Card>
           </TabsContent>
 
           <TabsContent value="goals" className="mt-6">

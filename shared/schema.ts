@@ -248,6 +248,14 @@ export const comprehensiveInteractions = pgTable("comprehensive_interactions", {
   selfAdvocacyActions: text("self_advocacy_actions").array(),
   lessonsLearned: text("lessons_learned"),
   futureStrategies: text("future_strategies"),
+  
+  // Compatibility assessment
+  communicationQuality: integer("communication_quality"),
+  communicationIssues: text("communication_issues").array(),
+  boundaryViolations: text("boundary_violations").array(),
+  boundariesMet: text("boundaries_met").array(),
+  emotionalNeedsMet: integer("emotional_needs_met"),
+  valuesAlignment: integer("values_alignment"),
 });
 
 // Personal baseline assessment

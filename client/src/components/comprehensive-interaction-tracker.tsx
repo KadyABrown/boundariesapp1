@@ -79,6 +79,7 @@ interface ComprehensiveInteractionData {
   communicationQuality: number; // 1-10
   communicationIssues: string[];
   boundaryViolations: string[];
+  boundariesMet: string[];
   emotionalNeedsMet: number; // 1-10
   valuesAlignment: number; // 1-10
   
@@ -817,21 +818,57 @@ export default function ComprehensiveInteractionTracker({
               </div>
             </div>
 
-            {/* Boundary Violations */}
+            {/* Boundary Respect Assessment */}
             <div className="space-y-3">
               <Label className="text-base font-medium flex items-center gap-2">
-                <Shield className="w-5 h-5 text-red-600" />
-                Boundary violations that occurred
+                <Shield className="w-5 h-5 text-blue-600" />
+                Boundary Respect Assessment
               </Label>
-              <div className="grid grid-cols-1 gap-2 max-h-48 overflow-y-auto">
+              <p className="text-sm text-gray-600 mb-3">For each boundary, select whether it was Met (green flag) or Violated (red flag)</p>
+              <div className="grid grid-cols-1 gap-3 max-h-64 overflow-y-auto">
                 {allBoundaries.slice(0, 8).map(boundary => (
-                  <div key={boundary} className="flex items-center space-x-2">
-                    <Checkbox
-                      id={`violated-${boundary}`}
-                      checked={(data.boundaryViolations || []).includes(boundary)}
-                      onCheckedChange={() => toggleArrayField('boundaryViolations', boundary)}
-                    />
-                    <Label htmlFor={`violated-${boundary}`} className="text-sm text-red-700">{boundary} was violated</Label>
+                  <div key={boundary} className="border rounded-lg p-3">
+                    <Label className="text-sm font-medium mb-2 block">{boundary}</Label>
+                    <div className="flex gap-4">
+                      <div className="flex items-center space-x-2">
+                        <input
+                          type="radio"
+                          id={`${boundary}-met`}
+                          name={`boundary-${boundary}`}
+                          checked={(data.boundariesMet || []).includes(boundary)}
+                          onChange={() => {
+                            const newMet = (data.boundariesMet || []).includes(boundary) 
+                              ? (data.boundariesMet || []).filter(b => b !== boundary)
+                              : [...(data.boundariesMet || []), boundary];
+                            const newViolated = (data.boundaryViolations || []).filter(b => b !== boundary);
+                            updateData('boundariesMet', newMet);
+                            updateData('boundaryViolations', newViolated);
+                          }}
+                        />
+                        <Label htmlFor={`${boundary}-met`} className="text-sm text-green-700 font-medium">
+                          Met (Green Flag)
+                        </Label>
+                      </div>
+                      <div className="flex items-center space-x-2">
+                        <input
+                          type="radio"
+                          id={`${boundary}-violated`}
+                          name={`boundary-${boundary}`}
+                          checked={(data.boundaryViolations || []).includes(boundary)}
+                          onChange={() => {
+                            const newViolated = (data.boundaryViolations || []).includes(boundary)
+                              ? (data.boundaryViolations || []).filter(b => b !== boundary)
+                              : [...(data.boundaryViolations || []), boundary];
+                            const newMet = (data.boundariesMet || []).filter(b => b !== boundary);
+                            updateData('boundaryViolations', newViolated);
+                            updateData('boundariesMet', newMet);
+                          }}
+                        />
+                        <Label htmlFor={`${boundary}-violated`} className="text-sm text-red-700 font-medium">
+                          Violated (Red Flag)
+                        </Label>
+                      </div>
+                    </div>
                   </div>
                 ))}
               </div>
@@ -895,9 +932,14 @@ export default function ComprehensiveInteractionTracker({
                   <div>
                     <span className="text-blue-600">Boundary Respect:</span>
                     <div className="font-medium">
-                      {(data.boundaryViolations?.length || 0) === 0 ? '10/10' : 
-                       (data.boundaryViolations?.length || 0) <= 2 ? '7/10' : 
-                       (data.boundaryViolations?.length || 0) <= 4 ? '4/10' : '1/10'}
+                      {(() => {
+                        const metCount = data.boundariesMet?.length || 0;
+                        const violatedCount = data.boundaryViolations?.length || 0;
+                        const totalAssessed = metCount + violatedCount;
+                        if (totalAssessed === 0) return 'Not Assessed';
+                        const score = Math.round((metCount / totalAssessed) * 10);
+                        return `${score}/10`;
+                      })()}
                     </div>
                   </div>
                   <div>
