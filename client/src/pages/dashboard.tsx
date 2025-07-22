@@ -11,6 +11,7 @@ import BoundaryBuddy from "@/components/boundary-buddy";
 import DailyChallenges from "@/components/daily-challenges";
 import BoundaryQuotes from "@/components/boundary-quotes";
 import StreakRecovery from "@/components/streak-recovery";
+import DealBreakerAlert from "@/components/deal-breaker-alert";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { CheckCircle, AlertTriangle, Smile, Plus, BookOpen, TrendingUp, Heart, Users } from "lucide-react";
@@ -241,6 +242,19 @@ export default function Dashboard() {
           <div className="space-y-6">
             {/* Weekly Progress */}
             <WeeklyProgress />
+
+            {/* Deal Breaker Alerts */}
+            {relationships && Array.isArray(relationships) && relationships.length > 0 && 
+              relationships.map((relationship: any) => (
+                <DealBreakerAlert 
+                  key={`alert-${relationship.id}`}
+                  relationshipId={relationship.id}
+                  relationshipName={relationship.name}
+                  showActions={false}
+                  className="mb-4"
+                />
+              ))
+            }
 
             {/* Relationship Trends */}
             {relationships && Array.isArray(relationships) && relationships.length > 0 && (

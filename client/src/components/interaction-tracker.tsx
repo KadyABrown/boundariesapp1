@@ -19,11 +19,35 @@ interface InteractionTrackerProps {
 interface InteractionTrackerData {
   relationshipId: number;
   timestamp: string;
+  
+  // Enhanced tracking for better predictive analysis
+  interactionType: string; // casual, planned, conflict, intimate, work-related
+  duration: number; // minutes
+  location: string; // home, public, their-place, phone, text
+  
+  // Baseline compatibility tracking
   communicationMet: boolean;
   emotionalNeedsMet: string[];
   triggersOccurred: string[];
   dealBreakersCrossed: string[];
   repeatedTriggers: string[];
+  
+  // Energy and mood tracking
+  energyBefore: number; // 1-10
+  energyAfter: number; // 1-10
+  moodBefore: string; // positive, neutral, negative, anxious
+  moodAfter: string;
+  
+  // Conflict and boundary tracking
+  boundariesRespected: boolean;
+  conflictOccurred: boolean;
+  conflictResolved: boolean;
+  
+  // Predictive indicators
+  redFlagsNoticed: string[];
+  positiveSignsNoticed: string[];
+  futureComfortLevel: number; // 1-10 how comfortable you'd be with similar interactions
+  
   overallCompatibility: number; // 1-10
   notes: string;
 }
@@ -52,11 +76,24 @@ export default function InteractionTracker({
   const [data, setData] = useState<Partial<InteractionTrackerData>>({
     relationshipId,
     timestamp: new Date().toISOString(),
+    interactionType: 'casual',
+    duration: 30,
+    location: 'home',
     communicationMet: false,
     emotionalNeedsMet: [],
     triggersOccurred: [],
     dealBreakersCrossed: [],
     repeatedTriggers: [],
+    energyBefore: 5,
+    energyAfter: 5,
+    moodBefore: 'neutral',
+    moodAfter: 'neutral',
+    boundariesRespected: true,
+    conflictOccurred: false,
+    conflictResolved: true,
+    redFlagsNoticed: [],
+    positiveSignsNoticed: [],
+    futureComfortLevel: 5,
     overallCompatibility: 5,
     notes: '',
   });
@@ -66,32 +103,43 @@ export default function InteractionTracker({
   };
 
   const toggleArrayField = (field: string, value: string) => {
-    setData(prev => ({
-      ...prev,
-      [field]: prev[field as keyof typeof prev]?.includes?.(value)
-        ? (prev[field as keyof typeof prev] as string[]).filter(item => item !== value)
-        : [...(prev[field as keyof typeof prev] as string[] || []), value]
-    }));
+    setData(prev => {
+      const currentArray = prev[field as keyof typeof prev] as string[] || [];
+      const isSelected = currentArray.includes(value);
+      return {
+        ...prev,
+        [field]: isSelected
+          ? currentArray.filter(item => item !== value)
+          : [...currentArray, value]
+      };
+    });
   };
 
   const getTopCommunicationNeed = () => {
-    if (!baseline?.communicationPreferences) return null;
-    const prefs = baseline.communicationPreferences;
-    const priorities = [
-      { key: 'direct', label: 'Direct Feedback', value: prefs.direct || 0 },
-      { key: 'gentle', label: 'Gentle Communication', value: prefs.gentle || 0 },
-      { key: 'collaborative', label: 'Collaborative Discussion', value: prefs.collaborative || 0 },
-      { key: 'assertive', label: 'Assertive Expression', value: prefs.assertive || 0 }
-    ];
-    return priorities.reduce((max, curr) => curr.value > max.value ? curr : max);
+    if (!baseline?.communicationStyle) return null;
+    const style = baseline.communicationStyle;
+    const needs = {
+      'direct': 'Clear, straightforward communication',
+      'gentle': 'Gentle, considerate approach',
+      'collaborative': 'Working together on solutions',
+      'assertive': 'Confident, respectful expression'
+    };
+    return { key: style, label: needs[style as keyof typeof needs] || style };
   };
 
   const getCommonTriggers = () => {
     if (!previousInteractions || !Array.isArray(previousInteractions)) return [];
-    const recentTriggers = previousInteractions
+    const triggerCounts = previousInteractions
       .flatMap((interaction: any) => interaction.triggersOccurred || [])
-      .filter((trigger, index, arr) => arr.indexOf(trigger) !== index); // Find duplicates
-    return [...new Set(recentTriggers)]; // Remove duplicates
+      .reduce((acc: Record<string, number>, trigger: string) => {
+        acc[trigger] = (acc[trigger] || 0) + 1;
+        return acc;
+      }, {});
+    
+    // Return triggers that occurred more than once
+    return Object.entries(triggerCounts)
+      .filter(([_, count]) => count > 1)
+      .map(([trigger, _]) => trigger);
   };
 
   const getEmotionalNeeds = () => {
@@ -99,20 +147,29 @@ export default function InteractionTracker({
     
     const needs = [];
     
-    // Map baseline emotional support to needs
-    if (baseline.emotionalSupport === 'high') {
+    // Map baseline emotional support to needs using new schema
+    if (baseline.emotionalSupportLevel === 'high') {
       needs.push('Frequent check-ins', 'Emotional validation', 'Active listening');
-    } else if (baseline.emotionalSupport === 'medium') {
+    } else if (baseline.emotionalSupportLevel === 'moderate') {
       needs.push('Regular support', 'Understanding', 'Empathy');
-    } else if (baseline.emotionalSupport === 'low') {
+    } else if (baseline.emotionalSupportLevel === 'low') {
       needs.push('Respect for independence', 'Space when needed');
+    } else if (baseline.emotionalSupportLevel === 'variable') {
+      needs.push('Flexible support', 'Reading emotional cues', 'Asking about needs');
     }
     
-    // Add validation needs
-    if (baseline.validationNeeds === 'frequent') {
-      needs.push('Regular affirmation', 'Positive feedback');
-    } else if (baseline.validationNeeds === 'moderate') {
-      needs.push('Occasional validation', 'Recognition');
+    // Add validation needs using new schema
+    if (baseline.validationFrequency === 'daily') {
+      needs.push('Daily affirmation', 'Regular positive feedback');
+    } else if (baseline.validationFrequency === 'weekly') {
+      needs.push('Weekly validation', 'Recognition of efforts');
+    } else if (baseline.validationFrequency === 'monthly') {
+      needs.push('Occasional validation', 'Recognition of achievements');
+    }
+    
+    // Add energy givers from baseline
+    if (baseline.energyGivers) {
+      needs.push(...baseline.energyGivers.map((giver: string) => giver.replace('-', ' ')));
     }
     
     return needs.filter(Boolean);
@@ -121,24 +178,31 @@ export default function InteractionTracker({
   const getPersonalTriggers = () => {
     if (!baseline) return [];
     
-    // Combine triggers from baseline with common relationship triggers
-    const triggers = [...(baseline.triggers || [])];
+    // Use new baseline schema - emotionalTriggers
+    const triggers = [...(baseline.emotionalTriggers || [])];
     
-    // Add triggers based on communication style
-    if (baseline.communicationStyle === 'direct' && baseline.conflictResolution === 'discuss-immediately') {
-      triggers.push('Avoiding important conversations', 'Being dismissive');
+    // Add triggers based on communication style and conflict resolution
+    if (baseline.communicationStyle === 'direct' && baseline.conflictResolution === 'immediate-discussion') {
+      triggers.push('avoiding-important-conversations', 'being-dismissive');
     }
     
-    if (baseline.conflictResolution === 'need-time-to-process') {
-      triggers.push('Pressuring for immediate responses', 'Not giving processing time');
+    if (baseline.conflictResolution === 'cool-down-first') {
+      triggers.push('pressuring-for-immediate-responses', 'not-giving-processing-time');
     }
     
-    if (baseline.conflictResolution === 'avoid-conflict') {
-      triggers.push('Confrontational approach', 'Aggressive tone');
+    if (baseline.conflictResolution === 'written-communication') {
+      triggers.push('confrontational-verbal-approach', 'overwhelming-in-person-discussion');
     }
     
-    // Remove duplicates and return
-    return [...new Set(triggers)].filter(Boolean);
+    // Add energy drainers as potential triggers
+    if (baseline.energyDrainers) {
+      triggers.push(...baseline.energyDrainers);
+    }
+    
+    // Remove duplicates and return formatted for display
+    return Array.from(new Set(triggers))
+      .filter(Boolean)
+      .map(trigger => trigger.replace('-', ' '));
   };
 
   const handleSubmit = async () => {

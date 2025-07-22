@@ -6,6 +6,7 @@ import { isUnauthorizedError } from "@/lib/authUtils";
 import { apiRequest } from "@/lib/queryClient";
 import Navigation from "@/components/navigation";
 import RelationshipHealthTracker from "@/components/relationship-health-tracker";
+import DealBreakerAlert from "@/components/deal-breaker-alert";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
@@ -388,10 +389,20 @@ export default function RelationshipDetail() {
 
         {/* Health Tracking System */}
         {profile && (
-          <RelationshipHealthTracker 
-            profileId={profile.id} 
-            profileName={profile.nickname || profile.name}
-          />
+          <>
+            {/* Deal Breaker Alerts */}
+            <DealBreakerAlert 
+              relationshipId={profile.id}
+              relationshipName={profile.nickname || profile.name}
+              showActions={true}
+              className="mb-6"
+            />
+            
+            <RelationshipHealthTracker 
+              profileId={profile.id} 
+              profileName={profile.nickname || profile.name}
+            />
+          </>
         )}
       </div>
     </div>
