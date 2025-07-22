@@ -38,6 +38,12 @@ export default function BaselinePage() {
     enabled: isAuthenticated && Array.isArray(relationships) && relationships.length > 0,
   });
 
+  // Fetch current baseline
+  const { data: currentBaseline } = useQuery({
+    queryKey: ["/api/baseline"],
+    enabled: isAuthenticated,
+  });
+
   // Fetch baseline versions for historical tracking
   const { data: baselineVersions = [] } = useQuery({
     queryKey: ["/api/baseline/versions"],
@@ -171,7 +177,7 @@ export default function BaselinePage() {
 
         {/* Baseline Assessment */}
         <PersonalBaselineAssessment
-          baseline={userBaseline || undefined}
+          baseline={currentBaseline || userBaseline || undefined}
           onSaveBaseline={handleSaveBaseline}
           relationshipData={Array.isArray(relationshipStats) ? relationshipStats : (Array.isArray(relationships) ? relationships : [])}
         />

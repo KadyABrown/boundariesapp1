@@ -94,6 +94,53 @@ export default function InteractionTracker({
     return [...new Set(recentTriggers)]; // Remove duplicates
   };
 
+  const getEmotionalNeeds = () => {
+    if (!baseline) return [];
+    
+    const needs = [];
+    
+    // Map baseline emotional support to needs
+    if (baseline.emotionalSupport === 'high') {
+      needs.push('Frequent check-ins', 'Emotional validation', 'Active listening');
+    } else if (baseline.emotionalSupport === 'medium') {
+      needs.push('Regular support', 'Understanding', 'Empathy');
+    } else if (baseline.emotionalSupport === 'low') {
+      needs.push('Respect for independence', 'Space when needed');
+    }
+    
+    // Add validation needs
+    if (baseline.validationNeeds === 'frequent') {
+      needs.push('Regular affirmation', 'Positive feedback');
+    } else if (baseline.validationNeeds === 'moderate') {
+      needs.push('Occasional validation', 'Recognition');
+    }
+    
+    return needs.filter(Boolean);
+  };
+
+  const getPersonalTriggers = () => {
+    if (!baseline) return [];
+    
+    // Combine triggers from baseline with common relationship triggers
+    const triggers = [...(baseline.triggers || [])];
+    
+    // Add triggers based on communication style
+    if (baseline.communicationStyle === 'direct' && baseline.conflictResolution === 'discuss-immediately') {
+      triggers.push('Avoiding important conversations', 'Being dismissive');
+    }
+    
+    if (baseline.conflictResolution === 'need-time-to-process') {
+      triggers.push('Pressuring for immediate responses', 'Not giving processing time');
+    }
+    
+    if (baseline.conflictResolution === 'avoid-conflict') {
+      triggers.push('Confrontational approach', 'Aggressive tone');
+    }
+    
+    // Remove duplicates and return
+    return [...new Set(triggers)].filter(Boolean);
+  };
+
   const handleSubmit = async () => {
     try {
       await onSubmit(data as InteractionTrackerData);
@@ -156,15 +203,17 @@ export default function InteractionTracker({
         {/* Conflict Resolution Question */}
         {baseline.conflictResolution && (
           <div className="p-4 bg-yellow-50 dark:bg-yellow-900/20 rounded-lg">
-            <Label className="text-sm font-medium mb-2 block">
-              You handle conflict by wanting to <span className="font-semibold">{baseline.conflictResolution.replace(/-/g, ' ')}</span>.
-            </Label>
-            <p className="text-xs text-gray-600">
-              {baseline.conflictResolution === 'discuss-immediately' && 'Did any conflicts get addressed right away as you prefer?'}
-              {baseline.conflictResolution === 'need-time-to-process' && 'Were you given time to process any disagreements?'}
-              {baseline.conflictResolution === 'avoid-conflict' && 'Did they respect your preference to avoid confrontation?'}
-              {baseline.conflictResolution === 'address-when-calm' && 'Were conflicts handled calmly when you were both ready?'}
-            </p>
+            <div className="flex items-center space-x-3 mb-2">
+              <Checkbox
+                id="conflict-handled"
+                checked={data.conflictHandledWell}
+                onCheckedChange={(checked) => updateData('conflictHandledWell', checked)}
+              />
+              <Label htmlFor="conflict-handled" className="text-sm">
+                You handle conflict by wanting to <span className="font-semibold">{baseline.conflictResolution.replace(/-/g, ' ')}</span>. 
+                Were any disagreements handled in this way?
+              </Label>
+            </div>
           </div>
         )}
 
@@ -206,19 +255,17 @@ export default function InteractionTracker({
               Emotional needs that were met:
             </Label>
             <div className="grid grid-cols-2 gap-2">
-              {baseline?.emotionalNeeds && Object.entries(baseline.emotionalNeeds).map(([key, value]) => (
-                value && (
-                  <div key={key} className="flex items-center space-x-2">
-                    <Checkbox
-                      id={`need-${key}`}
-                      checked={data.emotionalNeedsMet?.includes(key)}
-                      onCheckedChange={() => toggleArrayField('emotionalNeedsMet', key)}
-                    />
-                    <Label htmlFor={`need-${key}`} className="text-sm capitalize">
-                      {key.replace(/([A-Z])/g, ' $1').trim()}
-                    </Label>
-                  </div>
-                )
+              {getEmotionalNeeds().map((need) => (
+                <div key={need} className="flex items-center space-x-2">
+                  <Checkbox
+                    id={`need-${need}`}
+                    checked={data.emotionalNeedsMet?.includes(need)}
+                    onCheckedChange={() => toggleArrayField('emotionalNeedsMet', need)}
+                  />
+                  <Label htmlFor={`need-${need}`} className="text-sm">
+                    {need}
+                  </Label>
+                </div>
               ))}
             </div>
           </div>
@@ -229,7 +276,7 @@ export default function InteractionTracker({
               Personal triggers that occurred:
             </Label>
             <div className="grid grid-cols-2 gap-2">
-              {baseline?.personalTriggers?.map((trigger, index) => (
+              {getPersonalTriggers().map((trigger, index) => (
                 <div key={index} className="flex items-center space-x-2">
                   <Checkbox
                     id={`trigger-${index}`}
