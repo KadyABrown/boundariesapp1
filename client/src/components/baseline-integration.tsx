@@ -125,8 +125,26 @@ export default function BaselineIntegration({
                 <div className="flex items-center gap-2">
                   <Users className="w-4 h-4 text-purple-500" />
                   <div>
-                    <p className="text-sm font-medium">Social Energy</p>
-                    <p className="text-xs text-gray-600 capitalize">{(userBaseline as any).socialEnergyLevel || 'Not set'}</p>
+                    <p className="text-sm font-medium">Energy Needs</p>
+                    <p className="text-xs text-gray-600">
+                      {(userBaseline as any).socialEnergyPreference ? 
+                        (userBaseline as any).socialEnergyPreference.replace(/-/g, ' ').replace(/\b\w/g, (l: string) => l.toUpperCase()) :
+                        'Not assessed'
+                      }
+                    </p>
+                  </div>
+                </div>
+                
+                <div className="flex items-center gap-2">
+                  <Users className="w-4 h-4 text-purple-500" />
+                  <div>
+                    <p className="text-sm font-medium">Energy Needs</p>
+                    <p className="text-xs text-gray-600">
+                      {(userBaseline as any).socialEnergyPreference ? 
+                        (userBaseline as any).socialEnergyPreference.replace(/-/g, ' ').replace(/\b\w/g, (l: string) => l.toUpperCase()) :
+                        'Not assessed'
+                      }
+                    </p>
                   </div>
                 </div>
                 
