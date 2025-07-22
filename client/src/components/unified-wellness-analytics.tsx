@@ -248,7 +248,7 @@ export default function UnifiedWellnessAnalytics({ interactions = [], relationsh
               <p className="text-neutral-600">
                 Track more interactions to unlock comprehensive wellness insights including:
               </p>
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-4 text-sm text-neutral-500">
+              <div className="grid grid-cols-1 gap-4 text-sm text-neutral-500">
                 <div className="p-4 bg-neutral-50 rounded-lg">
                   <div className="font-medium mb-2">Energy Analysis</div>
                   <p>How different relationships affect your daily energy levels</p>
@@ -311,17 +311,17 @@ export default function UnifiedWellnessAnalytics({ interactions = [], relationsh
               initial={{ opacity: 0, y: 20 }}
               animate={{ opacity: 1, y: 0 }}
               transition={{ delay: index * 0.1 }}
-              className="border rounded-lg p-6 space-y-4"
+              className="border rounded-lg p-4 sm:p-6 space-y-4"
             >
-              <div className="flex items-center justify-between">
-                <div className="flex items-center gap-3">
-                  <span className="font-semibold text-lg capitalize">
+              <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2 sm:gap-0">
+                <div className="flex items-center gap-3 flex-wrap">
+                  <span className="font-semibold text-base sm:text-lg capitalize">
                     {typeData.type.replace('-', ' ')} Relationships
                   </span>
-                  <Badge variant="outline">{typeData.count} interactions</Badge>
+                  <Badge variant="outline" className="text-xs">{typeData.count} interactions</Badge>
                 </div>
                 <div className="flex items-center gap-2">
-                  <span className="text-sm text-muted-foreground">Wellness Score:</span>
+                  <span className="text-xs sm:text-sm text-muted-foreground">Wellness Score:</span>
                   <Badge className={
                     typeData.overallWellnessScore >= 70 ? 'bg-green-500' :
                     typeData.overallWellnessScore >= 50 ? 'bg-yellow-500' : 'bg-red-500'
@@ -331,10 +331,10 @@ export default function UnifiedWellnessAnalytics({ interactions = [], relationsh
                 </div>
               </div>
 
-              <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
                 {/* Energy Impact */}
-                <div className="text-center p-3 bg-slate-50 rounded-lg">
-                  <div className={`text-xl font-bold flex items-center justify-center gap-1 ${
+                <div className="text-center p-3 sm:p-4 bg-slate-50 rounded-lg">
+                  <div className={`text-lg sm:text-xl font-bold flex items-center justify-center gap-1 ${
                     typeData.avgEnergyChange > 0 ? 'text-green-600' : 'text-red-600'
                   }`}>
                     {typeData.avgEnergyChange > 0 ? (
@@ -344,18 +344,18 @@ export default function UnifiedWellnessAnalytics({ interactions = [], relationsh
                     )}
                     {typeData.avgEnergyChange > 0 ? '+' : ''}{typeData.avgEnergyChange.toFixed(1)}
                   </div>
-                  <div className="text-xs text-muted-foreground mt-1">Avg Energy Impact</div>
+                  <div className="text-xs sm:text-sm text-muted-foreground mt-1">Avg Energy Impact</div>
                 </div>
 
                 {/* Boundary Violations */}
-                <div className="text-center p-3 bg-slate-50 rounded-lg">
-                  <div className={`text-xl font-bold ${
+                <div className="text-center p-3 sm:p-4 bg-slate-50 rounded-lg">
+                  <div className={`text-lg sm:text-xl font-bold ${
                     typeData.boundaryViolationRate < 20 ? 'text-green-600' : 
                     typeData.boundaryViolationRate < 50 ? 'text-yellow-600' : 'text-red-600'
                   }`}>
                     {typeData.boundaryViolationRate.toFixed(0)}%
                   </div>
-                  <div className="text-xs text-muted-foreground mt-1">Boundary Testing Rate</div>
+                  <div className="text-xs sm:text-sm text-muted-foreground mt-1">Boundary Testing Rate</div>
                 </div>
 
                 {/* Recovery Time */}
@@ -370,7 +370,7 @@ export default function UnifiedWellnessAnalytics({ interactions = [], relationsh
               </div>
 
               {/* Physical & Emotional Patterns */}
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+              <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
                 {typeData.topSymptoms.length > 0 && (
                   <div>
                     <h4 className="font-medium text-sm mb-2 flex items-center gap-2">
@@ -484,7 +484,7 @@ export default function UnifiedWellnessAnalytics({ interactions = [], relationsh
                   <TrendingUp className="h-4 w-4" />
                   <span className="font-medium">Your Wellness Strength</span>
                 </div>
-                <p className="text-sm text-green-800 mb-3">
+                <p className="text-sm text-green-800 mb-3 leading-relaxed">
                   <strong>{analytics.relationshipTypeAnalysis[0].type.replace('-', ' ')} relationships</strong> energize you most 
                   (wellness score: {analytics.relationshipTypeAnalysis[0].overallWellnessScore}%, 
                   energy boost: {analytics.relationshipTypeAnalysis[0].avgEnergyChange > 0 ? '+' : ''}{analytics.relationshipTypeAnalysis[0].avgEnergyChange.toFixed(1)}).
@@ -508,7 +508,7 @@ export default function UnifiedWellnessAnalytics({ interactions = [], relationsh
                       {challengingType.type.replace('-', ' ')} Relationships Need Support
                     </span>
                   </div>
-                  <p className="text-sm text-orange-800 mb-3">
+                  <p className="text-sm text-orange-800 mb-3 leading-relaxed">
                     Wellness score: {challengingType.overallWellnessScore}%, 
                     Energy impact: {challengingType.avgEnergyChange > 0 ? '+' : ''}{challengingType.avgEnergyChange.toFixed(1)}, 
                     Boundary violations: {challengingType.boundaryViolationRate.toFixed(0)}%
@@ -516,7 +516,7 @@ export default function UnifiedWellnessAnalytics({ interactions = [], relationsh
                   <div className="bg-orange-100 p-3 rounded border-l-4 border-orange-500 space-y-3">
                     <div>
                       <h4 className="font-medium text-orange-800 mb-2">Immediate Actions:</h4>
-                      <ul className="text-sm text-orange-700 space-y-1">
+                      <ul className="text-sm text-orange-700 space-y-1 leading-relaxed">
                         {challengingType.boundaryViolationRate > 30 && (
                           <li>• <strong>Strengthen boundaries:</strong> Practice saying "no" and set clear expectations</li>
                         )}
@@ -532,7 +532,7 @@ export default function UnifiedWellnessAnalytics({ interactions = [], relationsh
                     {challengingType.topSymptoms.length > 0 && (
                       <div>
                         <h4 className="font-medium text-orange-800 mb-2">Physical Wellness:</h4>
-                        <p className="text-sm text-orange-700">
+                        <p className="text-sm text-orange-700 leading-relaxed">
                           Your body frequently responds with <strong>{challengingType.topSymptoms[0].symptom}</strong> during these interactions. 
                           Consider stress-reduction techniques before and after these encounters.
                         </p>
@@ -551,7 +551,7 @@ export default function UnifiedWellnessAnalytics({ interactions = [], relationsh
                   </div>
                   <div className="bg-blue-100 p-3 rounded border-l-4 border-blue-500">
                     <h4 className="font-medium text-blue-800 mb-2">Wellness Protocol:</h4>
-                    <ul className="text-sm text-blue-700 space-y-1">
+                    <ul className="text-sm text-blue-700 space-y-1 leading-relaxed">
                       <li>• <strong>Before difficult interactions:</strong> Try deep breathing or light stretching</li>
                       <li>• <strong>During interactions:</strong> Notice early physical warning signs</li>
                       <li>• <strong>After interactions:</strong> Use recovery time based on your patterns (avg: {
