@@ -44,7 +44,8 @@ export default function DealBreakerAlert({
       .filter((interaction: any) => {
         const interactionDate = new Date(interaction.timestamp);
         return interactionDate > thirtyDaysAgo && 
-               interaction.dealBreakersCrossed?.length > 0;
+               interaction.dealBreakersCrossed && 
+               interaction.dealBreakersCrossed.length > 0;
       })
       .flatMap((interaction: any) => 
         interaction.dealBreakersCrossed.map((dealBreaker: string) => ({

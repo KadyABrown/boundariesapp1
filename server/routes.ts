@@ -1465,6 +1465,8 @@ export async function registerRoutes(app: Express): Promise<Server> {
     try {
       const userId = req.user.claims.sub;
       
+      console.log("Received interaction tracker data:", JSON.stringify(req.body, null, 2));
+      
       // Transform the data to match our enhanced interaction tracker schema
       const transformedData = {
         userId,
@@ -1479,7 +1481,10 @@ export async function registerRoutes(app: Express): Promise<Server> {
         notes: req.body.notes || '',
       };
       
+      console.log("Transformed data for storage:", JSON.stringify(transformedData, null, 2));
+      
       const interaction = await storage.createInteractionTrackerEntry(transformedData);
+      console.log("Saved interaction:", JSON.stringify(interaction, null, 2));
       res.json(interaction);
     } catch (error) {
       console.error("Error creating interaction tracker entry:", error);
