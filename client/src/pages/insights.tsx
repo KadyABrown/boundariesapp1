@@ -233,9 +233,18 @@ export default function Insights() {
           </TabsList>
 
           <TabsContent value="overview" className="space-y-6">
-            {/* Overview Stats */}
+            {/* Boundary Buddy for Overview Tab */}
+            <BoundaryBuddy 
+              context="insights-overview"
+              hasNewRecommendations={true}
+              onNavigateToAnalytics={() => {
+                const analyticsTab = document.querySelector('[value="analytics"]') as HTMLElement;
+                analyticsTab?.click();
+              }}
+            />
 
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
+            {/* Overview Stats */}
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
           <Card>
             <CardHeader className="pb-3">
               <CardTitle className="text-sm font-medium text-neutral-600">Total Entries</CardTitle>

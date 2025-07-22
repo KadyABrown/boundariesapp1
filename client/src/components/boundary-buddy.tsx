@@ -7,9 +7,11 @@ import { X, HelpCircle, Lightbulb, TrendingUp, Cloud, MessageCircle, Bug } from 
 import { Link } from "wouter";
 
 interface BoundaryBuddyProps {
-  context: 'emotional-weather' | 'timeline' | 'achievements' | 'general';
+  context: 'emotional-weather' | 'timeline' | 'achievements' | 'general' | 'insights-overview';
   trigger?: React.ReactNode;
   position?: 'floating' | 'inline';
+  hasNewRecommendations?: boolean;
+  onNavigateToAnalytics?: () => void;
 }
 
 const explanations = {
@@ -71,6 +73,32 @@ const explanations = {
       }
     ]
   },
+  'insights-overview': {
+    title: "Navigate Your Insights Hub",
+    icon: TrendingUp,
+    sections: [
+      {
+        title: "Overview Tab - Where You Are Now",
+        content: "Get a high-level summary of your boundary tracking progress, success rates, and key statistics. This is your dashboard for understanding your overall journey."
+      },
+      {
+        title: "Timeline Tab - Your Story",
+        content: "See every interaction, boundary moment, and relationship milestone chronologically. Perfect for understanding patterns and seeing your growth over time."
+      },
+      {
+        title: "Weather Tab - Relationship Climate",
+        content: "View the emotional 'weather' of your relationships. Just like meteorology, this shows current conditions and forecasts based on recent patterns."
+      },
+      {
+        title: "Analytics Tab - Personalized Insights",
+        content: "🎯 **This is where the magic happens!** Based on your actual interaction data, we generate specific wellness recommendations, identify energy patterns, and provide actionable strategies tailored to your unique situation."
+      },
+      {
+        title: "New Recommendations Available",
+        content: "💡 We've detected patterns in your recent interactions that have generated new personalized wellness strategies. Click the button below to explore these insights!"
+      }
+    ]
+  },
   'general': {
     title: "Welcome to BoundaryCore",
     icon: HelpCircle,
@@ -91,11 +119,17 @@ const explanations = {
   }
 };
 
-export default function BoundaryBuddy({ context, trigger, position = 'inline' }: BoundaryBuddyProps) {
+export default function BoundaryBuddy({ 
+  context, 
+  trigger, 
+  position = 'inline', 
+  hasNewRecommendations = false,
+  onNavigateToAnalytics 
+}: BoundaryBuddyProps) {
   const [isOpen, setIsOpen] = useState(false);
   const [isAnimating, setIsAnimating] = useState(false);
   const explanation = explanations[context];
-  const IconComponent = explanation.icon;
+  const IconComponent = explanation?.icon || HelpCircle;
 
   const playNotificationSound = () => {
     AudioEffects.playBubblePop();
@@ -236,7 +270,7 @@ export default function BoundaryBuddy({ context, trigger, position = 'inline' }:
                           </div>
                         </motion.div>
                         <div>
-                          <h3 className="font-semibold text-lg">{explanation.title}</h3>
+                          <h3 className="font-semibold text-lg">{explanation?.title || "Boundary Guide"}</h3>
                           <p className="text-blue-100 text-sm">Hi! I'm Buddy, your boundary guide 👋</p>
                         </div>
                       </div>
@@ -254,7 +288,7 @@ export default function BoundaryBuddy({ context, trigger, position = 'inline' }:
                   {/* Content */}
                   <div className="p-4 flex-1 overflow-y-auto min-h-0 scrollbar-thin scrollbar-track-gray-100 scrollbar-thumb-gray-300">
                     <div className="space-y-3">
-                      {explanation.sections.map((section, index) => (
+                      {explanation?.sections?.map((section, index) => (
                         <motion.div
                           key={index}
                           initial={{ opacity: 0, y: 10 }}
@@ -280,18 +314,52 @@ export default function BoundaryBuddy({ context, trigger, position = 'inline' }:
 
                   {/* Footer */}
                   <div className="border-t border-gray-200 p-3 bg-gray-50 rounded-b-lg flex-shrink-0">
-                    <div className="flex items-center justify-between">
-                      <p className="text-xs text-gray-600">
-                        💡 Tip: Look for help icons throughout the app for context-specific guidance
-                      </p>
-                      <Button
-                        onClick={() => setIsOpen(false)}
-                        size="sm"
-                        className="bg-blue-600 hover:bg-blue-700"
-                      >
-                        Got it!
-                      </Button>
-                    </div>
+                    {hasNewRecommendations && context === 'insights-overview' && onNavigateToAnalytics ? (
+                      <div className="space-y-3">
+                        <div className="p-3 bg-orange-100 border border-orange-200 rounded-lg">
+                          <p className="text-sm text-orange-800 font-medium mb-2">🎯 New Recommendations Ready!</p>
+                          <p className="text-xs text-orange-700 mb-3">
+                            Your recent interactions have triggered new personalized wellness strategies.
+                          </p>
+                          <Button
+                            onClick={() => {
+                              onNavigateToAnalytics();
+                              setIsOpen(false);
+                            }}
+                            size="sm"
+                            className="w-full bg-orange-600 hover:bg-orange-700 text-white"
+                          >
+                            <TrendingUp className="w-4 h-4 mr-2" />
+                            View Analytics Recommendations
+                          </Button>
+                        </div>
+                        <div className="flex items-center justify-between">
+                          <p className="text-xs text-gray-600">
+                            💡 I'll guide you through each tab's purpose
+                          </p>
+                          <Button
+                            onClick={() => setIsOpen(false)}
+                            size="sm"
+                            variant="outline"
+                          >
+                            Got it!
+                          </Button>
+                        </div>
+                      </div>
+                    ) : (
+                      <div className="flex items-center justify-between">
+                        <p className="text-xs text-gray-600">
+                          💡 Tip: Look for help icons throughout the app for context-specific guidance
+                        </p>
+                        <Button
+                          onClick={() => setIsOpen(false)}
+                          size="sm"
+                          className="bg-blue-600 hover:bg-blue-700"
+                        >
+                          Got it!
+                        </Button>
+                      </div>
+                    )}
                   </div>
                 </CardContent>
               </Card>
