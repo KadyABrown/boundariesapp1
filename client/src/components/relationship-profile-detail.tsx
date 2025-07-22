@@ -4,8 +4,7 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { X, Calendar, Heart, Flag, TrendingUp, MessageSquare, Brain, Plus, Edit2, BarChart3 } from "lucide-react";
-
+import { X, Calendar, Heart, Flag, TrendingUp, MessageSquare, Brain, Plus, Edit2 } from "lucide-react";
 import { format } from "date-fns";
 import ComprehensiveInteractionsView from "./comprehensive-interactions-view";
 import ComprehensiveInteractionTracker from "./comprehensive-interaction-tracker";
@@ -171,16 +170,13 @@ export default function RelationshipProfileDetail({ relationship, onClose }: Rel
           <div className="flex-1 overflow-hidden">
             <Tabs defaultValue="overview" className="h-full flex flex-col">
               <div className="px-6 pt-4">
-                <div className="flex items-center justify-between mb-4">
-                  <TabsList className="grid w-full grid-cols-5 max-w-2xl">
-                    <TabsTrigger value="overview">Overview</TabsTrigger>
-                    <TabsTrigger value="interactions">Interactions</TabsTrigger>
-                    <TabsTrigger value="log-new">Log New</TabsTrigger>
-                    <TabsTrigger value="flags">Flags & Check-ins</TabsTrigger>
-                    <TabsTrigger value="analysis">Analysis</TabsTrigger>
-                  </TabsList>
-
-                </div>
+                <TabsList className="grid w-full grid-cols-5">
+                  <TabsTrigger value="overview">Overview</TabsTrigger>
+                  <TabsTrigger value="interactions">Interactions</TabsTrigger>
+                  <TabsTrigger value="log-new">Log New</TabsTrigger>
+                  <TabsTrigger value="flags">Flags & Check-ins</TabsTrigger>
+                  <TabsTrigger value="analysis">Analysis</TabsTrigger>
+                </TabsList>
               </div>
 
               <div className="flex-1 overflow-y-auto">

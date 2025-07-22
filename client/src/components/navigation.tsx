@@ -24,7 +24,7 @@ export default function Navigation() {
   ];
 
   // Add admin navigation for admin users
-  const isAdmin = (user as any)?.email === "hello@roxzmedia.com";
+  const isAdmin = user?.email === "hello@roxzmedia.com";
   if (isAdmin) {
     navigation.push({ name: "Admin", href: "/admin", icon: Settings, current: location === "/admin" });
   }
@@ -34,9 +34,9 @@ export default function Navigation() {
     setIsSheetOpen(false);
   };
 
-  const userInitials = (user as any)?.firstName && (user as any)?.lastName 
-    ? `${(user as any).firstName[0]}${(user as any).lastName[0]}`
-    : (user as any)?.email?.[0]?.toUpperCase() || "U";
+  const userInitials = user?.firstName && user?.lastName 
+    ? `${user.firstName[0]}${user.lastName[0]}`
+    : user?.email?.[0]?.toUpperCase() || "U";
 
   return (
     <nav className="bg-white shadow-sm border-b border-neutral-200 sticky top-0 z-50">
@@ -76,7 +76,7 @@ export default function Navigation() {
               <DropdownMenuTrigger asChild>
                 <Button variant="ghost" className="relative h-8 w-8 rounded-full">
                   <Avatar className="h-8 w-8">
-                    <AvatarImage src={(user as any)?.profileImageUrl || ""} />
+                    <AvatarImage src={user?.profileImageUrl || ""} />
                     <AvatarFallback className="bg-primary text-white text-sm">
                       {userInitials}
                     </AvatarFallback>
@@ -87,13 +87,13 @@ export default function Navigation() {
                 <div className="flex items-center justify-start gap-2 p-2">
                   <div className="flex flex-col space-y-1 leading-none">
                     <p className="font-medium">
-                      {((user as any)?.firstName && (user as any)?.lastName) 
-                        ? `${(user as any).firstName} ${(user as any).lastName}` 
+                      {(user?.firstName && user?.lastName) 
+                        ? `${user.firstName} ${user.lastName}` 
                         : "User"
                       }
                     </p>
                     <p className="w-[200px] truncate text-sm text-muted-foreground">
-                      {(user as any)?.email || ""}
+                      {user?.email || ""}
                     </p>
                   </div>
                 </div>

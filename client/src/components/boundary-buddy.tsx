@@ -3,16 +3,15 @@ import { motion, AnimatePresence } from "framer-motion";
 import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { AudioEffects } from "@/lib/audioEffects";
-import { X, HelpCircle, Lightbulb, TrendingUp, Cloud, MessageCircle, Bug, Heart } from "lucide-react";
+import { X, HelpCircle, Lightbulb, TrendingUp, Cloud, MessageCircle, Bug } from "lucide-react";
 import { Link } from "wouter";
 
 interface BoundaryBuddyProps {
-  context: 'emotional-weather' | 'timeline' | 'achievements' | 'general' | 'insights-overview' | 'relationship-profile';
+  context: 'emotional-weather' | 'timeline' | 'achievements' | 'general' | 'insights-overview';
   trigger?: React.ReactNode;
   position?: 'floating' | 'inline';
   hasNewRecommendations?: boolean;
   onNavigateToAnalytics?: () => void;
-  onNavigateToInsights?: () => void;
 }
 
 const explanations = {
@@ -115,36 +114,6 @@ const explanations = {
       {
         title: "Getting Started",
         content: "Look for my help icon throughout the app. I'll provide explanations tailored to whatever you're viewing, making your boundary journey clearer and more meaningful."
-      }
-    ]
-  },
-  'relationship-profile': {
-    title: "Relationship Profile Guide",
-    icon: Heart,
-    sections: [
-      {
-        title: "Overview Tab",
-        content: "Track this person's health score, green/red flags, and check-ins. This gives you a snapshot of how this specific relationship affects you."
-      },
-      {
-        title: "Interactions Tab", 
-        content: "See your complete interaction history with this person. Each entry shows energy changes, mood impacts, and boundary outcomes."
-      },
-      {
-        title: "Log New Tab",
-        content: "Use the Comprehensive Interaction Tracker (CIT) to record detailed interactions. This 5-step process captures before/after states, recovery time, and lessons learned."
-      },
-      {
-        title: "Flags & Check-ins Tab",
-        content: "Add behavioral flags (green for healthy, red for concerning) and log emotional safety check-ins to track relationship patterns over time."
-      },
-      {
-        title: "Analysis Tab",
-        content: "View interaction analytics and patterns specific to this relationship. See energy impacts, boundary trends, and recovery patterns."
-      },
-      {
-        title: "Want Deeper Cross-Relationship Insights?",
-        content: "For wellness recommendations and analytics that compare all your relationships, visit the main Insights page where we analyze patterns across your entire relationship network."
       }
     ]
   }
@@ -373,40 +342,6 @@ export default function BoundaryBuddy({
                         <div className="flex items-center justify-between">
                           <p className="text-xs text-gray-600">
                             💡 I'll guide you through each tab's purpose
-                          </p>
-                          <Button
-                            onClick={() => setIsOpen(false)}
-                            size="sm"
-                            variant="outline"
-                          >
-                            Got it!
-                          </Button>
-                        </div>
-                      </div>
-                    ) : context === 'relationship-profile' && onNavigateToInsights ? (
-                      <div className="space-y-3">
-                        <div className="p-3 bg-blue-100 border border-blue-200 rounded-lg">
-                          <p className="text-sm text-blue-800 font-medium mb-2">🎯 Want Deeper Insights?</p>
-                          <p className="text-xs text-blue-700 mb-3">
-                            For cross-relationship analysis and personalized wellness recommendations, check out the main Insights page.
-                          </p>
-                          <Button
-                            onClick={() => {
-                              if (onNavigateToInsights) {
-                                onNavigateToInsights();
-                              }
-                              setIsOpen(false);
-                            }}
-                            size="sm"
-                            className="w-full bg-blue-600 hover:bg-blue-700 text-white"
-                          >
-                            <TrendingUp className="w-4 h-4 mr-2" />
-                            View Comprehensive Insights
-                          </Button>
-                        </div>
-                        <div className="flex items-center justify-between">
-                          <p className="text-xs text-gray-600">
-                            💡 Each tab shows different aspects of this relationship
                           </p>
                           <Button
                             onClick={() => setIsOpen(false)}
