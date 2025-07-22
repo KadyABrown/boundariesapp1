@@ -345,7 +345,7 @@ export default function UnifiedWellnessAnalytics({ interactions, relationships }
                         <div key={symptom.symptom} className="flex justify-between text-sm">
                           <span>{symptom.symptom}</span>
                           <Badge variant="secondary" className="text-xs">
-                            {Math.round((symptom.count / typeData.count) * 100)}%
+                            {Math.round(((symptom.count as number) / typeData.count) * 100)}%
                           </Badge>
                         </div>
                       ))}
@@ -364,7 +364,7 @@ export default function UnifiedWellnessAnalytics({ interactions, relationships }
                         <div key={emotion.emotion} className="flex justify-between text-sm">
                           <span>{emotion.emotion}</span>
                           <Badge variant="secondary" className="text-xs">
-                            {Math.round((emotion.count / typeData.count) * 100)}%
+                            {Math.round(((emotion.count as number) / typeData.count) * 100)}%
                           </Badge>
                         </div>
                       ))}
