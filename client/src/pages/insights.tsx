@@ -468,8 +468,6 @@ export default function Insights() {
               interactions={allInteractions || []} 
               relationshipName="All Relationships"
             />
-              </CardContent>
-            </Card>
           </TabsContent>
         </Tabs>
       </div>

@@ -261,46 +261,112 @@ export default function InteractionAnalytics({ interactions, relationshipName }:
         </CardContent>
       </Card>
 
-      {/* Physical Symptoms Analysis */}
+      {/* Physical Symptoms Analysis with Context */}
       {analytics.topSymptoms.length > 0 && (
         <Card>
           <CardHeader>
-            <CardTitle>Physical Impact Patterns</CardTitle>
+            <CardTitle>Physical Symptoms & Interaction Context</CardTitle>
           </CardHeader>
           <CardContent>
-            <div className="space-y-3">
-              {analytics.topSymptoms.map(([symptom, count], index) => (
-                <motion.div
-                  key={symptom}
-                  initial={{ opacity: 0, x: -20 }}
-                  animate={{ opacity: 1, x: 0 }}
-                  transition={{ delay: index * 0.1 }}
-                  className="flex items-center justify-between py-2 px-3 bg-muted/30 rounded-lg"
-                >
-                  <span className="font-medium">{symptom}</span>
-                  <div className="flex items-center gap-2">
-                    <Badge variant="secondary">
-                      {count} time{count > 1 ? 's' : ''}
-                    </Badge>
-                    <span className="text-sm text-muted-foreground">
-                      {((count / analytics.totalInteractions) * 100).toFixed(0)}%
-                    </span>
-                  </div>
-                </motion.div>
-              ))}
+            <div className="space-y-4">
+              {analytics.topSymptoms.map(([symptom, count], index) => {
+                // Find interactions with this symptom to analyze context
+                const symptomInteractions = validInteractions.filter(i => 
+                  i.physicalSymptoms?.includes(symptom)
+                );
+                
+                // Analyze interaction types for this symptom
+                const interactionTypes = symptomInteractions.reduce((acc, interaction) => {
+                  const type = interaction.interactionType || 'Unknown';
+                  acc[type] = (acc[type] || 0) + 1;
+                  return acc;
+                }, {} as Record<string, number>);
+                
+                const topInteractionType = Object.entries(interactionTypes)
+                  .sort(([,a], [,b]) => b - a)[0]?.[0];
+                
+                // Analyze emotional states when this symptom occurs
+                const emotionalStates = symptomInteractions.reduce((acc, interaction) => {
+                  const states = interaction.emotionalStates || [];
+                  states.forEach(state => {
+                    acc[state] = (acc[state] || 0) + 1;
+                  });
+                  return acc;
+                }, {} as Record<string, number>);
+                
+                const topEmotionalState = Object.entries(emotionalStates)
+                  .sort(([,a], [,b]) => b - a)[0]?.[0];
+                
+                return (
+                  <motion.div
+                    key={symptom}
+                    initial={{ opacity: 0, x: -20 }}
+                    animate={{ opacity: 1, x: 0 }}
+                    transition={{ delay: index * 0.1 }}
+                    className="border rounded-lg p-4 space-y-3"
+                  >
+                    <div className="flex items-center justify-between">
+                      <span className="font-medium text-lg">{symptom}</span>
+                      <div className="flex items-center gap-2">
+                        <Badge variant="secondary">
+                          {count} occurrence{count > 1 ? 's' : ''}
+                        </Badge>
+                        <span className="text-sm text-muted-foreground">
+                          {((count / analytics.totalInteractions) * 100).toFixed(0)}% of interactions
+                        </span>
+                      </div>
+                    </div>
+                    
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4 text-sm">
+                      {topInteractionType && (
+                        <div className="flex items-center gap-2">
+                          <span className="text-muted-foreground">Most common during:</span>
+                          <Badge variant="outline" className="bg-blue-50">
+                            {topInteractionType}
+                          </Badge>
+                        </div>
+                      )}
+                      
+                      {topEmotionalState && (
+                        <div className="flex items-center gap-2">
+                          <span className="text-muted-foreground">Often paired with:</span>
+                          <Badge variant="outline" className="bg-purple-50">
+                            {topEmotionalState}
+                          </Badge>
+                        </div>
+                      )}
+                    </div>
+                  </motion.div>
+                );
+              })}
             </div>
-            {analytics.topSymptoms.length > 0 && (
-              <div className="mt-4 p-3 bg-orange-50 dark:bg-orange-950/20 rounded-lg border border-orange-200 dark:border-orange-800">
-                <div className="flex items-center gap-2 text-orange-700 dark:text-orange-300">
-                  <AlertTriangle className="h-4 w-4" />
-                  <span className="font-medium">Physical Impact Alert</span>
-                </div>
-                <p className="text-sm text-orange-600 dark:text-orange-400 mt-1">
-                  You've experienced physical symptoms after {analytics.topSymptoms.length > 1 ? 'multiple interactions' : 'interactions'} with {relationshipName}. 
-                  Consider discussing these patterns with a healthcare provider or therapist.
-                </p>
+            
+            <div className="mt-6 p-4 bg-orange-50 dark:bg-orange-950/20 rounded-lg border border-orange-200 dark:border-orange-800">
+              <div className="flex items-center gap-2 text-orange-700 dark:text-orange-300">
+                <AlertTriangle className="h-4 w-4" />
+                <span className="font-medium">Physical Impact Insights</span>
               </div>
-            )}
+              <div className="text-sm text-orange-600 dark:text-orange-400 mt-2 space-y-1">
+                <p>Your body is responding to specific interaction patterns:</p>
+                <ul className="list-disc list-inside ml-2 space-y-1">
+                  {analytics.topSymptoms.slice(0, 2).map(([symptom]) => {
+                    const symptomInteractions = validInteractions.filter(i => 
+                      i.physicalSymptoms?.includes(symptom)
+                    );
+                    const avgEnergyDrop = symptomInteractions.reduce((sum, i) => 
+                      sum + ((i.postEnergyLevel || 0) - (i.preEnergyLevel || 0)), 0
+                    ) / symptomInteractions.length;
+                    
+                    return (
+                      <li key={symptom}>
+                        <strong>{symptom}:</strong> Occurs during interactions with an average energy drop of {avgEnergyDrop.toFixed(1)} points
+                      </li>
+                    );
+                  })}
+                </ul>
+                <p className="mt-2">Consider tracking these patterns with a healthcare provider.</p>
+              </div>
+            </div>
           </CardContent>
         </Card>
       )}
