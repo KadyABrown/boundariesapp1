@@ -27,8 +27,10 @@ import { z } from "zod";
 // Stripe initialization removed - payment processing handled externally
 
 export async function registerRoutes(app: Express): Promise<Server> {
-  // Auth middleware
+  // Auth middleware - both Replit OIDC and local auth
   await setupAuth(app);
+  const { setupLocalAuth } = await import("./localAuth");
+  setupLocalAuth(app);
 
   // Auth routes
   app.get('/api/auth/user', isAuthenticated, async (req: any, res) => {
@@ -1836,7 +1838,12 @@ export async function registerRoutes(app: Express): Promise<Server> {
       // Generate a unique user ID (similar to how Replit does it)
       const userId = `admin-${Date.now()}-${Math.random().toString(36).substring(2, 15)}`;
       
-      // Create user in database - Stripe integration removed, external payment handling
+      // Generate temporary password for new account
+      const tempPassword = Math.random().toString(36).slice(-8) + Math.random().toString(36).slice(-8);
+      const { hashPassword } = await import("./localAuth");
+      const hashedPassword = await hashPassword(tempPassword);
+
+      // Create user in database with local authentication
       const newUser = await storage.createUser({
         id: userId,
         email: email,
@@ -1844,6 +1851,8 @@ export async function registerRoutes(app: Express): Promise<Server> {
         lastName: lastName || null,
         phoneNumber: phoneNumber || null,
         username: email.split('@')[0], // Use email prefix as username
+        password: hashedPassword,
+        accountType: 'local',
         profileImageUrl: null,
         createdAt: new Date(),
         updatedAt: new Date(),
@@ -1859,6 +1868,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
           phoneNumber: newUser.phoneNumber,
         },
         message: `User account created successfully for ${email}`,
+        tempPassword: tempPassword, // Send temp password to admin
       });
     } catch (error: any) {
       console.error("Error creating premium user:", error);
