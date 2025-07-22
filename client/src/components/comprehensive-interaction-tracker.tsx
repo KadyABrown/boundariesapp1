@@ -29,7 +29,9 @@ import {
   ChevronRight,
   ChevronLeft,
   Save,
-  RotateCcw
+  RotateCcw,
+  MessageCircle,
+  Star
 } from "lucide-react";
 
 interface ComprehensiveInteractionData {
@@ -72,6 +74,13 @@ interface ComprehensiveInteractionData {
   copingSkillsUsed: string[];
   supportSystemEngaged: boolean;
   selfAdvocacyActions: string[];
+  
+  // Compatibility assessment
+  communicationQuality: number; // 1-10
+  communicationIssues: string[];
+  boundaryViolations: string[];
+  emotionalNeedsMet: number; // 1-10
+  valuesAlignment: number; // 1-10
   
   // Reflection
   lessonsLearned: string;
@@ -754,6 +763,158 @@ export default function ComprehensiveInteractionTracker({
           <div className="space-y-6">
             <div className="text-center">
               <h3 className="text-lg font-semibold text-gray-800 mb-2">
+                Compatibility Assessment
+              </h3>
+              <p className="text-sm text-gray-600">How well did this interaction align with your baseline needs?</p>
+            </div>
+
+            {/* Communication Quality */}
+            <div className="space-y-3">
+              <Label className="text-base font-medium flex items-center gap-2">
+                <MessageCircle className="w-5 h-5 text-blue-600" />
+                Communication Quality (1-10)
+              </Label>
+              <Slider
+                value={[data.communicationQuality || 5]}
+                onValueChange={([value]) => updateData('communicationQuality', value)}
+                min={1}
+                max={10}
+                step={1}
+                className="w-full"
+              />
+              <div className="flex justify-between text-xs text-gray-500">
+                <span>1 - Terrible</span>
+                <span className="font-medium">{data.communicationQuality}/10</span>
+                <span>10 - Excellent</span>
+              </div>
+            </div>
+
+            {/* Specific Communication Issues */}
+            <div className="space-y-3">
+              <Label className="text-base font-medium">Communication issues present (select all that apply)</Label>
+              <div className="grid grid-cols-2 gap-2 max-h-48 overflow-y-auto">
+                {[
+                  'Interrupted me frequently',
+                  'Didn\'t listen to my perspective', 
+                  'Raised voice or yelled',
+                  'Used dismissive language',
+                  'Changed subject when I spoke',
+                  'Made assumptions about my feelings',
+                  'Talked over me',
+                  'Ignored what I was saying',
+                  'Used harsh tone',
+                  'Criticized my communication style'
+                ].map(issue => (
+                  <div key={issue} className="flex items-center space-x-2">
+                    <Checkbox
+                      id={issue}
+                      checked={(data.communicationIssues || []).includes(issue)}
+                      onCheckedChange={() => toggleArrayField('communicationIssues', issue)}
+                    />
+                    <Label htmlFor={issue} className="text-sm">{issue}</Label>
+                  </div>
+                ))}
+              </div>
+            </div>
+
+            {/* Boundary Violations */}
+            <div className="space-y-3">
+              <Label className="text-base font-medium flex items-center gap-2">
+                <Shield className="w-5 h-5 text-red-600" />
+                Boundary violations that occurred
+              </Label>
+              <div className="grid grid-cols-1 gap-2 max-h-48 overflow-y-auto">
+                {allBoundaries.slice(0, 8).map(boundary => (
+                  <div key={boundary} className="flex items-center space-x-2">
+                    <Checkbox
+                      id={`violated-${boundary}`}
+                      checked={(data.boundaryViolations || []).includes(boundary)}
+                      onCheckedChange={() => toggleArrayField('boundaryViolations', boundary)}
+                    />
+                    <Label htmlFor={`violated-${boundary}`} className="text-sm text-red-700">{boundary} was violated</Label>
+                  </div>
+                ))}
+              </div>
+            </div>
+
+            {/* Emotional Needs Met */}
+            <div className="space-y-3">
+              <Label className="text-base font-medium flex items-center gap-2">
+                <Heart className="w-5 h-5 text-purple-600" />
+                Emotional Needs Met (1-10)
+              </Label>
+              <Slider
+                value={[data.emotionalNeedsMet || 5]}
+                onValueChange={([value]) => updateData('emotionalNeedsMet', value)}
+                min={1}
+                max={10}
+                step={1}
+                className="w-full"
+              />
+              <div className="flex justify-between text-xs text-gray-500">
+                <span>1 - None</span>
+                <span className="font-medium">{data.emotionalNeedsMet}/10</span>
+                <span>10 - Completely</span>
+              </div>
+            </div>
+
+            {/* Values Alignment */}
+            <div className="space-y-3">
+              <Label className="text-base font-medium flex items-center gap-2">
+                <Star className="w-5 h-5 text-yellow-600" />
+                How well did their behavior align with your values? (1-10)
+              </Label>
+              <Slider
+                value={[data.valuesAlignment || 5]}
+                onValueChange={([value]) => updateData('valuesAlignment', value)}
+                min={1}
+                max={10}
+                step={1}
+                className="w-full"
+              />
+              <div className="flex justify-between text-xs text-gray-500">
+                <span>1 - Completely Misaligned</span>
+                <span className="font-medium">{data.valuesAlignment}/10</span>
+                <span>10 - Perfectly Aligned</span>
+              </div>
+            </div>
+
+            {/* Overall Compatibility Score */}
+            <Card className="bg-gradient-to-r from-blue-50 to-purple-50 border-blue-200">
+              <CardContent className="p-4">
+                <h4 className="font-medium text-blue-800 mb-2">Interaction Compatibility Score</h4>
+                <div className="grid grid-cols-2 gap-4 text-sm">
+                  <div>
+                    <span className="text-blue-600">Communication:</span>
+                    <div className="font-medium">{data.communicationQuality || 5}/10</div>
+                  </div>
+                  <div>
+                    <span className="text-blue-600">Emotional Needs:</span>
+                    <div className="font-medium">{data.emotionalNeedsMet || 5}/10</div>
+                  </div>
+                  <div>
+                    <span className="text-blue-600">Boundary Respect:</span>
+                    <div className="font-medium">
+                      {(data.boundaryViolations?.length || 0) === 0 ? '10/10' : 
+                       (data.boundaryViolations?.length || 0) <= 2 ? '7/10' : 
+                       (data.boundaryViolations?.length || 0) <= 4 ? '4/10' : '1/10'}
+                    </div>
+                  </div>
+                  <div>
+                    <span className="text-blue-600">Values Alignment:</span>
+                    <div className="font-medium">{data.valuesAlignment || 5}/10</div>
+                  </div>
+                </div>
+              </CardContent>
+            </Card>
+          </div>
+        );
+
+      case 6:
+        return (
+          <div className="space-y-6">
+            <div className="text-center">
+              <h3 className="text-lg font-semibold text-gray-800 mb-2">
                 Reflection and learning
               </h3>
               <p className="text-sm text-gray-600">What did you learn for next time?</p>
@@ -878,7 +1039,7 @@ export default function ComprehensiveInteractionTracker({
         <DialogHeader>
           <DialogTitle className="flex items-center justify-between">
             <span>Comprehensive Interaction Tracker</span>
-            <Badge variant="outline">Step {step} of 5</Badge>
+            <Badge variant="outline">Step {step} of 6</Badge>
           </DialogTitle>
         </DialogHeader>
 
@@ -887,7 +1048,7 @@ export default function ComprehensiveInteractionTracker({
           <div className="w-full bg-gray-200 rounded-full h-2">
             <div 
               className="bg-blue-600 h-2 rounded-full transition-all duration-300"
-              style={{ width: `${(step / 5) * 100}%` }}
+              style={{ width: `${(step / 6) * 100}%` }}
             />
           </div>
 
@@ -918,9 +1079,9 @@ export default function ComprehensiveInteractionTracker({
                 Cancel
               </Button>
 
-              {step < 5 ? (
+              {step < 6 ? (
                 <Button
-                  onClick={() => setStep(Math.min(5, step + 1))}
+                  onClick={() => setStep(Math.min(6, step + 1))}
                   className="flex items-center gap-2"
                 >
                   Next
