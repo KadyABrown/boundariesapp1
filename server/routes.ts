@@ -1362,6 +1362,38 @@ export async function registerRoutes(app: Express): Promise<Server> {
   });
 
   // Comprehensive interactions routes
+  // Reflection routes
+  app.get('/api/reflections', isAuthenticated, async (req: any, res) => {
+    try {
+      const userId = req.user.claims.sub;
+      const limit = req.query.limit ? parseInt(req.query.limit) : undefined;
+      const reflections = await storage.getReflectionEntriesByUser(userId, limit);
+      res.json(reflections);
+    } catch (error) {
+      console.error("Error fetching reflections:", error);
+      res.status(500).json({ message: "Failed to fetch reflections" });
+    }
+  });
+
+  app.post('/api/reflections', isAuthenticated, async (req: any, res) => {
+    try {
+      const userId = req.user.claims.sub;
+      const reflectionData = insertReflectionEntrySchema.parse({
+        ...req.body,
+        userId,
+      });
+      const reflection = await storage.createReflectionEntry(reflectionData);
+      res.json(reflection);
+    } catch (error) {
+      if (error instanceof z.ZodError) {
+        res.status(400).json({ message: "Invalid reflection data", errors: error.errors });
+      } else {
+        console.error("Error creating reflection:", error);
+        res.status(500).json({ message: "Failed to create reflection" });
+      }
+    }
+  });
+
   app.get('/api/interactions', isAuthenticated, async (req: any, res) => {
     try {
       const userId = req.user.claims.sub;

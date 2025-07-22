@@ -9,9 +9,10 @@ import BoundaryBuddy from "@/components/boundary-buddy";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { TrendingUp, Calendar, BarChart3, Download, Activity } from "lucide-react";
+import { TrendingUp, Calendar, BarChart3, Download, Activity, BookOpen } from "lucide-react";
 import UnifiedWellnessAnalytics from "@/components/unified-wellness-analytics";
 import InsightsActivitySummary from "@/components/insights-activity-summary";
+import DailyReflection from "@/components/daily-reflection";
 
 // Type definitions
 interface ComprehensiveInteraction {
@@ -250,7 +251,7 @@ export default function Insights() {
         />
 
         <Tabs value={activeTab} onValueChange={setActiveTab} className="space-y-6" id="insights-tabs">
-          <TabsList className="grid w-full grid-cols-2 md:grid-cols-4 gap-1 h-auto">
+          <TabsList className="grid w-full grid-cols-2 md:grid-cols-5 gap-1 h-auto">
             <TabsTrigger value="overview" className="flex items-center gap-1 md:gap-2 text-xs md:text-sm px-2 py-2 md:px-4">
               <BarChart3 className="w-3 h-3 md:w-4 md:h-4" />
               Overview
@@ -266,6 +267,10 @@ export default function Insights() {
             <TabsTrigger value="analytics" className="flex items-center gap-1 md:gap-2 text-xs md:text-sm px-2 py-2 md:px-4" id="analytics-tab-trigger">
               <TrendingUp className="w-3 h-3 md:w-4 md:h-4" />
               Analytics
+            </TabsTrigger>
+            <TabsTrigger value="reflection" className="flex items-center gap-1 md:gap-2 text-xs md:text-sm px-2 py-2 md:px-4">
+              <BookOpen className="w-3 h-3 md:w-4 md:h-4" />
+              Reflect
             </TabsTrigger>
           </TabsList>
 
@@ -523,6 +528,10 @@ export default function Insights() {
               interactions={(Array.isArray(interactions) ? interactions : []) as ComprehensiveInteraction[]} 
               relationships={(Array.isArray(transformedRelationships) ? transformedRelationships : []) as RelationshipWithStats[]}
             />
+          </TabsContent>
+
+          <TabsContent value="reflection" className="space-y-6">
+            <DailyReflection />
           </TabsContent>
         </Tabs>
       </div>

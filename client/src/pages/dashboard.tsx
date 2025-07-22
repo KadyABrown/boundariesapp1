@@ -112,6 +112,9 @@ export default function Dashboard() {
   });
 
   const activeBoundaries = boundaries?.filter((b: any) => b.isActive) || [];
+  
+  // Calculate total entries from stats for insights notification
+  const totalEntries = (stats as any)?.weeklyTotal || 0;
 
   return (
     <div className="min-h-screen bg-neutral-50">
@@ -204,6 +207,29 @@ export default function Dashboard() {
                     </div>
                   </div>
                 </div>
+
+                {/* Insights Notification */}
+                {totalEntries > 2 && (
+                  <div className="bg-gradient-to-r from-purple-50 to-blue-50 border border-purple-200 rounded-lg p-4 mb-4">
+                    <div className="flex items-center gap-3">
+                      <TrendingUp className="w-5 h-5 text-purple-600" />
+                      <div className="flex-1">
+                        <p className="text-sm font-medium text-purple-800">New Insights Available!</p>
+                        <p className="text-xs text-purple-600">
+                          Your relationship patterns are ready for analysis
+                        </p>
+                      </div>
+                      <Button 
+                        size="sm" 
+                        variant="outline"
+                        className="border-purple-300 text-purple-700 hover:bg-purple-100"
+                        onClick={() => window.location.href = '/insights?tab=analytics'}
+                      >
+                        View Insights
+                      </Button>
+                    </div>
+                  </div>
+                )}
                 
                 <Button 
                   className="w-full"

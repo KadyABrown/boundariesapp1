@@ -55,13 +55,6 @@ interface UnifiedWellnessAnalyticsProps {
 
 export default function UnifiedWellnessAnalytics({ interactions = [], relationships = [] }: UnifiedWellnessAnalyticsProps) {
   const analytics = useMemo(() => {
-    console.log('Analytics Data Check:', { 
-      interactionsCount: interactions.length, 
-      relationshipsCount: relationships.length,
-      interactions: interactions.slice(0, 2),
-      relationships: relationships.slice(0, 2)
-    });
-    
     if (!interactions || interactions.length === 0 || !relationships || relationships.length === 0) {
       return null;
     }
@@ -70,8 +63,6 @@ export default function UnifiedWellnessAnalytics({ interactions = [], relationsh
       i.preEnergyLevel !== undefined && i.postEnergyLevel !== undefined && 
       i.preEnergyLevel !== null && i.postEnergyLevel !== null
     );
-    
-    console.log('Valid interactions found:', validInteractions.length);
 
     if (validInteractions.length === 0) {
       return null;

@@ -38,11 +38,23 @@ function Router() {
       <Route path="/checkout" component={Subscribe} />
       <Route path="/subscription-success" component={SubscriptionSuccess} />
       
-      {isLoading || !isAuthenticated ? (
+      {isLoading ? (
+        <Route path="*">
+          <div className="min-h-screen bg-neutral-50 flex items-center justify-center">
+            <div className="text-center">
+              <div className="w-8 h-8 bg-primary rounded-lg flex items-center justify-center mx-auto mb-4 animate-pulse">
+                <span className="text-white text-sm">B</span>
+              </div>
+              <p className="text-neutral-600">Loading your data...</p>
+            </div>
+          </div>
+        </Route>
+      ) : !isAuthenticated ? (
         <Route path="/" component={Landing} />
       ) : (
         <>
           <Route path="/" component={Dashboard} />
+          <Route path="/dashboard" component={Dashboard} />
           <Route path="/boundaries" component={Boundaries} />
           <Route path="/relationships" component={Relationships} />
           <Route path="/relationships/:id" component={RelationshipDetail} />
