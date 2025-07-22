@@ -430,38 +430,143 @@ export default function UnifiedWellnessAnalytics({ interactions, relationships }
         </CardContent>
       </Card>
 
-      {/* Key Insights */}
+      {/* Personalized Wellness Recommendations */}
       <Card>
         <CardHeader>
           <CardTitle className="flex items-center gap-2">
-            <Brain className="h-5 w-5" />
-            Key Wellness Insights
+            <Target className="h-5 w-5" />
+            Personalized Wellness Recommendations
           </CardTitle>
         </CardHeader>
-        <CardContent className="space-y-4">
+        <CardContent className="space-y-6">
           {analytics.relationshipTypeAnalysis.length > 0 && (
             <>
+              {/* Most Supportive Relationship Type */}
               <div className="p-4 bg-green-50 rounded-lg border border-green-200">
-                <div className="flex items-center gap-2 text-green-700 mb-2">
+                <div className="flex items-center gap-2 text-green-700 mb-3">
                   <TrendingUp className="h-4 w-4" />
-                  <span className="font-medium">Most Supportive Relationship Type</span>
+                  <span className="font-medium">Your Wellness Strength</span>
                 </div>
-                <p className="text-sm text-green-800">
-                  <strong>{analytics.relationshipTypeAnalysis[0].type.replace('-', ' ')} relationships</strong> have the highest wellness score 
-                  ({analytics.relationshipTypeAnalysis[0].overallWellnessScore}%) with an average energy boost of 
-                  {analytics.relationshipTypeAnalysis[0].avgEnergyChange > 0 ? '+' : ''}{analytics.relationshipTypeAnalysis[0].avgEnergyChange.toFixed(1)} points.
+                <p className="text-sm text-green-800 mb-3">
+                  <strong>{analytics.relationshipTypeAnalysis[0].type.replace('-', ' ')} relationships</strong> energize you most 
+                  (wellness score: {analytics.relationshipTypeAnalysis[0].overallWellnessScore}%, 
+                  energy boost: {analytics.relationshipTypeAnalysis[0].avgEnergyChange > 0 ? '+' : ''}{analytics.relationshipTypeAnalysis[0].avgEnergyChange.toFixed(1)}).
                 </p>
+                <div className="bg-green-100 p-3 rounded border-l-4 border-green-500">
+                  <h4 className="font-medium text-green-800 mb-2">Actionable Strategy:</h4>
+                  <ul className="text-sm text-green-700 space-y-1">
+                    <li>• Schedule more time with these relationships when you need emotional recharge</li>
+                    <li>• Use their support patterns as a template for other relationships</li>
+                    <li>• Notice what specific behaviors make these interactions energizing</li>
+                  </ul>
+                </div>
               </div>
 
-              {analytics.relationshipTypeAnalysis.find(type => type.overallWellnessScore < 50) && (
-                <div className="p-4 bg-orange-50 rounded-lg border border-orange-200">
-                  <div className="flex items-center gap-2 text-orange-700 mb-2">
+              {/* Challenging Relationship Types */}
+              {analytics.relationshipTypeAnalysis.filter(type => type.overallWellnessScore < 60).map(challengingType => (
+                <div key={challengingType.type} className="p-4 bg-orange-50 rounded-lg border border-orange-200">
+                  <div className="flex items-center gap-2 text-orange-700 mb-3">
                     <AlertTriangle className="h-4 w-4" />
-                    <span className="font-medium">Relationship Type Requiring Attention</span>
+                    <span className="font-medium">
+                      {challengingType.type.replace('-', ' ')} Relationships Need Support
+                    </span>
                   </div>
-                  <p className="text-sm text-orange-800">
-                    Your <strong>{analytics.relationshipTypeAnalysis.find(type => type.overallWellnessScore < 50)?.type.replace('-', ' ')} relationships</strong> show 
-                    concerning patterns with lower wellness scores. Consider reviewing boundaries and communication strategies for these connections.
+                  <p className="text-sm text-orange-800 mb-3">
+                    Wellness score: {challengingType.overallWellnessScore}%, 
+                    Energy impact: {challengingType.avgEnergyChange > 0 ? '+' : ''}{challengingType.avgEnergyChange.toFixed(1)}, 
+                    Boundary violations: {challengingType.boundaryViolationRate.toFixed(0)}%
+                  </p>
+                  <div className="bg-orange-100 p-3 rounded border-l-4 border-orange-500 space-y-3">
+                    <div>
+                      <h4 className="font-medium text-orange-800 mb-2">Immediate Actions:</h4>
+                      <ul className="text-sm text-orange-700 space-y-1">
+                        {challengingType.boundaryViolationRate > 30 && (
+                          <li>• <strong>Strengthen boundaries:</strong> Practice saying "no" and set clear expectations</li>
+                        )}
+                        {challengingType.avgEnergyChange < -2 && (
+                          <li>• <strong>Energy protection:</strong> Limit interaction time or schedule recovery time after</li>
+                        )}
+                        {challengingType.avgRecoveryTime > 120 && (
+                          <li>• <strong>Recovery planning:</strong> Have specific strategies ready for post-interaction recovery</li>
+                        )}
+                      </ul>
+                    </div>
+                    
+                    {challengingType.topSymptoms.length > 0 && (
+                      <div>
+                        <h4 className="font-medium text-orange-800 mb-2">Physical Wellness:</h4>
+                        <p className="text-sm text-orange-700">
+                          Your body frequently responds with <strong>{challengingType.topSymptoms[0].symptom}</strong> during these interactions. 
+                          Consider stress-reduction techniques before and after these encounters.
+                        </p>
+                      </div>
+                    )}
+                  </div>
+                </div>
+              ))}
+
+              {/* Physical Symptoms Recommendations */}
+              {analytics.relationshipTypeAnalysis.some(type => type.topSymptoms.length > 0) && (
+                <div className="p-4 bg-blue-50 rounded-lg border border-blue-200">
+                  <div className="flex items-center gap-2 text-blue-700 mb-3">
+                    <Activity className="h-4 w-4" />
+                    <span className="font-medium">Body-Mind Connection Insights</span>
+                  </div>
+                  <div className="bg-blue-100 p-3 rounded border-l-4 border-blue-500">
+                    <h4 className="font-medium text-blue-800 mb-2">Wellness Protocol:</h4>
+                    <ul className="text-sm text-blue-700 space-y-1">
+                      <li>• <strong>Before difficult interactions:</strong> Try deep breathing or light stretching</li>
+                      <li>• <strong>During interactions:</strong> Notice early physical warning signs</li>
+                      <li>• <strong>After interactions:</strong> Use recovery time based on your patterns (avg: {
+                        Math.round(analytics.relationshipTypeAnalysis
+                          .reduce((sum, type) => sum + type.avgRecoveryTime, 0) / analytics.relationshipTypeAnalysis.length)
+                      } minutes)</li>
+                      <li>• <strong>Long-term:</strong> Consider discussing persistent physical symptoms with a healthcare provider</li>
+                    </ul>
+                  </div>
+                </div>
+              )}
+
+              {/* Relationship Status Patterns */}
+              {analytics.statusAnalysis.length > 1 && (
+                <div className="p-4 bg-purple-50 rounded-lg border border-purple-200">
+                  <div className="flex items-center gap-2 text-purple-700 mb-3">
+                    <Heart className="h-4 w-4" />
+                    <span className="font-medium">Relationship Stage Patterns</span>
+                  </div>
+                  <div className="bg-purple-100 p-3 rounded border-l-4 border-purple-500">
+                    <h4 className="font-medium text-purple-800 mb-2">Pattern Analysis:</h4>
+                    <div className="text-sm text-purple-700 space-y-2">
+                      {analytics.statusAnalysis.slice(0, 2).map(status => (
+                        <div key={status.status}>
+                          <strong>{status.status.replace('-', ' ')} relationships:</strong> 
+                          {status.avgEnergyChange > 0 ? (
+                            <span className="text-green-600"> Energizing (+{status.avgEnergyChange.toFixed(1)})</span>
+                          ) : (
+                            <span className="text-red-600"> Draining ({status.avgEnergyChange.toFixed(1)})</span>
+                          )}
+                          {status.topEmotion && <span> • Often feel: {status.topEmotion}</span>}
+                        </div>
+                      ))}
+                      <div className="mt-2 pt-2 border-t border-purple-200">
+                        <strong>Insight:</strong> Notice how relationship stages affect your energy. 
+                        Use this awareness to prepare for interactions and set appropriate boundaries.
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              )}
+
+              {/* Success Celebration */}
+              {analytics.relationshipTypeAnalysis.filter(type => type.overallWellnessScore >= 70).length > 1 && (
+                <div className="p-4 bg-emerald-50 rounded-lg border border-emerald-200">
+                  <div className="flex items-center gap-2 text-emerald-700 mb-2">
+                    <Heart className="h-4 w-4" />
+                    <span className="font-medium">Relationship Wellness Strengths</span>
+                  </div>
+                  <p className="text-sm text-emerald-800">
+                    <strong>Great news!</strong> You have {analytics.relationshipTypeAnalysis.filter(type => type.overallWellnessScore >= 70).length} relationship 
+                    types with excellent wellness scores (70%+). This shows you know how to build and maintain healthy connections.
                   </p>
                 </div>
               )}
