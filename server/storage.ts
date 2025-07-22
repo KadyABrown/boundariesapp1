@@ -601,11 +601,64 @@ export class DatabaseStorage implements IStorage {
       .from(emotionalCheckIns)
       .where(eq(emotionalCheckIns.profileId, profileId));
 
+    // Get comprehensive interaction data for health calculations
+    const interactions = await db
+      .select()
+      .from(comprehensiveInteractions)
+      .where(eq(comprehensiveInteractions.relationshipId, profileId))
+      .orderBy(desc(comprehensiveInteractions.createdAt));
+
+    const interactionCount = interactions.length;
+    
+    let energyImpact = 0;
+    let anxietyImpact = 0;
+    let selfWorthImpact = 0;
+    let averageRecoveryTime = 0;
+    let physicalSymptomsFrequency = 0;
+
+    if (interactionCount > 0) {
+      // Calculate average impacts
+      energyImpact = interactions.reduce((sum, i) => sum + ((i.postEnergyLevel || 0) - (i.preEnergyLevel || 0)), 0) / interactionCount;
+      anxietyImpact = interactions.reduce((sum, i) => sum + ((i.postAnxietyLevel || 0) - (i.preAnxietyLevel || 0)), 0) / interactionCount;
+      selfWorthImpact = interactions.reduce((sum, i) => sum + ((i.postSelfWorth || 0) - (i.preSelfWorth || 0)), 0) / interactionCount;
+      averageRecoveryTime = interactions.reduce((sum, i) => sum + (i.recoveryTimeMinutes || 0), 0) / interactionCount;
+      
+      // Calculate physical symptoms frequency (% of interactions with symptoms)
+      const interactionsWithSymptoms = interactions.filter(i => 
+        i.physicalSymptoms && Array.isArray(i.physicalSymptoms) && i.physicalSymptoms.length > 0
+      ).length;
+      physicalSymptomsFrequency = (interactionsWithSymptoms / interactionCount) * 100;
+    }
+
+    // Calculate overall health score combining flags and CIT data
+    const flagScore = Math.round(((greenFlags[0]?.count || 0) / Math.max((greenFlags[0]?.count || 0) + (redFlags[0]?.count || 0), 1)) * 100);
+    const safetyScore = (safetyData[0]?.avg || 5) * 10; // Convert 1-10 to 0-100
+    
+    const interactionScore = interactionCount > 0 ? Math.round(
+      ((energyImpact + 10) / 20) * 25 + // Energy impact (25%)
+      ((10 - Math.abs(anxietyImpact)) / 10) * 20 + // Anxiety impact (20%)
+      ((selfWorthImpact + 10) / 20) * 25 + // Self-worth impact (25%)
+      ((Math.max(0, 1440 - averageRecoveryTime) / 1440) * 15) + // Recovery time (15%)
+      ((100 - physicalSymptomsFrequency) / 100) * 15 // Physical symptoms (15%)
+    ) : 50;
+    
+    // Weighted combination: 40% flags, 30% interactions, 30% safety ratings
+    const overallHealthScore = Math.round(
+      (flagScore * 0.4) + (interactionScore * 0.3) + (safetyScore * 0.3)
+    );
+
     return {
       greenFlags: greenFlags[0]?.count || 0,
       redFlags: redFlags[0]?.count || 0,
       averageSafetyRating: safetyData[0]?.avg || 0,
       checkInCount: checkInCount[0]?.count || 0,
+      overallHealthScore,
+      energyImpact,
+      anxietyImpact,
+      selfWorthImpact,
+      averageRecoveryTime,
+      physicalSymptomsFrequency,
+      interactionCount,
     };
   }
 

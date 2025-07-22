@@ -108,6 +108,10 @@ export default function RelationshipProfileDetail({ relationship, onClose }: Rel
 
   const getHealthScore = () => {
     if (!stats) return 50; // Default to neutral score when no data
+    // Use the comprehensive health score if available, otherwise fall back to flag-based calculation
+    if ((stats as any).overallHealthScore !== undefined) {
+      return (stats as any).overallHealthScore;
+    }
     const totalFlags = (stats as any).greenFlags + (stats as any).redFlags;
     if (totalFlags === 0) return 50; // Default to neutral when no flags
     return Math.round(((stats as any).greenFlags / totalFlags) * 100);
@@ -301,6 +305,20 @@ export default function RelationshipProfileDetail({ relationship, onClose }: Rel
                               <div className="text-lg font-semibold">{stats.checkInCount}</div>
                               <div className="text-gray-500 text-sm">Check-ins</div>
                             </div>
+                            {stats.interactionCount > 0 && (
+                              <div className="border-t pt-2 text-xs text-gray-600">
+                                <div className="flex justify-between">
+                                  <span>CIT Interactions:</span>
+                                  <span className="font-medium">{stats.interactionCount}</span>
+                                </div>
+                                <div className="flex justify-between">
+                                  <span>Energy Impact:</span>
+                                  <span className={`font-medium ${stats.energyImpact >= 0 ? 'text-green-600' : 'text-red-600'}`}>
+                                    {stats.energyImpact >= 0 ? '+' : ''}{stats.energyImpact?.toFixed(1)}
+                                  </span>
+                                </div>
+                              </div>
+                            )}
                           </div>
                         ) : (
                           <p className="text-gray-500">No data available</p>
