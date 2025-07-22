@@ -20,7 +20,6 @@ import {
   insertFriendCircleSchema,
   insertComprehensiveInteractionSchema,
   insertPersonalBaselineSchema,
-  insertInteractionTrackerEntrySchema,
   insertFeedbackSchema,
 } from "@shared/schema";
 import { z } from "zod";
@@ -1445,51 +1444,6 @@ export async function registerRoutes(app: Express): Promise<Server> {
         console.error("Error creating friend circle:", error);
         res.status(500).json({ message: "Failed to create friend circle" });
       }
-    }
-  });
-
-  // Interaction Tracker routes (baseline compatibility focused)
-  app.get('/api/interaction-tracker/:relationshipId', isAuthenticated, async (req: any, res) => {
-    try {
-      const userId = req.user.claims.sub;
-      const relationshipId = parseInt(req.params.relationshipId);
-      const interactions = await storage.getInteractionTrackerEntries(userId, relationshipId);
-      console.log(`Fetching interactions for relationship ${relationshipId}:`, JSON.stringify(interactions, null, 2));
-      res.json(interactions);
-    } catch (error) {
-      console.error("Error fetching interaction tracker entries:", error);
-      res.status(500).json({ message: "Failed to fetch interaction tracker entries" });
-    }
-  });
-
-  app.post('/api/interaction-tracker', isAuthenticated, async (req: any, res) => {
-    try {
-      const userId = req.user.claims.sub;
-      
-      console.log("Received interaction tracker data:", JSON.stringify(req.body, null, 2));
-      
-      // Transform the data to match our enhanced interaction tracker schema
-      const transformedData = {
-        userId,
-        relationshipId: req.body.relationshipId,
-        timestamp: new Date(req.body.timestamp || new Date()),
-        communicationMet: req.body.communicationMet || false,
-        emotionalNeedsMet: req.body.emotionalNeedsMet || [],
-        triggersOccurred: req.body.triggersOccurred || [],
-        dealBreakersCrossed: req.body.dealBreakersCrossed || [],
-        repeatedTriggers: req.body.repeatedTriggers || [],
-        overallCompatibility: req.body.overallCompatibility,
-        notes: req.body.notes || '',
-      };
-      
-      console.log("Transformed data for storage:", JSON.stringify(transformedData, null, 2));
-      
-      const interaction = await storage.createInteractionTrackerEntry(transformedData);
-      console.log("Saved interaction:", JSON.stringify(interaction, null, 2));
-      res.json(interaction);
-    } catch (error) {
-      console.error("Error creating interaction tracker entry:", error);
-      res.status(500).json({ message: "Failed to create interaction tracker entry" });
     }
   });
 

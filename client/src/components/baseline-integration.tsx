@@ -1,7 +1,7 @@
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
-import { Brain, Heart, Shield, Clock, Users, Target, MessageCircle } from "lucide-react";
+import { Brain, Heart, Shield, Clock, Users, Target } from "lucide-react";
 import { useLocation } from "wouter";
 import { useQuery } from "@tanstack/react-query";
 
@@ -99,10 +99,34 @@ export default function BaselineIntegration({
             <>
               <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 mb-4">
                 <div className="flex items-center gap-2">
-                  <MessageCircle className="w-4 h-4 text-blue-500" />
+                  <Heart className="w-4 h-4 text-pink-500" />
                   <div>
-                    <p className="text-sm font-medium">Communication</p>
-                    <p className="text-xs text-gray-600 capitalize">{userBaseline.communicationStyle?.replace('-', ' ') || 'Not set'}</p>
+                    <p className="text-sm font-medium">Communication Style</p>
+                    <p className="text-xs text-gray-600 capitalize">{userBaseline.communicationStyle || 'Not set'}</p>
+                  </div>
+                </div>
+                
+                <div className="flex items-center gap-2">
+                  <Shield className="w-4 h-4 text-green-500" />
+                  <div>
+                    <p className="text-sm font-medium">Space Needs</p>
+                    <p className="text-xs text-gray-600 capitalize">{userBaseline.personalSpaceNeeds || 'Not set'}</p>
+                  </div>
+                </div>
+                
+                <div className="flex items-center gap-2">
+                  <Clock className="w-4 h-4 text-orange-500" />
+                  <div>
+                    <p className="text-sm font-medium">Recovery Time</p>
+                    <p className="text-xs text-gray-600">{userBaseline.recoveryTimeNeeded || 0}h after interaction</p>
+                  </div>
+                </div>
+                
+                <div className="flex items-center gap-2">
+                  <Users className="w-4 h-4 text-purple-500" />
+                  <div>
+                    <p className="text-sm font-medium">Social Energy</p>
+                    <p className="text-xs text-gray-600 capitalize">{userBaseline.socialEnergyLevel || 'Not set'}</p>
                   </div>
                 </div>
                 
@@ -113,72 +137,7 @@ export default function BaselineIntegration({
                     <p className="text-xs text-gray-600">{userBaseline.conflictResolution?.replace('-', ' ') || 'Not set'}</p>
                   </div>
                 </div>
-                
-                <div className="flex items-center gap-2">
-                  <Heart className="w-4 h-4 text-green-500" />
-                  <div>
-                    <p className="text-sm font-medium">Emotional Support</p>
-                    <p className="text-xs text-gray-600 capitalize">{userBaseline.emotionalSupportLevel?.replace('-', ' ') || 'Not set'}</p>
-                  </div>
-                </div>
-                
-                <div className="flex items-center gap-2">
-                  <Shield className="w-4 h-4 text-orange-500" />
-                  <div>
-                    <p className="text-sm font-medium">Personal Space</p>
-                    <p className="text-xs text-gray-600 capitalize">{userBaseline.personalSpaceNeeds?.replace('-', ' ') || 'Not set'}</p>
-                  </div>
-                </div>
-                
-                <div className="flex items-center gap-2">
-                  <Users className="w-4 h-4 text-purple-500" />
-                  <div>
-                    <p className="text-sm font-medium">Privacy</p>
-                    <p className="text-xs text-gray-600 capitalize">{userBaseline.privacyPreferences?.replace('-', ' ') || 'Not set'}</p>
-                  </div>
-                </div>
               </div>
-              
-              {/* Show selected categories */}
-              {(userBaseline.energyGivers?.length > 0 || userBaseline.energyDrainers?.length > 0 || userBaseline.emotionalTriggers?.length > 0 || userBaseline.dealBreakerBehaviors?.length > 0) && (
-                <div className="space-y-3 mb-4">
-                  {userBaseline.energyGivers?.length > 0 && (
-                    <div>
-                      <p className="text-xs font-medium text-green-700 mb-1">Energy Givers</p>
-                      <div className="flex flex-wrap gap-1">
-                        {userBaseline.energyGivers.slice(0, 5).map((item: string) => (
-                          <span key={item} className="text-xs bg-green-100 text-green-700 px-2 py-1 rounded">
-                            {item.replace('-', ' ')}
-                          </span>
-                        ))}
-                        {userBaseline.energyGivers.length > 5 && (
-                          <span className="text-xs bg-green-100 text-green-700 px-2 py-1 rounded">
-                            +{userBaseline.energyGivers.length - 5} more
-                          </span>
-                        )}
-                      </div>
-                    </div>
-                  )}
-                  
-                  {userBaseline.dealBreakerBehaviors?.length > 0 && (
-                    <div>
-                      <p className="text-xs font-medium text-red-700 mb-1">Deal-Breakers</p>
-                      <div className="flex flex-wrap gap-1">
-                        {userBaseline.dealBreakerBehaviors.slice(0, 3).map((item: string) => (
-                          <span key={item} className="text-xs bg-red-100 text-red-700 px-2 py-1 rounded">
-                            {item.replace('-', ' ')}
-                          </span>
-                        ))}
-                        {userBaseline.dealBreakerBehaviors.length > 3 && (
-                          <span className="text-xs bg-red-100 text-red-700 px-2 py-1 rounded">
-                            +{userBaseline.dealBreakerBehaviors.length - 3} more
-                          </span>
-                        )}
-                      </div>
-                    </div>
-                  )}
-                </div>
-              )}
               
               {/* Show compatibility analysis if baseline exists */}
               {compatibility && (
@@ -276,9 +235,9 @@ export default function BaselineIntegration({
                 }
                 
                 const getCompatibilityColor = (score: number) => {
-                  if (score >= 70) return 'text-green-700 bg-green-50 border-green-200';
-                  if (score >= 50) return 'text-green-600 bg-green-100 border-green-200';
-                  if (score >= 30) return 'text-yellow-700 bg-yellow-50 border-yellow-200';
+                  if (score >= 80) return 'text-green-700 bg-green-50 border-green-200';
+                  if (score >= 60) return 'text-blue-700 bg-blue-50 border-blue-200';
+                  if (score >= 40) return 'text-yellow-700 bg-yellow-50 border-yellow-200';
                   return 'text-red-700 bg-red-50 border-red-200';
                 };
                 

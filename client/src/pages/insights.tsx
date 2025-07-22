@@ -68,22 +68,18 @@ export default function Insights() {
     const relationshipsWithStats = relationshipStatsQueries.data || [];
     if (!Array.isArray(relationshipsWithStats)) return [];
     
-    console.log("Transforming relationships for insights:", relationshipsWithStats);
-    
     return relationshipsWithStats.map((rel: any) => ({
       ...rel,
       greenFlags: rel.greenFlags || 0,
       redFlags: rel.redFlags || 0,
-      healthScore: rel.healthScore || 50,
       flags: {
         green: rel.greenFlags || 0,
         red: rel.redFlags || 0
       },
       checkInCount: rel.checkInCount || 0,
-      averageSafetyRating: rel.averageSafetyRating || 5,
-      interactionBasedFlags: rel.interactionBasedFlags
+      averageSafetyRating: rel.averageSafetyRating || 5
     }));
-  }, [relationshipStatsQueries.data]);
+  }, [relationships]);
 
   const { data: userProfile } = useQuery({
     queryKey: ["/api/profile"],

@@ -32,7 +32,6 @@ export default function Relationships() {
   const { isAuthenticated, isLoading } = useAuth();
   const [isDialogOpen, setIsDialogOpen] = useState(false);
   const [editingProfile, setEditingProfile] = useState<any>(null);
-  const [dialogStep, setDialogStep] = useState<'basic' | 'assessment'>('basic');
   const [activeView, setActiveView] = useState<'overview' | 'detailed' | 'profile-detail'>('overview');
   const [selectedRelationship, setSelectedRelationship] = useState<any>(null);
   const [trackingMode, setTrackingMode] = useState<'interaction' | 'view-interactions' | 'triggers' | 'patterns' | 'analytics' | 'comparison'>('interaction');
@@ -179,40 +178,11 @@ export default function Relationships() {
     // Notes & Tags
     importantNotes: "",
     customTags: [] as string[],
-    
-    // Assessment Fields
-    communicationStyle: "",
-    conflictStyle: "",
-    feedbackStyle: "",
-    emotionalSupportStyle: "",
-    emotionalAvailability: "",
-    careExpression: [] as string[],
-    conflictResolution: "",
-    conflictBehavior: "",
-    postConflictStyle: "",
-    boundaryRespect: "",
-    decisionMaking: "",
-    boundaryResponse: "",
   });
-
-  const handleNext = () => {
-    setDialogStep('assessment');
-  };
-
-  const handleBack = () => {
-    setDialogStep('basic');
-  };
 
   const handleSubmit = (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
     
-    // If we're on the basic step, go to assessment
-    if (dialogStep === 'basic') {
-      handleNext();
-      return;
-    }
-    
-    // Otherwise, create the profile
     const profileData = {
       name: formData.name,
       nickname: formData.nickname || null,
@@ -236,20 +206,6 @@ export default function Relationships() {
       // Notes & Tags
       importantNotes: formData.importantNotes || null,
       customTags: formData.customTags,
-      
-      // Assessment Fields
-      communicationStyle: formData.communicationStyle || null,
-      conflictStyle: formData.conflictStyle || null,
-      feedbackStyle: formData.feedbackStyle || null,
-      emotionalSupportStyle: formData.emotionalSupportStyle || null,
-      emotionalAvailability: formData.emotionalAvailability || null,
-      careExpression: formData.careExpression,
-      conflictResolution: formData.conflictResolution || null,
-      conflictBehavior: formData.conflictBehavior || null,
-      postConflictStyle: formData.postConflictStyle || null,
-      boundaryRespect: formData.boundaryRespect || null,
-      decisionMaking: formData.decisionMaking || null,
-      boundaryResponse: formData.boundaryResponse || null,
     };
 
     console.log("Submitting profile data:", profileData);
@@ -292,7 +248,6 @@ export default function Relationships() {
 
   const openCreateDialog = () => {
     setEditingProfile(null);
-    setDialogStep('basic');
     setFormData({
       name: "",
       nickname: "",
@@ -323,7 +278,6 @@ export default function Relationships() {
   // Reset form when dialog closes
   useEffect(() => {
     if (!isDialogOpen) {
-      setDialogStep('basic');
       setFormData({
         name: "",
         nickname: "",
@@ -398,433 +352,39 @@ export default function Relationships() {
             <DialogContent className="max-w-4xl max-h-[90vh] overflow-y-auto">
               <DialogHeader>
                 <DialogTitle>
-                  {editingProfile ? "Edit Relationship Profile" : 
-                   dialogStep === 'basic' ? "Create New Relationship Profile" : 
-                   "Relationship Assessment - Step 2 of 2"}
+                  {editingProfile ? "Edit Relationship Profile" : "Create New Relationship Profile"}
                 </DialogTitle>
               </DialogHeader>
               
               <form onSubmit={handleSubmit} className="space-y-8">
-                {dialogStep === 'basic' ? (
-                  // Basic Profile Information
-                  <>
-                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                      <div>
-                        <Label htmlFor="name">Name</Label>
-                        <Input
-                          id="name"
-                          name="name"
-                          value={formData.name}
-                          onChange={(e) => setFormData(prev => ({ ...prev, name: e.target.value }))}
-                          placeholder="Their name"
-                          required
-                        />
-                      </div>
-                      <div>
-                        <Label htmlFor="nickname">Nickname (Optional)</Label>
-                        <Input
-                          id="nickname"
-                          name="nickname"
-                          value={formData.nickname}
-                          onChange={(e) => setFormData(prev => ({ ...prev, nickname: e.target.value }))}
-                          placeholder="What you call them"
-                        />
-                      </div>
-                    </div>
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                  <div>
+                    <Label htmlFor="name">Name</Label>
+                    <Input
+                      id="name"
+                      name="name"
+                      value={formData.name}
+                      onChange={(e) => setFormData(prev => ({ ...prev, name: e.target.value }))}
+                      placeholder="Their name"
+                      required
+                    />
+                  </div>
 
-                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                      <div>
-                        <Label htmlFor="relationshipType">Relationship Type</Label>
-                        <Select 
-                          name="relationshipType" 
-                          value={formData.relationshipType} 
-                          onValueChange={(value) => setFormData(prev => ({ ...prev, relationshipType: value }))}
-                          required
-                        >
-                          <SelectTrigger>
-                            <SelectValue placeholder="Select relationship type" />
-                          </SelectTrigger>
-                          <SelectContent>
-                            <SelectItem value="romantic">Romantic</SelectItem>
-                            <SelectItem value="platonic">Platonic</SelectItem>
-                            <SelectItem value="situationship">Situationship</SelectItem>
-                            <SelectItem value="family">Family</SelectItem>
-                            <SelectItem value="workplace">Workplace</SelectItem>
-                            <SelectItem value="other">Other</SelectItem>
-                          </SelectContent>
-                        </Select>
-                      </div>
-                      <div>
-                        <Label htmlFor="relationshipStatus">Status (Optional)</Label>
-                        <Select 
-                          name="relationshipStatus" 
-                          value={formData.relationshipStatus} 
-                          onValueChange={(value) => setFormData(prev => ({ ...prev, relationshipStatus: value }))}
-                        >
-                          <SelectTrigger>
-                            <SelectValue placeholder="Select status" />
-                          </SelectTrigger>
-                          <SelectContent>
-                            <SelectItem value="interested">Interested</SelectItem>
-                            <SelectItem value="mutual-interest">Mutual Interest</SelectItem>
-                            <SelectItem value="talking">Talking</SelectItem>
-                            <SelectItem value="dating">Dating</SelectItem>
-                            <SelectItem value="committed">Committed</SelectItem>
-                            <SelectItem value="friendship">Friendship</SelectItem>
-                            <SelectItem value="family">Family</SelectItem>
-                            <SelectItem value="over">Over</SelectItem>
-                          </SelectContent>
-                        </Select>
-                      </div>
-                    </div>
-                  </>
-                ) : (
-                  // Assessment Questions
-                  <>
-                    <div className="space-y-6">
-                      <div className="text-center pb-4 border-b">
-                        <p className="text-sm text-neutral-600">
-                          Help us understand this person's patterns from your perspective
-                        </p>
-                      </div>
-
-                      {/* Communication Style */}
-                      <div>
-                        <Label className="text-base font-semibold">Communication Style</Label>
-                        <p className="text-sm text-neutral-600 mb-3">When discussing important topics, they typically:</p>
-                        <Select 
-                          value={formData.communicationStyle} 
-                          onValueChange={(value) => setFormData(prev => ({ ...prev, communicationStyle: value }))}
-                        >
-                          <SelectTrigger>
-                            <SelectValue placeholder="Select communication style" />
-                          </SelectTrigger>
-                          <SelectContent>
-                            <SelectItem value="listens_first">Listens first then responds</SelectItem>
-                            <SelectItem value="jumps_to_solutions">Jumps in with solutions</SelectItem>
-                            <SelectItem value="asks_questions">Asks clarifying questions</SelectItem>
-                            <SelectItem value="changes_subject">Changes the subject</SelectItem>
-                          </SelectContent>
-                        </Select>
-                      </div>
-
-                      {/* Conflict Style */}
-                      <div>
-                        <Label className="text-base font-semibold">Conflict Approach</Label>
-                        <p className="text-sm text-neutral-600 mb-3">During disagreements, they tend to:</p>
-                        <Select 
-                          value={formData.conflictStyle} 
-                          onValueChange={(value) => setFormData(prev => ({ ...prev, conflictStyle: value }))}
-                        >
-                          <SelectTrigger>
-                            <SelectValue placeholder="Select conflict style" />
-                          </SelectTrigger>
-                          <SelectContent>
-                            <SelectItem value="stays_calm">Stay calm and discuss</SelectItem>
-                            <SelectItem value="gets_defensive">Get defensive</SelectItem>
-                            <SelectItem value="shuts_down">Shut down</SelectItem>
-                            <SelectItem value="escalates">Escalate emotions</SelectItem>
-                          </SelectContent>
-                        </Select>
-                      </div>
-
-                      {/* Emotional Support */}
-                      <div>
-                        <Label className="text-base font-semibold">Emotional Support</Label>
-                        <p className="text-sm text-neutral-600 mb-3">When you're upset, they typically:</p>
-                        <Select 
-                          value={formData.emotionalSupportStyle} 
-                          onValueChange={(value) => setFormData(prev => ({ ...prev, emotionalSupportStyle: value }))}
-                        >
-                          <SelectTrigger>
-                            <SelectValue placeholder="Select support style" />
-                          </SelectTrigger>
-                          <SelectContent>
-                            <SelectItem value="comfort_listen">Offer comfort and listen</SelectItem>
-                            <SelectItem value="fix_problems">Try to fix the problem</SelectItem>
-                            <SelectItem value="give_advice">Give advice</SelectItem>
-                            <SelectItem value="uncomfortable">Seem uncomfortable</SelectItem>
-                          </SelectContent>
-                        </Select>
-                      </div>
-
-                      {/* Boundary Respect */}
-                      <div>
-                        <Label className="text-base font-semibold">Boundary Respect</Label>
-                        <p className="text-sm text-neutral-600 mb-3">They respect your personal space:</p>
-                        <Select 
-                          value={formData.boundaryRespect} 
-                          onValueChange={(value) => setFormData(prev => ({ ...prev, boundaryRespect: value }))}
-                        >
-                          <SelectTrigger>
-                            <SelectValue placeholder="Select boundary respect level" />
-                          </SelectTrigger>
-                          <SelectContent>
-                            <SelectItem value="always">Always</SelectItem>
-                            <SelectItem value="usually">Usually</SelectItem>
-                            <SelectItem value="sometimes">Sometimes</SelectItem>
-                            <SelectItem value="rarely">Rarely</SelectItem>
-                          </SelectContent>
-                        </Select>
-                      </div>
-                    </div>
-                  </>
-                )}
-
-                {/* Action Buttons */}
-                <div className="flex space-x-3">
-                  {dialogStep === 'assessment' && !editingProfile && (
-                    <Button 
-                      type="button" 
-                      variant="outline"
-                      onClick={handleBack}
-                    >
-                      ← Back
-                    </Button>
-                  )}
-                  <Button 
-                    type="submit" 
-                    className="flex-1"
-                    disabled={createProfileMutation.isPending || updateProfileMutation.isPending}
-                  >
-                    {editingProfile ? "Update Profile" : 
-                     dialogStep === 'basic' ? "Next: Assessment →" : "Create Profile"}
-                  </Button>
-                  <Button 
-                    type="button" 
-                    variant="outline" 
-                    onClick={() => setIsDialogOpen(false)}
-                  >
-                    Cancel
-                  </Button>
+                  <div>
+                    <Label htmlFor="nickname">Nickname (Optional)</Label>
+                    <Input
+                      id="nickname"
+                      name="nickname"
+                      value={formData.nickname}
+                      onChange={(e) => setFormData(prev => ({ ...prev, nickname: e.target.value }))}
+                      placeholder="What you call them"
+                    />
+                  </div>
                 </div>
-              </form>
-            </DialogContent>
-          </Dialog>
 
-        {/* Load Profile Detail Component for full relationship management */}
-        {activeView === 'overview' && profilesError && (
-          <Card className="text-center py-8">
-            <CardContent>
-              <div className="w-16 h-16 bg-red-100 rounded-full flex items-center justify-center mx-auto mb-4">
-                <Heart className="w-8 h-8 text-red-500" />
-              </div>
-              <h3 className="text-lg font-semibold text-red-800 mb-2">Error Loading Relationships</h3>
-              <p className="text-red-600 mb-6">
-                {profilesError?.message || 'Unable to load your relationship profiles'}
-              </p>
-            </CardContent>
-          </Card>
-        )}
-
-        {activeView === 'overview' && !profilesLoading && !profilesError && (
-          <Card className="mb-8">
-            <CardHeader>
-              <CardTitle className="flex items-center space-x-2">
-                <TrendingUp className="w-5 h-5 text-blue-600" />
-                <span>Relationship Insights</span>
-              </CardTitle>
-            </CardHeader>
-            <CardContent>
-              <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-                <div className="text-center">
-                  <div className="text-2xl font-bold text-neutral-800">{profiles.length}</div>
-                  <div className="text-sm text-neutral-600">Total Relationships</div>
-                </div>
-                <div className="text-center">
-                  <div className="text-2xl font-bold text-red-600">
-                    {profiles.filter((p: any) => p.relationshipType === 'romantic').length}
-                  </div>
-                  <div className="text-sm text-neutral-600">Romantic</div>
-                </div>
-                <div className="text-center">
-                  <div className="text-2xl font-bold text-blue-600">
-                    {profiles.filter((p: any) => p.relationshipType === 'platonic').length}
-                  </div>
-                  <div className="text-sm text-neutral-600">Platonic</div>
-                </div>
-                <div className="text-center">
-                  <div className="text-2xl font-bold text-green-600">
-                    {profiles.filter((p: any) => p.currentStatus === 'active').length}
-                  </div>
-                  <div className="text-sm text-neutral-600">Active</div>
-                </div>
-              </div>
-              
-              {/* Relationship Status Breakdown */}
-              <div className="mt-6 pt-4 border-t">
-                <h4 className="text-sm font-medium text-neutral-700 mb-3">Relationship Status Distribution</h4>
-                <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-2">
-                  {['dating', 'talking', 'interested', 'friendship', 'family', 'over'].map(status => {
-                    const count = profiles.filter((p: any) => p.relationshipStatus === status).length;
-                    if (count === 0) return null;
-                    return (
-                      <div key={status} className="text-center p-2 bg-neutral-100 rounded">
-                        <div className="text-lg font-semibold text-neutral-800">{count}</div>
-                        <div className="text-xs text-neutral-600 capitalize">{status}</div>
-                      </div>
-                    );
-                  })}
-                </div>
-              </div>
-            </CardContent>
-          </Card>
-        )}
-
-        {profilesLoading ? (
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-            {[...Array(6)].map((_, i) => (
-              <Card key={i} className="animate-pulse">
-                <CardHeader>
-                  <div className="h-4 bg-neutral-200 rounded w-3/4"></div>
-                  <div className="h-3 bg-neutral-200 rounded w-1/2"></div>
-                </CardHeader>
-                <CardContent>
-                  <div className="space-y-2">
-                    <div className="h-3 bg-neutral-200 rounded"></div>
-                    <div className="h-3 bg-neutral-200 rounded w-2/3"></div>
-                  </div>
-                </CardContent>
-              </Card>
-            ))}
-          </div>
-        ) : profiles && profiles.length > 0 ? (
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-            {profiles.map((profile: any) => (
-              <Card key={profile.id} className="relative cursor-pointer hover:shadow-lg transition-shadow">
-                <CardHeader>
-                  <div className="flex items-start justify-between">
-                    <div className="flex items-center space-x-3">
-                      <div className={`w-3 h-3 ${relationshipTypeColors[profile.relationshipType] || 'bg-neutral-500'} rounded-full`}></div>
-                      <div>
-                        <CardTitle className="text-lg">
-                          {profile.nickname || profile.name}
-                          {profile.nickname && (
-                            <span className="text-sm text-neutral-500 font-normal ml-2">({profile.name})</span>
-                          )}
-                        </CardTitle>
-                        <p className="text-sm text-neutral-500 capitalize">
-                          {profile.relationshipType}
-                        </p>
-                      </div>
-                    </div>
-                    <div className="flex space-x-1">
-                      <Button
-                        variant="ghost"
-                        size="sm"
-                        onClick={() => {
-                          setSelectedRelationship(profile);
-                          setActiveView('profile-detail');
-                        }}
-                        title="View Profile & Interactions"
-                      >
-                        <User className="w-4 h-4" />
-                      </Button>
-                      <Button
-                        variant="ghost"
-                        size="sm"
-                        onClick={() => openEditDialog(profile)}
-                      >
-                        <Edit2 className="w-4 h-4" />
-                      </Button>
-                      <Button
-                        variant="ghost"
-                        size="sm"
-                        onClick={() => deleteProfileMutation.mutate(profile.id)}
-                        disabled={deleteProfileMutation.isPending}
-                      >
-                        <Trash2 className="w-4 h-4" />
-                      </Button>
-                    </div>
-                  </div>
-                </CardHeader>
-                <CardContent>
-                  <div className="space-y-3">
-                    {profile.dateMet && (
-                      <div className="flex items-center space-x-2 text-sm text-neutral-600">
-                        <Calendar className="w-4 h-4" />
-                        <span>Met {new Date(profile.dateMet).toLocaleDateString()}</span>
-                      </div>
-                    )}
-                    
-                    {profile.howMet && (
-                      <div className="flex items-center space-x-2 text-sm text-neutral-600">
-                        <MapPin className="w-4 h-4" />
-                        <span className="capitalize">{profile.howMet.replace('-', ' ')}</span>
-                      </div>
-                    )}
-                    
-                    <div className="flex items-center justify-between">
-                      <Badge 
-                        className={`text-xs font-medium border ${statusColors[profile.currentStatus] || 'bg-neutral-100 text-neutral-700 border-neutral-200'}`}
-                      >
-                        {profile.currentStatus}
-                      </Badge>
-                      
-                      {profile.isPrivate && (
-                        <div className="text-xs text-neutral-500 flex items-center space-x-1">
-                          <Flag className="w-3 h-3" />
-                          <span>Private</span>
-                        </div>
-                      )}
-                    </div>
-
-                  </div>
-                </CardContent>
-              </Card>
-            ))}
-          </div>
-        ) : (
-          <Card className="text-center py-12">
-            <CardContent>
-              <div className="w-16 h-16 bg-neutral-100 rounded-full flex items-center justify-center mx-auto mb-4">
-                <Heart className="w-8 h-8 text-neutral-400" />
-              </div>
-              <h3 className="text-lg font-semibold text-neutral-800 mb-2">No Relationships Yet</h3>
-              <p className="text-neutral-600 mb-6">
-                Start tracking your connections and evaluating relationship patterns
-              </p>
-              <Button onClick={openCreateDialog}>
-                <Plus className="w-4 h-4 mr-2" />
-                Add Your First Relationship
-              </Button>
-            </CardContent>
-          </Card>
-        )}
-
-        {/* Advanced Tracking View */}
-        {activeView === 'detailed' && selectedRelationship && (
-          <div className="fixed inset-0 bg-black bg-opacity-50 z-50 flex items-center justify-center p-4">
-            <div className="bg-white rounded-lg shadow-xl w-full max-w-6xl h-[90vh] overflow-hidden">
-              <div className="flex flex-col h-full">
-                {/* Header */}
-                <div className="p-6 border-b border-gray-200 bg-gray-50">
-                  <div className="flex items-center justify-between">
-                    <div>
-                      <h2 className="text-2xl font-bold text-gray-800">
-                        Advanced Tracking: {selectedRelationship.name}
-                      </h2>
-                      <p className="text-gray-600 mt-1">
-                        Comprehensive relationship analysis and pattern tracking
-                      </p>
-                    </div>
-                    <Button
-                      variant="outline"
-                      onClick={() => {
-                        setActiveView('overview');
-                        setSelectedRelationship(null);
-                      }}
-                    >
-                      ← Back to Overview
-                    </Button>
-                  </div>
-
-                  {/* Tracking Mode Tabs */}
-                  <div className="flex space-x-1 mt-6 bg-white rounded-lg p-1 border">
-                    {[
-                      { id: 'interaction', label: 'Log Interaction', icon: Brain },
-                      { id: 'view-interactions', label: 'View Interactions', icon: Calendar },
-                      { id: 'triggers', label: 'Trigger Analysis', icon: Target },
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                  <div>
+                    <Label htmlFor="relationshipType">Relationship Type</Label>
                     <Select 
                       name="relationshipType" 
                       value={formData.relationshipType} 

@@ -150,24 +150,6 @@ export const relationshipProfiles = pgTable("relationship_profiles", {
   importantNotes: text("important_notes"),
   customTags: text("custom_tags").array(),
   
-  // Relationship Profile Assessment (from your perspective about them)
-  communicationStyle: varchar("communication_style"), // listens_first, jumps_to_solutions, asks_questions, changes_subject
-  conflictStyle: varchar("conflict_style"), // stays_calm, gets_defensive, shuts_down, escalates
-  feedbackStyle: varchar("feedback_style"), // direct_honest, gentle_encouraging, critical, avoids_feedback
-  emotionalSupportStyle: varchar("emotional_support_style"), // comfort_listen, fix_problems, give_advice, uncomfortable
-  emotionalAvailability: varchar("emotional_availability"), // very_present, available_when_asked, inconsistent, distracted
-  careExpression: text("care_expression").array(), // words, touch, acts_of_service, quality_time, gifts
-  conflictResolution: varchar("conflict_resolution"), // address_immediately, cool_down_first, avoid_entirely, need_mediator
-  conflictBehavior: varchar("conflict_behavior"), // stays_engaged, withdraws, defensive, redirects_blame
-  postConflictStyle: varchar("post_conflict_style"), // resolve_quickly, needs_processing, acts_normal, holds_grudges
-  boundaryRespect: varchar("boundary_respect"), // always, usually, sometimes, rarely
-  decisionMaking: varchar("decision_making"), // independent, collaborative, seeks_advice, defers
-  boundaryResponse: varchar("boundary_response"), // respects_immediately, pushes_back, ignores, gets_defensive
-  
-  // Derived archetype and compatibility
-  profileArchetype: varchar("profile_archetype"), // Will be calculated from assessment answers
-  baselineCompatibility: integer("baseline_compatibility"), // 0-100 predictive score
-  
   createdAt: timestamp("created_at").defaultNow(),
   updatedAt: timestamp("updated_at").defaultNow(),
 });
@@ -277,25 +259,38 @@ export const personalBaselines = pgTable("personal_baselines", {
   
   // Communication Preferences
   communicationStyle: varchar("communication_style"), // direct, gentle, collaborative, assertive
-  conflictResolution: varchar("conflict_resolution"), // immediate-discussion, cool-down-first, written-communication, with-mediator
-  
-  // Energy Impact (trackable arrays)
-  energyGivers: text("energy_givers").array(), // deep-conversations, physical-affection, shared-activities, individual-time, problem-solving-together
-  energyDrainers: text("energy_drainers").array(), // conflict, neediness, dishonesty, drama, lack-of-communication, different-values
-  
-  // Triggers & Deal-breakers (trackable arrays)
-  emotionalTriggers: text("emotional_triggers").array(), // criticism, being-ignored, dishonesty, controlling-behavior, disrespect, manipulation
-  dealBreakerBehaviors: text("deal_breaker_behaviors").array(), // dishonesty, infidelity, abuse, addiction-issues, incompatible-values, poor-communication
-  
-  // Boundary Requirements
-  personalSpaceNeeds: varchar("personal_space_needs"), // high, moderate, low, flexible
-  privacyPreferences: varchar("privacy_preferences"), // very-private, moderately-private, open-book, situational
-  decisionMakingStyle: varchar("decision_making_style"), // independently, collaboratively, seek-advice-first, depends-on-decision
+  conflictResolution: varchar("conflict_resolution"), // discuss-immediately, need-time-to-process, avoid-conflict, address-when-calm
+  feedbackPreference: varchar("feedback_preference"), // frequent-check-ins, only-when-needed, scheduled-discussions, in-the-moment
+  listeningNeeds: text("listening_needs").array(),
+  communicationDealBreakers: text("communication_deal_breakers").array(),
   
   // Emotional Needs
-  emotionalSupportLevel: varchar("emotional_support_level"), // high, moderate, low, variable
-  affectionStyles: text("affection_styles").array(), // physical-touch, words-of-affirmation, quality-time, acts-of-service, gifts
-  validationFrequency: varchar("validation_frequency"), // daily, weekly, monthly, rarely
+  emotionalSupport: varchar("emotional_support"), // high, medium, low
+  affectionStyle: text("affection_style").array(),
+  validationNeeds: varchar("validation_needs"), // frequent, moderate, minimal
+  emotionalProcessingTime: integer("emotional_processing_time"), // hours
+  triggers: text("triggers").array(),
+  comfortingSources: text("comforting_sources").array(),
+  
+  // Boundary Requirements
+  personalSpaceNeeds: varchar("personal_space_needs"), // high, medium, low
+  aloneTimeFrequency: varchar("alone_time_frequency"), // daily, few-times-week, weekly, rarely
+  decisionMakingStyle: varchar("decision_making_style"), // independent, collaborative, seek-input, guided
+  privacyLevels: text("privacy_levels").array(),
+  nonNegotiableBoundaries: text("non_negotiable_boundaries").array(),
+  flexibleBoundaries: text("flexible_boundaries").array(),
+  
+  // Time and Availability
+  responseTimeExpectation: integer("response_time_expectation"), // hours
+  availabilityWindows: text("availability_windows").array(),
+  socialEnergyLevel: varchar("social_energy_level"), // high, medium, low
+  recoveryTimeNeeded: integer("recovery_time_needed"), // hours
+  
+  // Growth and Values
+  personalGrowthPriorities: text("personal_growth_priorities").array(),
+  relationshipGoals: text("relationship_goals").array(),
+  valueAlignment: text("value_alignment").array(),
+  dealBreakerBehaviors: text("deal_breaker_behaviors").array(),
   
   createdAt: timestamp("created_at").defaultNow(),
   updatedAt: timestamp("updated_at").defaultNow(),
@@ -325,29 +320,6 @@ export const goalCheckIns = pgTable("goal_check_ins", {
   date: timestamp("date").notNull(), // The date this check-in is for
   status: varchar("status").notNull(), // "hit", "missed", "partial"
   notes: text("notes"), // Optional notes about the day
-  createdAt: timestamp("created_at").defaultNow(),
-});
-
-// Interaction tracker entries - focused on baseline compatibility
-export const interactionTrackerEntries = pgTable("interaction_tracker_entries", {
-  id: serial("id").primaryKey(),
-  userId: varchar("user_id").notNull().references(() => users.id, { onDelete: "cascade" }),
-  relationshipId: integer("relationship_id").notNull().references(() => relationshipProfiles.id, { onDelete: "cascade" }),
-  timestamp: timestamp("timestamp").notNull().defaultNow(),
-  
-  // Baseline alignment data
-  communicationMet: boolean("communication_met").default(false),
-  emotionalNeedsMet: text("emotional_needs_met").array(), // Array of met needs
-  triggersOccurred: text("triggers_occurred").array(), // Array of triggered behaviors
-  dealBreakersCrossed: text("deal_breakers_crossed").array(), // Array of crossed boundaries
-  
-  // Pattern tracking
-  repeatedTriggers: text("repeated_triggers").array(), // Triggers that happened before
-  
-  // Overall assessment
-  overallCompatibility: integer("overall_compatibility"), // 1-10 scale
-  notes: text("notes"),
-  
   createdAt: timestamp("created_at").defaultNow(),
 });
 
@@ -510,17 +482,6 @@ export const goalCheckInsRelations = relations(goalCheckIns, ({ one }) => ({
   }),
 }));
 
-export const interactionTrackerEntriesRelations = relations(interactionTrackerEntries, ({ one }) => ({
-  user: one(users, {
-    fields: [interactionTrackerEntries.userId],
-    references: [users.id],
-  }),
-  relationshipProfile: one(relationshipProfiles, {
-    fields: [interactionTrackerEntries.relationshipId],
-    references: [relationshipProfiles.id],
-  }),
-}));
-
 // Schemas for validation
 export type UpsertUser = typeof users.$inferInsert;
 export type User = typeof users.$inferSelect;
@@ -639,13 +600,6 @@ export const insertGoalCheckInSchema = createInsertSchema(goalCheckIns).omit({
 });
 export type InsertGoalCheckIn = z.infer<typeof insertGoalCheckInSchema>;
 export type GoalCheckIn = typeof goalCheckIns.$inferSelect;
-
-export const insertInteractionTrackerEntrySchema = createInsertSchema(interactionTrackerEntries).omit({
-  id: true,
-  createdAt: true,
-});
-export type InsertInteractionTrackerEntry = z.infer<typeof insertInteractionTrackerEntrySchema>;
-export type InteractionTrackerEntry = typeof interactionTrackerEntries.$inferSelect;
 
 // Feedback and bug tracking system
 export const feedback = pgTable("feedback", {

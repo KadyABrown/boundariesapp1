@@ -82,27 +82,16 @@ export default function EmotionalWeather({ relationships, userProfile, showForec
     if (relationships && relationships.length > 0) {
       // Convert actual relationship data to weather format
       const weatherData = relationships.map((rel: any) => {
-        console.log("Processing relationship for weather:", rel.name, {
-          greenFlags: rel.greenFlags,
-          redFlags: rel.redFlags,
-          healthScore: rel.healthScore,
-          averageSafetyRating: rel.averageSafetyRating,
-          interactionBasedFlags: rel.interactionBasedFlags
-        });
-
-        // Use health score if available, otherwise calculate from flags
-        let temperature = 50; // default neutral
-        if (rel.healthScore !== undefined) {
-          temperature = rel.healthScore;
-        } else if (rel.greenFlags !== undefined && rel.redFlags !== undefined) {
-          const totalFlags = rel.greenFlags + rel.redFlags;
-          temperature = totalFlags > 0 ? Math.round((rel.greenFlags / totalFlags) * 100) : 50;
-        }
+        // Use emotional safety and flag data to determine weather
+        const greenFlags = rel.greenFlags || 0;
+        const redFlags = rel.redFlags || 0;
+        const totalFlags = greenFlags + redFlags;
         
-        // Calculate relationship metrics from available data
-        const safetyScore = rel.averageSafetyRating ? rel.averageSafetyRating * 10 : 50;
-        const tension = rel.redFlags || 0;
-        const communication = rel.greenFlags || 0;
+        // Calculate emotional temperature based on positive flags
+        const temperature = totalFlags > 0 ? Math.round((greenFlags / totalFlags) * 100) : 50;
+        
+        // Calculate tension based on red flags
+        const tension = totalFlags > 0 ? Math.round((redFlags / totalFlags) * 100) : 30;
         
         return {
           relationshipName: rel.name || 'Unknown',
@@ -227,12 +216,15 @@ export default function EmotionalWeather({ relationships, userProfile, showForec
               <Badge variant="secondary" className="text-xs">
                 {current.relationshipName}
               </Badge>
-              <p className="text-xs opacity-60 italic mt-2">
-                {!relationships || relationships.length === 0 
-                  ? "Sample data - Add relationships to see your real patterns"
-                  : "Based on your tracked flags, check-ins, and interactions"
-                }
-              </p>
+              {!relationships || relationships.length === 0 ? (
+                <p className="text-xs opacity-60 italic mt-2">
+                  Sample data - Add relationships to see your real patterns
+                </p>
+              ) : (
+                <p className="text-xs opacity-60 italic mt-2">
+                  Based on your tracked flags and check-ins
+                </p>
+              )}
             </div>
 
             {/* Weather Metrics */}
@@ -348,11 +340,11 @@ export default function EmotionalWeather({ relationships, userProfile, showForec
 }
 
 function generateRealisticWeatherData(userProfile?: any): RelationshipWeather[] {
-  // Create example relationship types focused on actual relationships, not environments
+  // Create example relationship categories (not actual relationships)
   const relationships = [
-    { name: "Sample Close Friend", baseTemp: 85, baseTension: 15 },
-    { name: "Sample Family Member", baseTemp: 70, baseTension: 35 },
-    { name: "Sample Dating Interest", baseTemp: 75, baseTension: 25 }
+    { name: "Work Environment", baseTemp: 65, baseTension: 40 },
+    { name: "Social Circle", baseTemp: 80, baseTension: 20 },
+    { name: "Family Dynamics", baseTemp: 70, baseTension: 30 }
   ];
 
   return relationships.map(rel => {

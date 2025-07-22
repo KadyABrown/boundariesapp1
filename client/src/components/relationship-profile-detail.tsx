@@ -8,7 +8,6 @@ import { X, Calendar, Heart, Flag, TrendingUp, MessageSquare, Brain, Plus, Edit2
 import { format } from "date-fns";
 import ComprehensiveInteractionsView from "./comprehensive-interactions-view";
 import ComprehensiveInteractionTracker from "./comprehensive-interaction-tracker";
-import InteractionTracker from "./interaction-tracker";
 import { apiRequest, queryClient } from "@/lib/queryClient";
 import { useToast } from "@/hooks/use-toast";
 
@@ -79,7 +78,6 @@ interface RelationshipProfileDetailProps {
 export default function RelationshipProfileDetail({ relationship, onClose }: RelationshipProfileDetailProps) {
   const { toast } = useToast();
   const [showCIT, setShowCIT] = useState(false);
-  const [showInteractionTracker, setShowInteractionTracker] = useState(false);
   const [showFlagDialog, setShowFlagDialog] = useState(false);
   const [showCheckInDialog, setShowCheckInDialog] = useState(false);
   const [showSettingsDialog, setShowSettingsDialog] = useState(false);
@@ -110,11 +108,6 @@ export default function RelationshipProfileDetail({ relationship, onClose }: Rel
 
   const getHealthScore = () => {
     if (!stats) return 50; // Default to neutral score when no data
-    // Use the healthScore calculated by the backend if available
-    if ('healthScore' in stats) {
-      return (stats as any).healthScore;
-    }
-    // Fallback to flag-based calculation
     const totalFlags = (stats as any).greenFlags + (stats as any).redFlags;
     if (totalFlags === 0) return 50; // Default to neutral when no flags
     return Math.round(((stats as any).greenFlags / totalFlags) * 100);
@@ -207,22 +200,12 @@ export default function RelationshipProfileDetail({ relationship, onClose }: Rel
                             {stats?.greenFlags || 0}
                           </div>
                           <div className="text-sm text-gray-600 mt-1">Green Flags</div>
-                          {(stats as any)?.interactionBasedFlags?.emotionalNeedsMetCount > 0 && (
-                            <div className="text-xs text-green-500 mt-1">
-                              +{(stats as any).interactionBasedFlags.emotionalNeedsMetCount} from interactions
-                            </div>
-                          )}
                         </div>
                         <div className="text-center p-4 bg-white rounded-lg shadow-sm">
                           <div className="text-3xl font-bold text-red-600">
                             {stats?.redFlags || 0}
                           </div>
                           <div className="text-sm text-gray-600 mt-1">Red Flags</div>
-                          {(stats as any)?.interactionBasedFlags?.triggersOccurredCount > 0 && (
-                            <div className="text-xs text-red-500 mt-1">
-                              +{(stats as any).interactionBasedFlags.triggersOccurredCount} from interactions
-                            </div>
-                          )}
                         </div>
                         <div className="text-center p-4 bg-white rounded-lg shadow-sm">
                           <div className="text-3xl font-bold text-blue-600">
@@ -390,51 +373,29 @@ export default function RelationshipProfileDetail({ relationship, onClose }: Rel
                   <div className="space-y-6">
                     <div className="text-center">
                       <h3 className="text-lg font-semibold">Log New Interaction</h3>
-                      <p className="text-gray-600">Choose how you'd like to track your interaction with {relationship.name}</p>
+                      <p className="text-gray-600">Track your interaction with {relationship.name}</p>
                     </div>
                     
-                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                      <Card className="border-2 border-blue-200 hover:border-blue-400 transition-colors cursor-pointer" 
-                            onClick={() => setShowInteractionTracker(true)}>
-                        <CardContent className="p-6">
-                          <div className="text-center space-y-3">
-                            <div className="bg-blue-100 w-12 h-12 rounded-full flex items-center justify-center mx-auto">
-                              <Heart className="w-6 h-6 text-blue-600" />
-                            </div>
-                            <h4 className="font-semibold">Interaction Tracker</h4>
-                            <p className="text-sm text-gray-600">Quick baseline compatibility check</p>
-                            <ul className="text-xs text-gray-500 space-y-1">
-                              <li>• Did they meet your communication needs?</li>
-                              <li>• Were any personal triggers activated?</li>
-                              <li>• Pattern recognition from past interactions</li>
-                            </ul>
-                            <Badge variant="outline" className="text-xs">3 steps • 2 mins</Badge>
-                          </div>
-                        </CardContent>
-                      </Card>
-
-                      <Card className="border-2 border-purple-200 hover:border-purple-400 transition-colors cursor-pointer" 
-                            onClick={() => setShowCIT(true)}>
-                        <CardContent className="p-6">
-                          <div className="text-center space-y-3">
-                            <div className="bg-purple-100 w-12 h-12 rounded-full flex items-center justify-center mx-auto">
-                              <Brain className="w-6 h-6 text-purple-600" />
-                            </div>
-                            <h4 className="font-semibold">Impact Tracker</h4>
-                            <p className="text-sm text-gray-600">Comprehensive emotional & physical impact</p>
-                            <ul className="text-xs text-gray-500 space-y-1">
-                              <li>• Energy and mood before/after</li>
-                              <li>• Physical symptoms tracking</li>
-                              <li>• Recovery analysis & strategies</li>
-                            </ul>
-                            <Badge variant="outline" className="text-xs">5 steps • 5 mins</Badge>
-                          </div>
-                        </CardContent>
-                      </Card>
-                    </div>
+                    <Button 
+                      onClick={() => {
+                        // Open the CIT modal
+                        setShowCIT(true);
+                      }}
+                      className="w-full h-16 text-lg"
+                    >
+                      <Brain className="w-6 h-6 mr-3" />
+                      Start Comprehensive Interaction Tracker
+                    </Button>
                     
-                    <div className="text-center text-sm text-gray-500">
-                      <p>Both trackers help identify patterns like <em>"Coffee dates with {relationship.name} lead to energy drain"</em></p>
+                    <div className="text-sm text-gray-500 space-y-2">
+                      <p><strong>What you'll track:</strong></p>
+                      <ul className="list-disc list-inside space-y-1 ml-4">
+                        <li>Energy and mood before/after</li>
+                        <li>Physical and emotional impacts</li>
+                        <li>Recovery time and strategies</li>
+                        <li>Boundaries and self-advocacy</li>
+                        <li>Lessons learned and future planning</li>
+                      </ul>
                     </div>
                   </div>
                 </TabsContent>
@@ -822,51 +783,6 @@ export default function RelationshipProfileDetail({ relationship, onClose }: Rel
           </div>
         </div>
       )}
-
-      {/* Interaction Tracker Modal */}
-      <InteractionTracker
-        relationshipId={relationship.id}
-        relationshipName={relationship.name}
-        isOpen={showInteractionTracker}
-        onClose={() => setShowInteractionTracker(false)}
-        onSubmit={async (data) => {
-          try {
-            console.log("Submitting interaction tracker data:", JSON.stringify(data, null, 2));
-            
-            const response = await fetch(`/api/interaction-tracker`, {
-              method: 'POST',
-              headers: {
-                'Content-Type': 'application/json',
-              },
-              body: JSON.stringify(data),
-              credentials: 'include',
-            });
-            
-            if (!response.ok) {
-              throw new Error('Failed to submit interaction data');
-            }
-            
-            const result = await response.json();
-            console.log("Interaction submission result:", JSON.stringify(result, null, 2));
-            
-            toast({
-              title: "Interaction Logged",
-              description: "Your baseline compatibility assessment has been saved.",
-            });
-            // Invalidate all related caches to ensure UI updates
-            queryClient.invalidateQueries({ queryKey: [`/api/interaction-tracker`, relationship.id] });
-            queryClient.invalidateQueries({ queryKey: [`/api/relationships/${relationship.id}/stats`] });
-            queryClient.invalidateQueries({ queryKey: ["relationship-stats"] });
-          } catch (error) {
-            console.error("Error logging interaction:", error);
-            toast({
-              title: "Error",
-              description: "Failed to log interaction. Please try again.",
-              variant: "destructive",
-            });
-          }
-        }}
-      />
     </div>
   );
 }

@@ -15,7 +15,6 @@ import {
   personalBaselines,
   boundaryGoals,
   goalCheckIns,
-  interactionTrackerEntries,
   feedback,
   type User,
   type UpsertUser,
@@ -49,8 +48,6 @@ import {
   type InsertBoundaryGoal,
   type GoalCheckIn,
   type InsertGoalCheckIn,
-  type InteractionTrackerEntry,
-  type InsertInteractionTrackerEntry,
   type Feedback,
   type InsertFeedback,
 } from "@shared/schema";
@@ -571,11 +568,6 @@ export class DatabaseStorage implements IStorage {
     redFlags: number;
     averageSafetyRating: number;
     checkInCount: number;
-    healthScore: number;
-    interactionBasedFlags?: {
-      emotionalNeedsMetCount: number;
-      triggersOccurredCount: number;
-    };
   }> {
     const greenFlags = await db
       .select({ count: count() })
@@ -609,109 +601,11 @@ export class DatabaseStorage implements IStorage {
       .from(emotionalCheckIns)
       .where(eq(emotionalCheckIns.profileId, profileId));
 
-    // Get interaction tracker entries to include in flag calculations
-    const interactions = await db
-      .select()
-      .from(interactionTrackerEntries)
-      .where(eq(interactionTrackerEntries.relationshipId, profileId));
-
-    // Calculate interaction-based flags
-    let emotionalNeedsMetCount = 0;
-    let triggersOccurredCount = 0;
-
-    if (interactions.length > 0) {
-      emotionalNeedsMetCount = interactions.reduce((sum, interaction) => 
-        sum + (interaction.emotionalNeedsMet?.length || 0), 0
-      );
-      triggersOccurredCount = interactions.reduce((sum, interaction) => 
-        sum + (interaction.triggersOccurred?.length || 0), 0
-      );
-    }
-
-    const baseGreenFlags = greenFlags[0]?.count || 0;
-    const baseRedFlags = redFlags[0]?.count || 0;
-    const totalGreenFlags = baseGreenFlags + emotionalNeedsMetCount;
-    const totalRedFlags = baseRedFlags + triggersOccurredCount;
-
-    // Get the user ID from the relationship profile
-    const relationshipProfile = await db
-      .select({ userId: relationshipProfiles.userId })
-      .from(relationshipProfiles)
-      .where(eq(relationshipProfiles.id, profileId))
-      .limit(1);
-    
-    const userId = relationshipProfile[0]?.userId;
-    
-    // Get user's personal baseline for compatibility scoring
-    const baseline = userId ? await db
-      .select()
-      .from(personalBaselines)
-      .where(eq(personalBaselines.userId, userId))
-      .orderBy(desc(personalBaselines.createdAt))
-      .limit(1) : [];
-
-    // Enhanced health calculation incorporating baseline compatibility
-    const flagScore = totalGreenFlags > 0 
-      ? Math.round((totalGreenFlags / (totalGreenFlags + totalRedFlags)) * 100)
-      : 0;
-    
-    const avgSafety = safetyData[0]?.avg || 5;
-    const safetyScore = avgSafety * 20; // Convert 1-5 scale to 0-100
-    
-    let compatibilityScore = 50; // Default if no baseline
-    
-    if (baseline.length > 0 && interactions.length > 0) {
-      const userBaseline = baseline[0];
-      
-      // Calculate compatibility metrics based on interaction patterns
-      const communicationRespected = this.calculateCommunicationCompatibility(interactions, userBaseline);
-      const boundariesRespected = this.calculateBoundaryCompatibility(interactions, userBaseline);
-      const triggersAvoided = this.calculateTriggerAvoidance(interactions, userBaseline);
-      const valuesAligned = this.calculateValuesAlignment(interactions, userBaseline);
-      const energyImpact = this.calculateEnergyImpact(interactions, userBaseline);
-      const selfWorthImpact = this.calculateSelfWorthImpact(interactions, userBaseline);
-      
-      // Apply the sophisticated scoring algorithm
-      compatibilityScore = Math.round(
-        (communicationRespected * 0.20) +
-        (boundariesRespected * 0.25) +
-        (triggersAvoided * 0.20) +
-        (valuesAligned * 0.15) +
-        (energyImpact * 0.10) +
-        (selfWorthImpact * 0.10)
-      );
-      
-      // Apply deal-breaker penalties
-      const dealBreakerPenalty = this.calculateDealBreakerPenalty(interactions, userBaseline);
-      compatibilityScore = Math.max(0, compatibilityScore - dealBreakerPenalty);
-    }
-    
-    // Combine traditional health metrics with compatibility analysis
-    const healthScore = Math.round((flagScore * 0.4) + (safetyScore * 0.3) + (compatibilityScore * 0.3));
-
-    console.log(`Health calculation for relationship ${profileId}:`, {
-      baseGreenFlags,
-      baseRedFlags,
-      emotionalNeedsMetCount,
-      triggersOccurredCount,
-      totalGreenFlags,
-      totalRedFlags,
-      flagScore,
-      avgSafety,
-      safetyScore,
-      healthScore
-    });
-
     return {
-      greenFlags: totalGreenFlags,
-      redFlags: totalRedFlags,
-      averageSafetyRating: avgSafety,
+      greenFlags: greenFlags[0]?.count || 0,
+      redFlags: redFlags[0]?.count || 0,
+      averageSafetyRating: safetyData[0]?.avg || 0,
       checkInCount: checkInCount[0]?.count || 0,
-      healthScore,
-      interactionBasedFlags: {
-        emotionalNeedsMetCount,
-        triggersOccurredCount
-      }
     };
   }
 
@@ -1162,30 +1056,17 @@ export class DatabaseStorage implements IStorage {
   }
 
   async updatePersonalBaseline(userId: string, updates: Partial<InsertPersonalBaseline>): Promise<PersonalBaseline> {
-    // Check if baseline exists
-    const existingBaseline = await this.getPersonalBaseline(userId);
+    // Create new version instead of updating existing one
+    const currentBaseline = await this.getPersonalBaseline(userId);
+    const newVersion = currentBaseline ? currentBaseline.version + 1 : 1;
     
-    if (existingBaseline) {
-      // Update existing baseline
-      const [updatedBaseline] = await db
-        .update(personalBaselines)
-        .set({
-          ...updates,
-          version: existingBaseline.version + 1,
-          updatedAt: new Date(),
-        })
-        .where(eq(personalBaselines.userId, userId))
-        .returning();
-      return updatedBaseline;
-    } else {
-      // Create new baseline if none exists
-      const newBaseline = await this.createPersonalBaseline({
-        ...updates,
-        userId,
-        version: 1,
-      });
-      return newBaseline;
-    }
+    const newBaseline = await this.createPersonalBaseline({
+      ...updates,
+      userId,
+      version: newVersion,
+    });
+    
+    return newBaseline;
   }
 
   async createBoundaryGoal(goal: InsertBoundaryGoal): Promise<BoundaryGoal> {
@@ -1264,29 +1145,6 @@ export class DatabaseStorage implements IStorage {
     await db
       .delete(goalCheckIns)
       .where(eq(goalCheckIns.id, id));
-  }
-
-  // Interaction Tracker Entry Methods (baseline compatibility focused)
-  async createInteractionTrackerEntry(entry: InsertInteractionTrackerEntry): Promise<InteractionTrackerEntry> {
-    const [newEntry] = await db
-      .insert(interactionTrackerEntries)
-      .values(entry)
-      .returning();
-    return newEntry;
-  }
-
-  async getInteractionTrackerEntries(userId: string, relationshipId?: number): Promise<InteractionTrackerEntry[]> {
-    const conditions = [eq(interactionTrackerEntries.userId, userId)];
-    
-    if (relationshipId !== undefined) {
-      conditions.push(eq(interactionTrackerEntries.relationshipId, relationshipId));
-    }
-
-    return await db
-      .select()
-      .from(interactionTrackerEntries)
-      .where(and(...conditions))
-      .orderBy(desc(interactionTrackerEntries.createdAt));
   }
 
   async getBoundaryGoalProgress(userId: string, goalId: number, startDate: Date, endDate: Date): Promise<{

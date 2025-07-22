@@ -1,11 +1,10 @@
-import { useEffect, useState } from "react";
+import { useState, useEffect } from "react";
 import { useQuery } from "@tanstack/react-query";
 import { useAuth } from "@/hooks/useAuth";
 import { useToast } from "@/hooks/use-toast";
-import { apiRequest, queryClient } from "@/lib/queryClient";
+import { queryClient } from "@/lib/queryClient";
 import Navigation from "@/components/navigation";
-import BaselineIntegration from "@/components/baseline-integration";
-import SimpleBaselineModal from "@/components/simple-baseline-modal";
+import PersonalBaselineAssessment from "@/components/personal-baseline-assessment";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Brain, Target, Heart, MessageCircle, Shield } from "lucide-react";
@@ -13,7 +12,7 @@ import { Brain, Target, Heart, MessageCircle, Shield } from "lucide-react";
 export default function BaselinePage() {
   const { toast } = useToast();
   const { isAuthenticated, isLoading } = useAuth();
-  const [isModalOpen, setIsModalOpen] = useState(false);
+  const [userBaseline, setUserBaseline] = useState(null);
 
   // Fetch relationships data for compatibility analysis
   const { data: relationships = [] } = useQuery({
@@ -39,12 +38,6 @@ export default function BaselinePage() {
     enabled: isAuthenticated && Array.isArray(relationships) && relationships.length > 0,
   });
 
-  // Fetch current baseline
-  const { data: currentBaseline } = useQuery({
-    queryKey: ["/api/baseline"],
-    enabled: isAuthenticated,
-  });
-
   // Fetch baseline versions for historical tracking
   const { data: baselineVersions = [] } = useQuery({
     queryKey: ["/api/baseline/versions"],
@@ -66,7 +59,39 @@ export default function BaselinePage() {
     }
   }, [isAuthenticated, isLoading, toast]);
 
+  const handleSaveBaseline = async (baseline: any) => {
+    try {
+      const response = await fetch('/api/baseline', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify(baseline),
+      });
 
+      if (!response.ok) {
+        throw new Error('Failed to save baseline');
+      }
+
+      const savedBaseline = await response.json();
+      setUserBaseline(savedBaseline);
+      
+      // Invalidate baseline cache to refresh the data
+      queryClient.invalidateQueries({ queryKey: ["/api/baseline"] });
+      
+      toast({
+        title: "Baseline Saved",
+        description: "Your personal baseline has been saved and will be used for relationship compatibility analysis.",
+      });
+    } catch (error) {
+      console.error('Error saving baseline:', error);
+      toast({
+        title: "Error",
+        description: "Failed to save your baseline. Please try again.",
+        variant: "destructive",
+      });
+    }
+  };
 
   if (isLoading) {
     return (
@@ -144,53 +169,11 @@ export default function BaselinePage() {
           </Card>
         </div>
 
-        {/* Baseline Summary */}
-        <BaselineIntegration 
-          boundaries={[]}
-          relationships={Array.isArray(relationshipStats) ? relationshipStats : (Array.isArray(relationships) ? relationships : [])}
-        />
-        
-        {/* Edit Assessment Button - Always Show */}
-        <Card className="mt-6">
-          <CardContent className="p-6">
-            <div className="flex items-center justify-between">
-              <div>
-                <h3 className="text-lg font-semibold text-gray-900">Edit Your Baseline Assessment</h3>
-                <p className="text-sm text-gray-600 mt-1">Update your preferences, triggers, and deal-breakers</p>
-              </div>
-              <Button 
-                size="sm"
-                onClick={() => setIsModalOpen(true)}
-                className="bg-purple-600 hover:bg-purple-700"
-              >
-                Edit Assessment
-              </Button>
-            </div>
-          </CardContent>
-        </Card>
-        
-        {/* Baseline Assessment Modal */}
-        <SimpleBaselineModal
-          isOpen={isModalOpen}
-          onClose={() => setIsModalOpen(false)}
-          baseline={currentBaseline}
-          onSave={async (baseline) => {
-            try {
-              await apiRequest("POST", "/api/baseline", baseline);
-              queryClient.invalidateQueries({ queryKey: ["/api/baseline"] });
-              setIsModalOpen(false);
-              toast({
-                title: "Baseline Saved",
-                description: "Your baseline assessment has been updated successfully.",
-              });
-            } catch (error) {
-              toast({
-                title: "Error",
-                description: "Failed to save baseline assessment. Please try again.",
-                variant: "destructive",
-              });
-            }
-          }}
+        {/* Baseline Assessment */}
+        <PersonalBaselineAssessment
+          baseline={userBaseline || undefined}
+          onSaveBaseline={handleSaveBaseline}
+          relationshipData={Array.isArray(relationshipStats) ? relationshipStats : (Array.isArray(relationships) ? relationships : [])}
         />
       </div>
     </div>
