@@ -20,7 +20,7 @@ function RelationshipSummaryCard({ relationship }: { relationship: any }) {
     retry: false,
   });
 
-  const healthScore = stats ? stats.greenFlags - stats.redFlags : 0;
+  const healthScore = stats ? (stats.greenFlags || 0) - (stats.redFlags || 0) : 0;
   
   const getHealthStatus = () => {
     if (healthScore >= 5) return { label: "Going Well", color: "text-green-600", bgColor: "bg-green-50" };
@@ -48,11 +48,11 @@ function RelationshipSummaryCard({ relationship }: { relationship: any }) {
       
       {stats && (
         <div className="flex items-center gap-4 text-xs text-neutral-600">
-          <span className="text-green-600">+{stats.greenFlags}</span>
-          <span className="text-red-600">-{stats.redFlags}</span>
+          <span className="text-green-600">+{stats.greenFlags || 0}</span>
+          <span className="text-red-600">-{stats.redFlags || 0}</span>
           <span className="flex items-center gap-1">
             <Users className="w-3 h-3" />
-            {stats.checkInCount}
+            {stats.checkInCount || 0}
           </span>
         </div>
       )}
@@ -164,10 +164,10 @@ export default function Dashboard() {
                       <div>
                         <p className="text-green-600 text-sm font-medium">Boundaries Respected</p>
                         <p className="text-2xl font-bold text-green-700">
-                          {statsLoading ? "..." : stats?.weeklyRespected || 0}
+                          {statsLoading ? "..." : (stats as any)?.weeklyRespected || 0}
                         </p>
                         <p className="text-xs text-green-600">
-                          of {stats?.weeklyTotal || 0} total entries
+                          of {(stats as any)?.weeklyTotal || 0} total entries
                         </p>
                       </div>
                       <CheckCircle className="text-green-500 w-5 h-5" />
@@ -179,7 +179,7 @@ export default function Dashboard() {
                       <div>
                         <p className="text-amber-600 text-sm font-medium">Challenges</p>
                         <p className="text-2xl font-bold text-amber-700">
-                          {statsLoading ? "..." : (stats?.weeklyTotal || 0) - (stats?.weeklyRespected || 0)}
+                          {statsLoading ? "..." : ((stats as any)?.weeklyTotal || 0) - ((stats as any)?.weeklyRespected || 0)}
                         </p>
                         <p className="text-xs text-amber-600">
                           boundary challenges
@@ -194,7 +194,7 @@ export default function Dashboard() {
                       <div>
                         <p className="text-blue-600 text-sm font-medium">Average Mood</p>
                         <p className="text-2xl font-bold text-blue-700">
-                          {statsLoading ? "..." : (stats?.averageMood?.toFixed(1) || "7.5")}
+                          {statsLoading ? "..." : ((stats as any)?.averageMood?.toFixed(1) || "7.5")}
                         </p>
                         <p className="text-xs text-blue-600">
                           out of 10 scale
