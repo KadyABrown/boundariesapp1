@@ -10,7 +10,7 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { TrendingUp, Calendar, BarChart3, Download, Activity } from "lucide-react";
-import InteractionAnalytics from "@/components/interaction-analytics";
+import UnifiedWellnessAnalytics from "@/components/unified-wellness-analytics";
 
 export default function Insights() {
   const { toast } = useToast();
@@ -464,9 +464,9 @@ export default function Insights() {
           </TabsContent>
 
           <TabsContent value="analytics" className="space-y-6">
-            <InteractionAnalytics 
+            <UnifiedWellnessAnalytics 
               interactions={allInteractions || []} 
-              relationshipName="All Relationships"
+              relationships={relationships || []}
             />
           </TabsContent>
         </Tabs>

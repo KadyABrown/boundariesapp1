@@ -271,31 +271,31 @@ export default function InteractionAnalytics({ interactions, relationshipName }:
             <div className="space-y-4">
               {analytics.topSymptoms.map(([symptom, count], index) => {
                 // Find interactions with this symptom to analyze context
-                const symptomInteractions = validInteractions.filter(i => 
+                const symptomInteractions = validInteractions.filter((i: ComprehensiveInteraction) => 
                   i.physicalSymptoms?.includes(symptom)
                 );
                 
                 // Analyze interaction types for this symptom
-                const interactionTypes = symptomInteractions.reduce((acc, interaction) => {
+                const interactionTypes = symptomInteractions.reduce((acc: Record<string, number>, interaction: ComprehensiveInteraction) => {
                   const type = interaction.interactionType || 'Unknown';
                   acc[type] = (acc[type] || 0) + 1;
                   return acc;
                 }, {} as Record<string, number>);
                 
                 const topInteractionType = Object.entries(interactionTypes)
-                  .sort(([,a], [,b]) => b - a)[0]?.[0];
+                  .sort(([,a], [,b]) => (b as number) - (a as number))[0]?.[0];
                 
                 // Analyze emotional states when this symptom occurs
-                const emotionalStates = symptomInteractions.reduce((acc, interaction) => {
+                const emotionalStates = symptomInteractions.reduce((acc: Record<string, number>, interaction: ComprehensiveInteraction) => {
                   const states = interaction.emotionalStates || [];
-                  states.forEach(state => {
+                  states.forEach((state: string) => {
                     acc[state] = (acc[state] || 0) + 1;
                   });
                   return acc;
                 }, {} as Record<string, number>);
                 
                 const topEmotionalState = Object.entries(emotionalStates)
-                  .sort(([,a], [,b]) => b - a)[0]?.[0];
+                  .sort(([,a], [,b]) => (b as number) - (a as number))[0]?.[0];
                 
                 return (
                   <motion.div
@@ -350,10 +350,10 @@ export default function InteractionAnalytics({ interactions, relationshipName }:
                 <p>Your body is responding to specific interaction patterns:</p>
                 <ul className="list-disc list-inside ml-2 space-y-1">
                   {analytics.topSymptoms.slice(0, 2).map(([symptom]) => {
-                    const symptomInteractions = validInteractions.filter(i => 
+                    const symptomInteractions = validInteractions.filter((i: ComprehensiveInteraction) => 
                       i.physicalSymptoms?.includes(symptom)
                     );
-                    const avgEnergyDrop = symptomInteractions.reduce((sum, i) => 
+                    const avgEnergyDrop = symptomInteractions.reduce((sum: number, i: ComprehensiveInteraction) => 
                       sum + ((i.postEnergyLevel || 0) - (i.preEnergyLevel || 0)), 0
                     ) / symptomInteractions.length;
                     
