@@ -55,29 +55,26 @@ interface UnifiedWellnessAnalyticsProps {
 
 export default function UnifiedWellnessAnalytics({ interactions = [], relationships = [] }: UnifiedWellnessAnalyticsProps) {
   const analytics = useMemo(() => {
+    console.log('Analytics Data Check:', { 
+      interactionsCount: interactions.length, 
+      relationshipsCount: relationships.length,
+      interactions: interactions.slice(0, 2),
+      relationships: relationships.slice(0, 2)
+    });
+    
     if (!interactions || interactions.length === 0 || !relationships || relationships.length === 0) {
-      return {
-        wellnessScore: 0,
-        energyImpact: 0,
-        relationshipTypeAnalysis: {},
-        riskFactors: [],
-        recommendations: []
-      };
+      return null;
     }
 
     const validInteractions = interactions.filter(i => 
       i.preEnergyLevel !== undefined && i.postEnergyLevel !== undefined && 
       i.preEnergyLevel !== null && i.postEnergyLevel !== null
     );
+    
+    console.log('Valid interactions found:', validInteractions.length);
 
     if (validInteractions.length === 0) {
-      return {
-        wellnessScore: 0,
-        energyImpact: 0,
-        relationshipTypeAnalysis: {},
-        riskFactors: [],
-        recommendations: []
-      };
+      return null;
     }
 
     // Create relationship lookup
