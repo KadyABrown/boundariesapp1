@@ -227,15 +227,12 @@ export default function EmotionalWeather({ relationships, userProfile, showForec
               <Badge variant="secondary" className="text-xs">
                 {current.relationshipName}
               </Badge>
-              {!relationships || relationships.length === 0 ? (
-                <p className="text-xs opacity-60 italic mt-2">
-                  Sample data - Add relationships to see your real patterns
-                </p>
-              ) : (
-                <p className="text-xs opacity-60 italic mt-2">
-                  Based on your tracked flags and check-ins
-                </p>
-              )}
+              <p className="text-xs opacity-60 italic mt-2">
+                {!relationships || relationships.length === 0 
+                  ? "Sample data - Add relationships to see your real patterns"
+                  : "Based on your tracked flags, check-ins, and interactions"
+                }
+              </p>
             </div>
 
             {/* Weather Metrics */}
