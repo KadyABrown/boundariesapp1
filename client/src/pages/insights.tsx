@@ -10,6 +10,7 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { TrendingUp, Calendar, BarChart3, Download, Activity } from "lucide-react";
+import InteractionAnalytics from "@/components/interaction-analytics";
 
 export default function Insights() {
   const { toast } = useToast();
@@ -83,6 +84,12 @@ export default function Insights() {
 
   const { data: userProfile } = useQuery({
     queryKey: ["/api/profile"],
+    retry: false,
+  });
+
+  // Fetch all interactions across relationships
+  const { data: allInteractions } = useQuery({
+    queryKey: ["/api/interactions"],
     retry: false,
   });
 
@@ -457,15 +464,10 @@ export default function Insights() {
           </TabsContent>
 
           <TabsContent value="analytics" className="space-y-6">
-            <Card>
-              <CardHeader>
-                <CardTitle>Advanced Analytics</CardTitle>
-              </CardHeader>
-              <CardContent>
-                <p className="text-muted-foreground">
-                  Advanced analytics and trend analysis coming soon. This will include detailed charts, 
-                  predictive insights, and personalized recommendations based on your boundary tracking patterns.
-                </p>
+            <InteractionAnalytics 
+              interactions={allInteractions || []} 
+              relationshipName="All Relationships"
+            />
               </CardContent>
             </Card>
           </TabsContent>

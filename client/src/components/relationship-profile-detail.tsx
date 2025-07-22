@@ -385,11 +385,7 @@ export default function RelationshipProfileDetail({ relationship, onClose }: Rel
                     </CardContent>
                   </Card>
 
-                  {/* Interaction Analytics */}
-                  <InteractionAnalytics 
-                    interactions={interactions || []} 
-                    relationshipName={relationship.name}
-                  />
+
                 </TabsContent>
 
                 <TabsContent value="interactions" className="p-0">
