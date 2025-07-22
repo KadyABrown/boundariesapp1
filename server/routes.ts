@@ -1378,6 +1378,18 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
+  // Get all interactions for a user (for unified analytics)
+  app.get('/api/interactions', isAuthenticated, async (req: any, res) => {
+    try {
+      const userId = req.user.claims.sub;
+      const interactions = await storage.getComprehensiveInteractionsByUser(userId);
+      res.json(interactions);
+    } catch (error) {
+      console.error("Error fetching all user interactions:", error);
+      res.status(500).json({ message: "Failed to fetch interactions" });
+    }
+  });
+
   app.post('/api/interactions', async (req: any, res) => {
     try {
       // For testing - use a default user ID if no user is authenticated

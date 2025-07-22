@@ -1074,6 +1074,14 @@ export class DatabaseStorage implements IStorage {
       .orderBy(desc(comprehensiveInteractions.createdAt));
   }
 
+  async getAllUserComprehensiveInteractions(userId: string): Promise<ComprehensiveInteraction[]> {
+    return await db
+      .select()
+      .from(comprehensiveInteractions)
+      .where(eq(comprehensiveInteractions.userId, userId))
+      .orderBy(desc(comprehensiveInteractions.createdAt));
+  }
+
   async getComprehensiveInteractionsByUser(userId: string): Promise<ComprehensiveInteraction[]> {
     return await db
       .select()
