@@ -9,6 +9,7 @@ import { Textarea } from "@/components/ui/textarea";
 import { Slider } from "@/components/ui/slider";
 import { Checkbox } from "@/components/ui/checkbox";
 import { Badge } from "@/components/ui/badge";
+import { TagInput } from "@/components/ui/tag-input";
 import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
@@ -711,22 +712,22 @@ export default function ComprehensiveInteractionTracker({
             {/* What Helped */}
             <div className="space-y-3">
               <Label className="text-base font-medium">What helped you recover fastest?</Label>
-              <Textarea
-                value={(data.whatHelped || []).join(', ')}
-                onChange={(e) => updateData('whatHelped', e.target.value.split(', ').filter(Boolean))}
-                placeholder="Specific actions, thoughts, or activities that helped..."
-                className="min-h-[60px]"
+              <TagInput
+                value={data.whatHelped || []}
+                onChange={(tags) => updateData('whatHelped', tags)}
+                placeholder="Add recovery helpers... (e.g., deep breathing, calling friend, taking a walk)"
+                maxTags={10}
               />
             </div>
 
             {/* What Made It Worse */}
             <div className="space-y-3">
               <Label className="text-base font-medium">What made recovery harder?</Label>
-              <Textarea
-                value={(data.whatMadeItWorse || []).join(', ')}
-                onChange={(e) => updateData('whatMadeItWorse', e.target.value.split(', ').filter(Boolean))}
-                placeholder="Things that prolonged recovery or made you feel worse..."
-                className="min-h-[60px]"
+              <TagInput
+                value={data.whatMadeItWorse || []}
+                onChange={(tags) => updateData('whatMadeItWorse', tags)}
+                placeholder="Add recovery barriers... (e.g., ruminating, isolation, negative self-talk)"
+                maxTags={10}
               />
             </div>
 
@@ -959,61 +960,18 @@ export default function ComprehensiveInteractionTracker({
               <h3 className="text-lg font-semibold text-gray-800 mb-2">
                 Reflection and learning
               </h3>
-              <p className="text-sm text-gray-600">What did you learn for next time?</p>
-            </div>
-
-            {/* Warning Signs Noticed */}
-            <div className="space-y-3">
-              <Label className="text-base font-medium">Warning signs you noticed during or after</Label>
-              <Textarea
-                value={(data.warningSignsNoticed || []).join(', ')}
-                onChange={(e) => updateData('warningSignsNoticed', e.target.value.split(', ').filter(Boolean))}
-                placeholder="Body language, tone changes, energy shifts, gut feelings..."
-                className="min-h-[80px]"
-              />
-            </div>
-
-            {/* Boundaries Maintained */}
-            <div className="space-y-3">
-              <Label className="text-base font-medium">Boundaries you successfully maintained</Label>
-              <Textarea
-                value={(data.boundariesMaintained || []).join(', ')}
-                onChange={(e) => updateData('boundariesMaintained', e.target.value.split(', ').filter(Boolean))}
-                placeholder="Times you said no, redirected conversation, protected your energy..."
-                className="min-h-[80px]"
-              />
-            </div>
-
-            {/* Self-Advocacy Actions */}
-            <div className="space-y-3">
-              <Label className="text-base font-medium">Ways you advocated for yourself</Label>
-              <Textarea
-                value={(data.selfAdvocacyActions || []).join(', ')}
-                onChange={(e) => updateData('selfAdvocacyActions', e.target.value.split(', ').filter(Boolean))}
-                placeholder="Spoke up, asked for what you needed, corrected them..."
-                className="min-h-[80px]"
-              />
+              <p className="text-sm text-gray-600">What did you learn from this interaction?</p>
             </div>
 
             {/* Lessons Learned */}
             <div className="space-y-3">
               <Label className="text-base font-medium">Key lessons learned</Label>
+              <p className="text-xs text-gray-500 mb-2">These insights will help you recognize patterns and improve future interactions</p>
               <Textarea
                 value={data.lessonsLearned || ''}
                 onChange={(e) => updateData('lessonsLearned', e.target.value)}
-                placeholder="What would you do differently? What patterns do you notice?"
-                className="min-h-[100px]"
-              />
-            </div>
-
-            {/* Future Preparation */}
-            <div className="space-y-3">
-              <Label className="text-base font-medium">How will you prepare for next time?</Label>
-              <Textarea
-                value={(data.futurePreparation || []).join(', ')}
-                onChange={(e) => updateData('futurePreparation', e.target.value.split(', ').filter(Boolean))}
-                placeholder="Strategies, phrases, boundaries, exit plans..."
-                className="min-h-[80px]"
+                placeholder="What would you do differently? What patterns do you notice? What surprised you about their behavior or your response?"
+                className="min-h-[120px]"
               />
             </div>
 
