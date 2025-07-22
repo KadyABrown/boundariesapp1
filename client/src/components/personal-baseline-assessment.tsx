@@ -112,6 +112,7 @@ export default function PersonalBaselineAssessment({
   relationshipData = []
 }: PersonalBaselineAssessmentProps) {
   const [activeSection, setActiveSection] = useState<'communication' | 'emotional' | 'boundaries' | 'time' | 'values' | 'compatibility'>('communication');
+  const [isEditing, setIsEditing] = useState(!baseline); // Show edit mode only if no baseline exists
   const [formData, setFormData] = useState<PersonalBaseline>({
     communicationStyle: 'collaborative',
     conflictResolution: 'address-when-calm',
@@ -570,6 +571,173 @@ export default function PersonalBaselineAssessment({
     }
   };
 
+  // Show results view when baseline exists and not editing
+  if (baseline && !isEditing) {
+    return (
+      <div className="space-y-6">
+        {/* Results Header */}
+        <Card className="border-green-200 bg-green-50">
+          <CardContent className="p-6">
+            <div className="flex items-center justify-between">
+              <div className="flex items-center gap-3">
+                <CheckCircle className="w-8 h-8 text-green-600" />
+                <div>
+                  <h3 className="text-lg font-semibold text-green-800">Your Personal Baseline</h3>
+                  <p className="text-green-700">Assessment completed and active for relationship compatibility tracking</p>
+                </div>
+              </div>
+              <Button onClick={() => setIsEditing(true)} variant="outline">
+                Edit Assessment
+              </Button>
+            </div>
+          </CardContent>
+        </Card>
+
+        {/* Results Grid */}
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+          {/* Communication Style */}
+          <Card>
+            <CardHeader>
+              <CardTitle className="flex items-center gap-2">
+                <MessageCircle className="w-5 h-5 text-blue-500" />
+                Communication Style
+              </CardTitle>
+            </CardHeader>
+            <CardContent className="space-y-3">
+              <div>
+                <Label className="text-sm font-medium text-gray-600">Preferred Style:</Label>
+                <p className="text-lg capitalize">{baseline.communicationStyle?.replace('-', ' ')}</p>
+              </div>
+              <div>
+                <Label className="text-sm font-medium text-gray-600">Conflict Resolution:</Label>
+                <p className="text-lg capitalize">{baseline.conflictResolution?.replace('-', ' ')}</p>
+              </div>
+            </CardContent>
+          </Card>
+
+          {/* Emotional Needs */}
+          <Card>
+            <CardHeader>
+              <CardTitle className="flex items-center gap-2">
+                <Heart className="w-5 h-5 text-red-500" />
+                Emotional Needs
+              </CardTitle>
+            </CardHeader>
+            <CardContent className="space-y-3">
+              <div>
+                <Label className="text-sm font-medium text-gray-600">Support Level:</Label>
+                <p className="text-lg capitalize">{baseline.emotionalSupport}</p>
+              </div>
+              <div>
+                <Label className="text-sm font-medium text-gray-600">Validation Needs:</Label>
+                <p className="text-lg capitalize">{baseline.validationNeeds}</p>
+              </div>
+            </CardContent>
+          </Card>
+
+          {/* Personal Triggers */}
+          <Card>
+            <CardHeader>
+              <CardTitle className="flex items-center gap-2">
+                <AlertTriangle className="w-5 h-5 text-amber-500" />
+                Personal Triggers
+              </CardTitle>
+            </CardHeader>
+            <CardContent>
+              {baseline.triggers && baseline.triggers.length > 0 ? (
+                <div className="flex flex-wrap gap-2">
+                  {baseline.triggers.map((trigger, index) => (
+                    <Badge key={index} variant="outline" className="text-xs">
+                      {trigger}
+                    </Badge>
+                  ))}
+                </div>
+              ) : (
+                <p className="text-gray-500 italic">No triggers specified</p>
+              )}
+            </CardContent>
+          </Card>
+
+          {/* Deal Breakers */}
+          <Card>
+            <CardHeader>
+              <CardTitle className="flex items-center gap-2">
+                <Shield className="w-5 h-5 text-orange-500" />
+                Deal Breakers
+              </CardTitle>
+            </CardHeader>
+            <CardContent>
+              {baseline.dealBreakerBehaviors && baseline.dealBreakerBehaviors.length > 0 ? (
+                <div className="flex flex-wrap gap-2">
+                  {baseline.dealBreakerBehaviors.map((behavior, index) => (
+                    <Badge key={index} variant="destructive" className="text-xs">
+                      {behavior}
+                    </Badge>
+                  ))}
+                </div>
+              ) : (
+                <p className="text-gray-500 italic">No deal breakers specified</p>
+              )}
+            </CardContent>
+          </Card>
+        </div>
+
+        {/* Compatibility Section if relationships exist */}
+        {relationshipData && relationshipData.length > 0 && (
+          <Card>
+            <CardHeader>
+              <CardTitle className="flex items-center gap-2">
+                <TrendingUp className="w-5 h-5 text-purple-500" />
+                Relationship Compatibility Analysis
+              </CardTitle>
+            </CardHeader>
+            <CardContent>
+              <div className="grid gap-4">
+                {relationshipData.map((relationship: any) => {
+                  const compatibility = calculateCompatibility(relationship.id);
+                  return (
+                    <div key={relationship.id} className="p-4 border rounded-lg">
+                      <div className="flex justify-between items-start mb-3">
+                        <div>
+                          <h4 className="font-semibold text-lg">{relationship.name}</h4>
+                          <div className={`inline-flex px-3 py-1 rounded-full text-sm font-medium ${getCompatibilityColor(compatibility.overall)}`}>
+                            {compatibility.overall}% Compatible
+                          </div>
+                        </div>
+                      </div>
+                      <div className="grid grid-cols-2 md:grid-cols-5 gap-2 text-sm">
+                        <div className="text-center">
+                          <div className="font-medium">Communication</div>
+                          <div className="text-gray-600">{compatibility.communication}%</div>
+                        </div>
+                        <div className="text-center">
+                          <div className="font-medium">Emotional</div>
+                          <div className="text-gray-600">{compatibility.emotional}%</div>
+                        </div>
+                        <div className="text-center">
+                          <div className="font-medium">Boundaries</div>
+                          <div className="text-gray-600">{compatibility.boundaries}%</div>
+                        </div>
+                        <div className="text-center">
+                          <div className="font-medium">Time</div>
+                          <div className="text-gray-600">{compatibility.timeAvailability}%</div>
+                        </div>
+                        <div className="text-center">
+                          <div className="font-medium">Values</div>
+                          <div className="text-gray-600">{compatibility.valuesAlignment}%</div>
+                        </div>
+                      </div>
+                    </div>
+                  );
+                })}
+              </div>
+            </CardContent>
+          </Card>
+        )}
+      </div>
+    );
+  }
+
   return (
     <div className="space-y-6">
       {/* Navigation */}
@@ -602,8 +770,16 @@ export default function PersonalBaselineAssessment({
           {renderSection()}
           
           {activeSection !== 'compatibility' && (
-            <div className="flex justify-end mt-6 pt-6 border-t">
-              <Button onClick={() => onSaveBaseline(formData)} className="flex items-center gap-2">
+            <div className="flex justify-between mt-6 pt-6 border-t">
+              {baseline && (
+                <Button onClick={() => setIsEditing(false)} variant="outline">
+                  Cancel
+                </Button>
+              )}
+              <Button onClick={() => {
+                onSaveBaseline(formData);
+                setIsEditing(false);
+              }} className="flex items-center gap-2">
                 <CheckCircle className="w-4 h-4" />
                 Save Baseline
               </Button>
@@ -611,23 +787,6 @@ export default function PersonalBaselineAssessment({
           )}
         </CardContent>
       </Card>
-
-      {/* Completion Status */}
-      {baseline && (
-        <Card className="border-green-200 bg-green-50">
-          <CardContent className="p-4">
-            <div className="flex items-center gap-3">
-              <CheckCircle className="w-6 h-6 text-green-600" />
-              <div>
-                <h4 className="font-medium text-green-800">Baseline Assessment Complete</h4>
-                <p className="text-sm text-green-700">
-                  Your personal baseline is saved and being used for compatibility analysis with your relationships.
-                </p>
-              </div>
-            </div>
-          </CardContent>
-        </Card>
-      )}
     </div>
   );
 }
