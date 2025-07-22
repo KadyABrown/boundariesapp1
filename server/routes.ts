@@ -1734,6 +1734,59 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
+  // Feedback routes
+  app.post('/api/feedback', isAuthenticated, async (req: any, res) => {
+    try {
+      const userId = req.user.claims.sub;
+      const userEmail = req.user.claims.email;
+      const feedbackData = {
+        ...req.body,
+        userId,
+        submittedBy: userEmail || `User ${userId}`
+      };
+      
+      const feedback = await storage.submitFeedback(feedbackData);
+      res.json(feedback);
+    } catch (error) {
+      console.error("Error submitting feedback:", error);
+      res.status(500).json({ message: "Failed to submit feedback" });
+    }
+  });
+
+  app.get('/api/feedback', isAuthenticated, async (req: any, res) => {
+    try {
+      const userId = req.user.claims.sub;
+      const feedback = await storage.getUserFeedback(userId);
+      res.json(feedback);
+    } catch (error) {
+      console.error("Error fetching feedback:", error);
+      res.status(500).json({ message: "Failed to fetch feedback" });
+    }
+  });
+
+  // Admin feedback management
+  app.get('/api/admin/feedback', isAuthenticated, isAdmin, async (req: any, res) => {
+    try {
+      const feedback = await storage.getAllFeedback();
+      res.json(feedback);
+    } catch (error) {
+      console.error("Error fetching admin feedback:", error);
+      res.status(500).json({ message: "Failed to fetch feedback" });
+    }
+  });
+
+  app.patch('/api/admin/feedback/:id', isAuthenticated, isAdmin, async (req: any, res) => {
+    try {
+      const feedbackId = parseInt(req.params.id);
+      const updates = req.body;
+      const feedback = await storage.updateFeedback(feedbackId, updates);
+      res.json(feedback);
+    } catch (error) {
+      console.error("Error updating feedback:", error);
+      res.status(500).json({ message: "Failed to update feedback" });
+    }
+  });
+
   const httpServer = createServer(app);
   return httpServer;
 }

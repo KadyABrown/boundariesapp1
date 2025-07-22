@@ -1553,6 +1553,25 @@ export class DatabaseStorage implements IStorage {
 
     return usersWithMetadata;
   }
+
+  async deleteUser(userId: string): Promise<void> {
+    // Delete user and all related data in correct order to handle foreign key constraints
+    await db.delete(comprehensiveInteractions).where(eq(comprehensiveInteractions.userId, userId));
+    await db.delete(behavioralFlags).where(eq(behavioralFlags.userId, userId));
+    await db.delete(emotionalCheckIns).where(eq(emotionalCheckIns.userId, userId));
+    await db.delete(relationshipProfiles).where(eq(relationshipProfiles.userId, userId));
+    await db.delete(boundaryEntries).where(eq(boundaryEntries.userId, userId));
+    await db.delete(boundaries).where(eq(boundaries.userId, userId));
+    await db.delete(personalBaselines).where(eq(personalBaselines.userId, userId));
+    await db.delete(friendships).where(or(
+      eq(friendships.requesterId, userId),
+      eq(friendships.receiverId, userId)
+    ));
+    await db.delete(friendCircles).where(eq(friendCircles.userId, userId));
+    await db.delete(userSavedFlags).where(eq(userSavedFlags.userId, userId));
+    // Finally delete the user
+    await db.delete(users).where(eq(users.id, userId));
+  }
 }
 
 export const storage = new DatabaseStorage();
