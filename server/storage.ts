@@ -15,6 +15,7 @@ import {
   personalBaselines,
   boundaryGoals,
   goalCheckIns,
+  interactionTrackerEntries,
   feedback,
   type User,
   type UpsertUser,
@@ -48,6 +49,8 @@ import {
   type InsertBoundaryGoal,
   type GoalCheckIn,
   type InsertGoalCheckIn,
+  type InteractionTrackerEntry,
+  type InsertInteractionTrackerEntry,
   type Feedback,
   type InsertFeedback,
 } from "@shared/schema";
@@ -1158,6 +1161,29 @@ export class DatabaseStorage implements IStorage {
     await db
       .delete(goalCheckIns)
       .where(eq(goalCheckIns.id, id));
+  }
+
+  // Interaction Tracker Entry Methods (baseline compatibility focused)
+  async createInteractionTrackerEntry(entry: InsertInteractionTrackerEntry): Promise<InteractionTrackerEntry> {
+    const [newEntry] = await db
+      .insert(interactionTrackerEntries)
+      .values(entry)
+      .returning();
+    return newEntry;
+  }
+
+  async getInteractionTrackerEntries(userId: string, relationshipId?: number): Promise<InteractionTrackerEntry[]> {
+    const conditions = [eq(interactionTrackerEntries.userId, userId)];
+    
+    if (relationshipId !== undefined) {
+      conditions.push(eq(interactionTrackerEntries.relationshipId, relationshipId));
+    }
+
+    return await db
+      .select()
+      .from(interactionTrackerEntries)
+      .where(and(...conditions))
+      .orderBy(desc(interactionTrackerEntries.createdAt));
   }
 
   async getBoundaryGoalProgress(userId: string, goalId: number, startDate: Date, endDate: Date): Promise<{

@@ -20,6 +20,7 @@ import {
   insertFriendCircleSchema,
   insertComprehensiveInteractionSchema,
   insertPersonalBaselineSchema,
+  insertInteractionTrackerEntrySchema,
   insertFeedbackSchema,
 } from "@shared/schema";
 import { z } from "zod";
@@ -1444,6 +1445,36 @@ export async function registerRoutes(app: Express): Promise<Server> {
         console.error("Error creating friend circle:", error);
         res.status(500).json({ message: "Failed to create friend circle" });
       }
+    }
+  });
+
+  // Interaction Tracker routes (baseline compatibility focused)
+  app.get('/api/interaction-tracker/:relationshipId', isAuthenticated, async (req: any, res) => {
+    try {
+      const userId = req.user.claims.sub;
+      const relationshipId = parseInt(req.params.relationshipId);
+      const interactions = await storage.getInteractionTrackerEntries(userId, relationshipId);
+      res.json(interactions);
+    } catch (error) {
+      console.error("Error fetching interaction tracker entries:", error);
+      res.status(500).json({ message: "Failed to fetch interaction tracker entries" });
+    }
+  });
+
+  app.post('/api/interaction-tracker', isAuthenticated, async (req: any, res) => {
+    try {
+      const userId = req.user.claims.sub;
+      const validatedData = insertInteractionTrackerEntrySchema.parse(req.body);
+      
+      const interaction = await storage.createInteractionTrackerEntry({
+        ...validatedData,
+        userId,
+      });
+      
+      res.json(interaction);
+    } catch (error) {
+      console.error("Error creating interaction tracker entry:", error);
+      res.status(500).json({ message: "Failed to create interaction tracker entry" });
     }
   });
 

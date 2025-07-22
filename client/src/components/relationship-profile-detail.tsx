@@ -8,6 +8,7 @@ import { X, Calendar, Heart, Flag, TrendingUp, MessageSquare, Brain, Plus, Edit2
 import { format } from "date-fns";
 import ComprehensiveInteractionsView from "./comprehensive-interactions-view";
 import ComprehensiveInteractionTracker from "./comprehensive-interaction-tracker";
+import InteractionTracker from "./interaction-tracker";
 import { apiRequest, queryClient } from "@/lib/queryClient";
 import { useToast } from "@/hooks/use-toast";
 
@@ -78,6 +79,7 @@ interface RelationshipProfileDetailProps {
 export default function RelationshipProfileDetail({ relationship, onClose }: RelationshipProfileDetailProps) {
   const { toast } = useToast();
   const [showCIT, setShowCIT] = useState(false);
+  const [showInteractionTracker, setShowInteractionTracker] = useState(false);
   const [showFlagDialog, setShowFlagDialog] = useState(false);
   const [showCheckInDialog, setShowCheckInDialog] = useState(false);
   const [showSettingsDialog, setShowSettingsDialog] = useState(false);
@@ -373,29 +375,51 @@ export default function RelationshipProfileDetail({ relationship, onClose }: Rel
                   <div className="space-y-6">
                     <div className="text-center">
                       <h3 className="text-lg font-semibold">Log New Interaction</h3>
-                      <p className="text-gray-600">Track your interaction with {relationship.name}</p>
+                      <p className="text-gray-600">Choose how you'd like to track your interaction with {relationship.name}</p>
                     </div>
                     
-                    <Button 
-                      onClick={() => {
-                        // Open the CIT modal
-                        setShowCIT(true);
-                      }}
-                      className="w-full h-16 text-lg"
-                    >
-                      <Brain className="w-6 h-6 mr-3" />
-                      Start Comprehensive Interaction Tracker
-                    </Button>
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                      <Card className="border-2 border-blue-200 hover:border-blue-400 transition-colors cursor-pointer" 
+                            onClick={() => setShowInteractionTracker(true)}>
+                        <CardContent className="p-6">
+                          <div className="text-center space-y-3">
+                            <div className="bg-blue-100 w-12 h-12 rounded-full flex items-center justify-center mx-auto">
+                              <Heart className="w-6 h-6 text-blue-600" />
+                            </div>
+                            <h4 className="font-semibold">Interaction Tracker</h4>
+                            <p className="text-sm text-gray-600">Quick baseline compatibility check</p>
+                            <ul className="text-xs text-gray-500 space-y-1">
+                              <li>• Did they meet your communication needs?</li>
+                              <li>• Were any personal triggers activated?</li>
+                              <li>• Pattern recognition from past interactions</li>
+                            </ul>
+                            <Badge variant="outline" className="text-xs">3 steps • 2 mins</Badge>
+                          </div>
+                        </CardContent>
+                      </Card>
+
+                      <Card className="border-2 border-purple-200 hover:border-purple-400 transition-colors cursor-pointer" 
+                            onClick={() => setShowCIT(true)}>
+                        <CardContent className="p-6">
+                          <div className="text-center space-y-3">
+                            <div className="bg-purple-100 w-12 h-12 rounded-full flex items-center justify-center mx-auto">
+                              <Brain className="w-6 h-6 text-purple-600" />
+                            </div>
+                            <h4 className="font-semibold">Impact Tracker</h4>
+                            <p className="text-sm text-gray-600">Comprehensive emotional & physical impact</p>
+                            <ul className="text-xs text-gray-500 space-y-1">
+                              <li>• Energy and mood before/after</li>
+                              <li>• Physical symptoms tracking</li>
+                              <li>• Recovery analysis & strategies</li>
+                            </ul>
+                            <Badge variant="outline" className="text-xs">5 steps • 5 mins</Badge>
+                          </div>
+                        </CardContent>
+                      </Card>
+                    </div>
                     
-                    <div className="text-sm text-gray-500 space-y-2">
-                      <p><strong>What you'll track:</strong></p>
-                      <ul className="list-disc list-inside space-y-1 ml-4">
-                        <li>Energy and mood before/after</li>
-                        <li>Physical and emotional impacts</li>
-                        <li>Recovery time and strategies</li>
-                        <li>Boundaries and self-advocacy</li>
-                        <li>Lessons learned and future planning</li>
-                      </ul>
+                    <div className="text-center text-sm text-gray-500">
+                      <p>Both trackers help identify patterns like <em>"Coffee dates with {relationship.name} lead to energy drain"</em></p>
                     </div>
                   </div>
                 </TabsContent>
@@ -783,6 +807,31 @@ export default function RelationshipProfileDetail({ relationship, onClose }: Rel
           </div>
         </div>
       )}
+
+      {/* Interaction Tracker Modal */}
+      <InteractionTracker
+        relationshipId={relationship.id}
+        relationshipName={relationship.name}
+        isOpen={showInteractionTracker}
+        onClose={() => setShowInteractionTracker(false)}
+        onSubmit={async (data) => {
+          try {
+            await apiRequest("POST", `/api/interaction-tracker`, data);
+            toast({
+              title: "Interaction Logged",
+              description: "Your baseline compatibility assessment has been saved.",
+            });
+            queryClient.invalidateQueries({ queryKey: [`/api/interaction-tracker`, relationship.id] });
+          } catch (error) {
+            console.error("Error logging interaction:", error);
+            toast({
+              title: "Error",
+              description: "Failed to log interaction. Please try again.",
+              variant: "destructive",
+            });
+          }
+        }}
+      />
     </div>
   );
 }

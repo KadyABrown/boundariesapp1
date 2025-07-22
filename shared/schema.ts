@@ -323,6 +323,29 @@ export const goalCheckIns = pgTable("goal_check_ins", {
   createdAt: timestamp("created_at").defaultNow(),
 });
 
+// Interaction tracker entries - focused on baseline compatibility
+export const interactionTrackerEntries = pgTable("interaction_tracker_entries", {
+  id: serial("id").primaryKey(),
+  userId: varchar("user_id").notNull().references(() => users.id, { onDelete: "cascade" }),
+  relationshipId: integer("relationship_id").notNull().references(() => relationshipProfiles.id, { onDelete: "cascade" }),
+  timestamp: timestamp("timestamp").notNull().defaultNow(),
+  
+  // Baseline alignment data
+  communicationMet: boolean("communication_met").default(false),
+  emotionalNeedsMet: text("emotional_needs_met").array(), // Array of met needs
+  triggersOccurred: text("triggers_occurred").array(), // Array of triggered behaviors
+  dealBreakersCrossed: text("deal_breakers_crossed").array(), // Array of crossed boundaries
+  
+  // Pattern tracking
+  repeatedTriggers: text("repeated_triggers").array(), // Triggers that happened before
+  
+  // Overall assessment
+  overallCompatibility: integer("overall_compatibility"), // 1-10 scale
+  notes: text("notes"),
+  
+  createdAt: timestamp("created_at").defaultNow(),
+});
+
 // Relations
 export const usersRelations = relations(users, ({ many, one }) => ({
   boundaries: many(boundaries),
@@ -482,6 +505,17 @@ export const goalCheckInsRelations = relations(goalCheckIns, ({ one }) => ({
   }),
 }));
 
+export const interactionTrackerEntriesRelations = relations(interactionTrackerEntries, ({ one }) => ({
+  user: one(users, {
+    fields: [interactionTrackerEntries.userId],
+    references: [users.id],
+  }),
+  relationshipProfile: one(relationshipProfiles, {
+    fields: [interactionTrackerEntries.relationshipId],
+    references: [relationshipProfiles.id],
+  }),
+}));
+
 // Schemas for validation
 export type UpsertUser = typeof users.$inferInsert;
 export type User = typeof users.$inferSelect;
@@ -600,6 +634,13 @@ export const insertGoalCheckInSchema = createInsertSchema(goalCheckIns).omit({
 });
 export type InsertGoalCheckIn = z.infer<typeof insertGoalCheckInSchema>;
 export type GoalCheckIn = typeof goalCheckIns.$inferSelect;
+
+export const insertInteractionTrackerEntrySchema = createInsertSchema(interactionTrackerEntries).omit({
+  id: true,
+  createdAt: true,
+});
+export type InsertInteractionTrackerEntry = z.infer<typeof insertInteractionTrackerEntrySchema>;
+export type InteractionTrackerEntry = typeof interactionTrackerEntries.$inferSelect;
 
 // Feedback and bug tracking system
 export const feedback = pgTable("feedback", {
