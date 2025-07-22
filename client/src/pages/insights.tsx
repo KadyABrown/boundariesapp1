@@ -11,6 +11,7 @@ import { Button } from "@/components/ui/button";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { TrendingUp, Calendar, BarChart3, Download, Activity } from "lucide-react";
 import UnifiedWellnessAnalytics from "@/components/unified-wellness-analytics";
+import InsightsActivitySummary from "@/components/insights-activity-summary";
 
 export default function Insights() {
   const { toast } = useToast();
@@ -201,6 +202,15 @@ export default function Insights() {
             Export Data
           </Button>
         </div>
+
+        {/* Activity Summary Banner */}
+        <InsightsActivitySummary 
+          onNavigateToRecommendations={() => {
+            // Switch to analytics tab
+            const analyticsTab = document.querySelector('[value="analytics"]') as HTMLElement;
+            analyticsTab?.click();
+          }}
+        />
 
         <Tabs defaultValue="overview" className="space-y-6">
           <TabsList className="grid w-full grid-cols-2 md:grid-cols-4 gap-1 h-auto">
