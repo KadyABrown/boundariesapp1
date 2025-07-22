@@ -182,20 +182,22 @@ export default function BoundaryBuddy({
         </div>
       </motion.div>
 
-      {/* Speech Bubble Indicator */}
-      <motion.div
-        className="absolute -top-2 -right-2 w-4 h-4 bg-green-400 rounded-full flex items-center justify-center"
-        animate={{
-          scale: [1, 1.2, 1],
-          opacity: [0.7, 1, 0.7]
-        }}
-        transition={{
-          duration: 1.5,
-          repeat: Infinity,
-        }}
-      >
-        <MessageCircle className="w-2 h-2 text-white" />
-      </motion.div>
+      {/* Speech Bubble Indicator - Only show for certain contexts */}
+      {(hasNewRecommendations || context === 'insights-overview') && (
+        <motion.div
+          className="absolute -top-2 -right-2 w-4 h-4 bg-orange-500 rounded-full flex items-center justify-center"
+          animate={{
+            scale: [1, 1.2, 1],
+            opacity: [0.7, 1, 0.7]
+          }}
+          transition={{
+            duration: 1.5,
+            repeat: Infinity,
+          }}
+        >
+          <MessageCircle className="w-2 h-2 text-white" />
+        </motion.div>
+      )}
 
       {/* Hover hint */}
       <motion.div
@@ -207,14 +209,16 @@ export default function BoundaryBuddy({
     </motion.div>
   );
 
-  const defaultTrigger = position === 'floating' ? <BuddyCharacter /> : (
-    <BuddyCharacter />
+  const defaultTrigger = (
+    <div className="flex justify-center mb-4">
+      <BuddyCharacter />
+    </div>
   );
 
   return (
     <>
       {trigger ? (
-        <div onClick={() => setIsOpen(true)} className="cursor-pointer">
+        <div onClick={handleOpenDialog} className="cursor-pointer">
           {trigger}
         </div>
       ) : (

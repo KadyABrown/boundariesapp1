@@ -47,6 +47,11 @@ export default function Insights() {
     retry: false,
   });
 
+  const { data: interactions } = useQuery({
+    queryKey: ["/api/interactions"],
+    retry: false,
+  });
+
   // Fetch stats for each relationship to get flag counts
   const relationshipStatsQueries = useQuery({
     queryKey: ["relationship-stats", relationships],
@@ -178,7 +183,8 @@ export default function Insights() {
 
   // Get category breakdown
   const categoryStats = Array.isArray(entries) ? entries.reduce((acc: any, entry: any) => {
-    acc[entry.category] = (acc[entry.category] || 0) + 1;
+    const category = entry.category || 'other';
+    acc[category] = (acc[category] || 0) + 1;
     return acc;
   }, {}) : {};
 
@@ -484,8 +490,8 @@ export default function Insights() {
 
           <TabsContent value="analytics" className="space-y-6">
             <UnifiedWellnessAnalytics 
-              interactions={allInteractions || []} 
-              relationships={relationships || []}
+              interactions={Array.isArray(interactions) ? interactions : []} 
+              relationships={Array.isArray(relationships) ? relationships : []}
             />
           </TabsContent>
         </Tabs>
