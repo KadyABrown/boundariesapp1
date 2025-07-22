@@ -1416,6 +1416,44 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
+  // Get user's custom CIT options from boundaries
+  app.get('/api/boundaries/cit-options', isAuthenticated, async (req: any, res) => {
+    try {
+      const userId = req.user.claims.sub;
+      const boundaries = await storage.getBoundaries(userId);
+      
+      // Organize boundaries by category for CIT use
+      const citOptions = {
+        triggers: boundaries
+          .filter(b => b.category === 'emotional-triggers')
+          .map(b => b.title.replace('Trigger: ', '')),
+        comfortingSources: boundaries
+          .filter(b => b.category === 'comfort-preferences')
+          .map(b => b.title.replace('Comfort: ', '')),
+        communicationDealBreakers: boundaries
+          .filter(b => b.category === 'communication-triggers')
+          .map(b => b.title.replace('Communication: ', '')),
+        nonNegotiableBoundaries: boundaries
+          .filter(b => b.category === 'non-negotiable')
+          .map(b => b.title.replace('Non-negotiable: ', '')),
+        flexibleBoundaries: boundaries
+          .filter(b => b.category === 'flexible-boundaries')
+          .map(b => b.title.replace('Flexible: ', '')),
+        relationshipGoals: boundaries
+          .filter(b => b.category === 'relationship-goals')
+          .map(b => b.title.replace('Goal: ', '')),
+        dealBreakerBehaviors: boundaries
+          .filter(b => b.category === 'deal-breakers')
+          .map(b => b.title.replace('Deal-breaker: ', ''))
+      };
+      
+      res.json(citOptions);
+    } catch (error) {
+      console.error("Error fetching CIT options:", error);
+      res.status(500).json({ message: "Failed to fetch CIT options" });
+    }
+  });
+
   // Friend circles routes
   app.get('/api/friend-circles', isAuthenticated, async (req: any, res) => {
     try {
@@ -1475,6 +1513,9 @@ export async function registerRoutes(app: Express): Promise<Server> {
         baseline = await storage.updatePersonalBaseline(userId, baselineData);
       } else {
         baseline = await storage.createPersonalBaseline(baselineData);
+        
+        // Auto-generate boundaries from baseline custom inputs for new users
+        await storage.generateBoundariesFromBaseline(userId, baselineData);
       }
       
       res.json(baseline);

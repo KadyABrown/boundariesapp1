@@ -1222,6 +1222,114 @@ export class DatabaseStorage implements IStorage {
     };
   }
 
+  // Generate boundaries from baseline custom inputs
+  async generateBoundariesFromBaseline(userId: string, baseline: any): Promise<void> {
+    const boundariesToCreate = [];
+
+    // Communication deal breakers
+    if (baseline.communicationDealBreakers && baseline.communicationDealBreakers.length > 0) {
+      for (const dealBreaker of baseline.communicationDealBreakers) {
+        boundariesToCreate.push({
+          userId,
+          title: `Communication: ${dealBreaker}`,
+          description: `Communication deal-breaker from baseline: ${dealBreaker}`,
+          category: 'communication-triggers',
+          importance: 9,
+          isActive: true,
+        });
+      }
+    }
+
+    // Emotional triggers
+    if (baseline.triggers && baseline.triggers.length > 0) {
+      for (const trigger of baseline.triggers) {
+        boundariesToCreate.push({
+          userId,
+          title: `Trigger: ${trigger}`,
+          description: `Emotional trigger from baseline: ${trigger}`,
+          category: 'emotional-triggers',
+          importance: 8,
+          isActive: true,
+        });
+      }
+    }
+
+    // Comforting sources
+    if (baseline.comfortingSources && baseline.comfortingSources.length > 0) {
+      for (const source of baseline.comfortingSources) {
+        boundariesToCreate.push({
+          userId,
+          title: `Comfort: ${source}`,
+          description: `Comforting source from baseline: ${source}`,
+          category: 'comfort-preferences',
+          importance: 6,
+          isActive: true,
+        });
+      }
+    }
+
+    // Non-negotiable boundaries
+    if (baseline.nonNegotiableBoundaries && baseline.nonNegotiableBoundaries.length > 0) {
+      for (const boundary of baseline.nonNegotiableBoundaries) {
+        boundariesToCreate.push({
+          userId,
+          title: `Non-negotiable: ${boundary}`,
+          description: `Non-negotiable boundary from baseline: ${boundary}`,
+          category: 'non-negotiable',
+          importance: 10,
+          isActive: true,
+        });
+      }
+    }
+
+    // Flexible boundaries
+    if (baseline.flexibleBoundaries && baseline.flexibleBoundaries.length > 0) {
+      for (const boundary of baseline.flexibleBoundaries) {
+        boundariesToCreate.push({
+          userId,
+          title: `Flexible: ${boundary}`,
+          description: `Flexible boundary from baseline: ${boundary}`,
+          category: 'flexible-boundaries',
+          importance: 5,
+          isActive: true,
+        });
+      }
+    }
+
+    // Relationship goals
+    if (baseline.relationshipGoals && baseline.relationshipGoals.length > 0) {
+      for (const goal of baseline.relationshipGoals) {
+        boundariesToCreate.push({
+          userId,
+          title: `Goal: ${goal}`,
+          description: `Relationship goal from baseline: ${goal}`,
+          category: 'relationship-goals',
+          importance: 7,
+          isActive: true,
+        });
+      }
+    }
+
+    // Deal-breaker behaviors
+    if (baseline.dealBreakerBehaviors && baseline.dealBreakerBehaviors.length > 0) {
+      for (const behavior of baseline.dealBreakerBehaviors) {
+        boundariesToCreate.push({
+          userId,
+          title: `Deal-breaker: ${behavior}`,
+          description: `Deal-breaker behavior from baseline: ${behavior}`,
+          category: 'deal-breakers',
+          importance: 10,
+          isActive: true,
+        });
+      }
+    }
+
+    // Create boundaries if any exist
+    if (boundariesToCreate.length > 0) {
+      await db.insert(boundaries).values(boundariesToCreate);
+    }
+  }
+
   async getAdminStats() {
     // Exclude test accounts from analytics
     const testEmails = ['KeturahBrown17@gmail.com', 'KadyABrown@gmail.com'];

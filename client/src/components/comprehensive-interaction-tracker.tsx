@@ -1,4 +1,5 @@
 import { useState, useEffect } from "react";
+import { useQuery } from "@tanstack/react-query";
 import { motion, AnimatePresence } from "framer-motion";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -128,6 +129,52 @@ export default function ComprehensiveInteractionTracker({
   onClose,
   onSubmit
 }: ComprehensiveInteractionTrackerProps) {
+  // Fetch user's custom boundary options for CIT
+  const { data: customOptions = {
+    triggers: [],
+    comfortingSources: [],
+    communicationDealBreakers: [],
+    nonNegotiableBoundaries: [],
+    flexibleBoundaries: [],
+    relationshipGoals: [],
+    dealBreakerBehaviors: []
+  } } = useQuery<{
+    triggers: string[];
+    comfortingSources: string[];
+    communicationDealBreakers: string[];
+    nonNegotiableBoundaries: string[];
+    flexibleBoundaries: string[];
+    relationshipGoals: string[];
+    dealBreakerBehaviors: string[];
+  }>({
+    queryKey: ['/api/boundaries/cit-options'],
+    enabled: isOpen, // Only fetch when dialog is open
+  });
+
+  // Create merged options arrays combining predefined and custom options
+  const allTriggers = [
+    ...emotionalWarningSigns,
+    ...customOptions.triggers,
+    ...customOptions.communicationDealBreakers,
+    ...customOptions.dealBreakerBehaviors
+  ].filter((item, index, arr) => arr.indexOf(item) === index); // Remove duplicates
+
+  const allComfortingSources = [
+    ...recoveryStrategies,
+    ...customOptions.comfortingSources
+  ].filter((item, index, arr) => arr.indexOf(item) === index);
+
+  const allBoundaries = [
+    ...copingSkills,
+    ...customOptions.nonNegotiableBoundaries,
+    ...customOptions.flexibleBoundaries
+  ].filter((item, index, arr) => arr.indexOf(item) === index);
+
+  const allGoalsAndMotivations = [
+    'Personal growth', 'Better communication', 'Deeper connection', 'Mutual respect',
+    ...customOptions.relationshipGoals
+  ].filter((item, index, arr) => arr.indexOf(item) === index);
+  
   const [step, setStep] = useState(1);
   const [data, setData] = useState<Partial<ComprehensiveInteractionData>>({
     relationshipId,
@@ -163,12 +210,18 @@ export default function ComprehensiveInteractionTracker({
   };
 
   const toggleArrayField = (field: string, value: string) => {
-    setData(prev => ({
-      ...prev,
-      [field]: prev[field as keyof typeof prev]?.includes?.(value)
-        ? (prev[field as keyof typeof prev] as string[]).filter(item => item !== value)
-        : [...(prev[field as keyof typeof prev] as string[] || []), value]
-    }));
+    setData(prev => {
+      const currentValue = prev[field as keyof typeof prev] as string[] || [];
+      const isArray = Array.isArray(currentValue);
+      const currentArray = isArray ? currentValue : [];
+      
+      return {
+        ...prev,
+        [field]: currentArray.includes(value)
+          ? currentArray.filter(item => item !== value)
+          : [...currentArray, value]
+      };
+    });
   };
 
   const getEnergyImpact = () => {
@@ -340,7 +393,7 @@ export default function ComprehensiveInteractionTracker({
                 Warning Signs Present (Select any that apply)
               </Label>
               <div className="grid grid-cols-2 gap-2">
-                {emotionalWarningSigns.map(sign => (
+                {allTriggers.map(sign => (
                   <div key={sign} className="flex items-center space-x-2">
                     <Checkbox
                       id={sign}
@@ -632,7 +685,7 @@ export default function ComprehensiveInteractionTracker({
             <div className="space-y-3">
               <Label className="text-base font-medium">Recovery strategies you used</Label>
               <div className="grid grid-cols-2 gap-2 max-h-48 overflow-y-auto">
-                {recoveryStrategies.map(strategy => (
+                {allComfortingSources.map(strategy => (
                   <div key={strategy} className="flex items-center space-x-2">
                     <Checkbox
                       id={strategy}
@@ -671,7 +724,7 @@ export default function ComprehensiveInteractionTracker({
             <div className="space-y-3">
               <Label className="text-base font-medium">Coping skills you used during the interaction</Label>
               <div className="grid grid-cols-1 gap-2 max-h-48 overflow-y-auto">
-                {copingSkills.map(skill => (
+                {allBoundaries.map(skill => (
                   <div key={skill} className="flex items-center space-x-2">
                     <Checkbox
                       id={skill}
