@@ -816,7 +816,24 @@ export default function RelationshipProfileDetail({ relationship, onClose }: Rel
         onClose={() => setShowInteractionTracker(false)}
         onSubmit={async (data) => {
           try {
-            await apiRequest("POST", `/api/interaction-tracker`, data);
+            console.log("Submitting interaction tracker data:", JSON.stringify(data, null, 2));
+            
+            const response = await fetch(`/api/interaction-tracker`, {
+              method: 'POST',
+              headers: {
+                'Content-Type': 'application/json',
+              },
+              body: JSON.stringify(data),
+              credentials: 'include',
+            });
+            
+            if (!response.ok) {
+              throw new Error('Failed to submit interaction data');
+            }
+            
+            const result = await response.json();
+            console.log("Interaction submission result:", JSON.stringify(result, null, 2));
+            
             toast({
               title: "Interaction Logged",
               description: "Your baseline compatibility assessment has been saved.",
