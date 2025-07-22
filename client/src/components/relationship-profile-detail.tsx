@@ -610,27 +610,53 @@ export default function RelationshipProfileDetail({ relationship, onClose }: Rel
           onClose={() => setShowCIT(false)}
           onSubmit={async (data: any) => {
             try {
-              // Transform array fields to strings where needed for schema validation
+              // Transform form field names to match database schema
               const transformedData = {
-                ...data,
-                whatHelped: Array.isArray(data.whatHelped) ? data.whatHelped.join(', ') : data.whatHelped || '',
-                whatMadeItWorse: Array.isArray(data.whatMadeItWorse) ? data.whatMadeItWorse.join(', ') : data.whatMadeItWorse || '',
-                futurePreparation: Array.isArray(data.futurePreparation) ? data.futurePreparation.join(', ') : data.futurePreparation || '',
-                lessonsLearned: data.lessonsLearned || '',
-                location: data.location || '',
-                // Ensure array fields that should be arrays stay as arrays
-                physicalSymptomsAfter: Array.isArray(data.physicalSymptomsAfter) ? data.physicalSymptomsAfter : [],
-                emotionalStateAfter: Array.isArray(data.emotionalStateAfter) ? data.emotionalStateAfter : [],
-                topicsDiscussed: Array.isArray(data.topicsDiscussed) ? data.topicsDiscussed : [],
+                userId: data.userId,
+                relationshipId: data.relationshipId,
+                
+                // Pre-interaction state (form fields -> database fields)
+                preEnergyLevel: data.energyBefore,
+                preAnxietyLevel: data.anxietyBefore,
+                preSelfWorth: data.selfWorthBefore,
+                preMood: data.moodBefore,
+                preWarningSigns: Array.isArray(data.emotionalWarningSignsPresent) ? data.emotionalWarningSignsPresent : [],
+                
+                // Interaction context
+                interactionType: data.interactionType,
+                durationMinutes: data.duration,
+                locationSetting: data.location || '',
+                witnessesPresent: data.witnesses || false,
+                boundaryTesting: data.boundariesTested || false,
+                
+                // Post-interaction impact
+                postEnergyLevel: data.energyAfter,
+                postAnxietyLevel: data.anxietyAfter,
+                postSelfWorth: data.selfWorthAfter,
+                physicalSymptoms: Array.isArray(data.physicalSymptomsAfter) ? data.physicalSymptomsAfter : [],
+                emotionalStates: Array.isArray(data.emotionalStateAfter) ? data.emotionalStateAfter : [],
+                
+                // Recovery analysis
+                recoveryTimeMinutes: data.recoveryTime,
                 recoveryStrategies: Array.isArray(data.recoveryStrategies) ? data.recoveryStrategies : [],
-                copingSkillsUsed: Array.isArray(data.copingSkillsUsed) ? data.copingSkillsUsed : [],
+                whatHelped: Array.isArray(data.whatHelped) ? data.whatHelped.join(', ') : data.whatHelped || '',
+                whatMadeWorse: Array.isArray(data.whatMadeItWorse) ? data.whatMadeItWorse.join(', ') : data.whatMadeItWorse || '',
+                supportUsed: Array.isArray(data.copingSkillsUsed) ? data.copingSkillsUsed : [],
+                
+                // Learning and growth
+                warningSignsRecognized: Array.isArray(data.warningSignsNoticed) ? data.warningSignsNoticed : [],
+                boundariesMaintained: Array.isArray(data.boundariesMaintained) ? data.boundariesMaintained : [],
                 selfAdvocacyActions: Array.isArray(data.selfAdvocacyActions) ? data.selfAdvocacyActions : [],
-                warningSignsNoticed: Array.isArray(data.warningSignsNoticed) ? data.warningSignsNoticed : [],
-                emotionalWarningSignsPresent: Array.isArray(data.emotionalWarningSignsPresent) ? data.emotionalWarningSignsPresent : [],
+                lessonsLearned: data.lessonsLearned || '',
+                futureStrategies: Array.isArray(data.futurePreparation) ? data.futurePreparation.join(', ') : data.futurePreparation || '',
+                
+                // Compatibility assessment
+                communicationQuality: data.communicationQuality,
                 communicationIssues: Array.isArray(data.communicationIssues) ? data.communicationIssues : [],
-                boundariesMet: Array.isArray(data.boundariesMet) ? data.boundariesMet : [],
                 boundaryViolations: Array.isArray(data.boundaryViolations) ? data.boundaryViolations : [],
-                boundariesMaintained: Array.isArray(data.boundariesMaintained) ? data.boundariesMaintained : []
+                boundariesMet: Array.isArray(data.boundariesMet) ? data.boundariesMet : [],
+                emotionalNeedsMet: data.emotionalNeedsMet,
+                valuesAlignment: data.valuesAlignment
               };
               
               await apiRequest("POST", "/api/interactions", transformedData);

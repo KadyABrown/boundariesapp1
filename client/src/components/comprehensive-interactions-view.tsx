@@ -39,6 +39,12 @@ interface ComprehensiveInteraction {
   selfAdvocacyActions: string[];
   lessonsLearned: string;
   futureStrategies: string;
+  communicationQuality: number;
+  communicationIssues: string[];
+  boundaryViolations: string[];
+  boundariesMet: string[];
+  emotionalNeedsMet: number;
+  valuesAlignment: number;
 }
 
 export default function ComprehensiveInteractionsView({ relationshipId, relationshipName }: ComprehensiveInteractionsViewProps) {
