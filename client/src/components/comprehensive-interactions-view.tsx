@@ -42,9 +42,17 @@ interface ComprehensiveInteraction {
 }
 
 export default function ComprehensiveInteractionsView({ relationshipId, relationshipName }: ComprehensiveInteractionsViewProps) {
-  const { data: interactions, isLoading } = useQuery<ComprehensiveInteraction[]>({
+  const { data: interactions, isLoading, error } = useQuery<ComprehensiveInteraction[]>({
     queryKey: ['/api/interactions', relationshipId],
-    queryFn: () => fetch(`/api/interactions/${relationshipId}`).then(res => res.json()),
+    queryFn: async () => {
+      const response = await fetch(`/api/interactions/${relationshipId}`);
+      if (!response.ok) {
+        throw new Error('Failed to fetch interactions');
+      }
+      const data = await response.json();
+      // Ensure we always return an array
+      return Array.isArray(data) ? data : [];
+    },
     refetchOnWindowFocus: false,
   });
 
@@ -97,6 +105,24 @@ export default function ComprehensiveInteractionsView({ relationshipId, relation
               </CardContent>
             </Card>
           ))}
+        </div>
+      </div>
+    );
+  }
+
+  if (error) {
+    return (
+      <div className="p-6 text-center">
+        <div className="flex items-center gap-2 mb-6">
+          <Calendar className="w-5 h-5 text-blue-600" />
+          <h3 className="text-xl font-semibold">Comprehensive Interactions</h3>
+        </div>
+        <div className="bg-red-50 rounded-lg p-8">
+          <AlertTriangle className="w-12 h-12 text-red-400 mx-auto mb-4" />
+          <h4 className="text-lg font-medium text-red-600 mb-2">Error Loading Interactions</h4>
+          <p className="text-red-500">
+            There was an error loading interaction data. Please try again later.
+          </p>
         </div>
       </div>
     );
