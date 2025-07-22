@@ -327,7 +327,9 @@ export default function BoundaryBuddy({
                           </p>
                           <Button
                             onClick={() => {
-                              onNavigateToAnalytics();
+                              if (onNavigateToAnalytics) {
+                                onNavigateToAnalytics();
+                              }
                               setIsOpen(false);
                             }}
                             size="sm"

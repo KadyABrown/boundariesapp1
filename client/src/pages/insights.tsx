@@ -1,4 +1,4 @@
-import { useEffect, useMemo } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { useQuery } from "@tanstack/react-query";
 import { useAuth } from "@/hooks/useAuth";
 import { useToast } from "@/hooks/use-toast";
@@ -16,6 +16,7 @@ import InsightsActivitySummary from "@/components/insights-activity-summary";
 export default function Insights() {
   const { toast } = useToast();
   const { isAuthenticated, isLoading } = useAuth();
+  const [activeTab, setActiveTab] = useState("overview");
 
   // Redirect to home if not authenticated
   useEffect(() => {
@@ -212,17 +213,11 @@ export default function Insights() {
         {/* Activity Summary Banner */}
         <InsightsActivitySummary 
           onNavigateToRecommendations={() => {
-            // Switch to analytics tab using multiple selectors
-            const analyticsTab = document.getElementById('analytics-tab-trigger') || 
-                               document.querySelector('[value="analytics"]') || 
-                               document.querySelector('[data-value="analytics"]');
-            if (analyticsTab) {
-              analyticsTab.click();
-            }
+            setActiveTab("analytics");
           }}
         />
 
-        <Tabs defaultValue="overview" className="space-y-6" id="insights-tabs">
+        <Tabs value={activeTab} onValueChange={setActiveTab} className="space-y-6" id="insights-tabs">
           <TabsList className="grid w-full grid-cols-2 md:grid-cols-4 gap-1 h-auto">
             <TabsTrigger value="overview" className="flex items-center gap-1 md:gap-2 text-xs md:text-sm px-2 py-2 md:px-4">
               <BarChart3 className="w-3 h-3 md:w-4 md:h-4" />
@@ -248,16 +243,7 @@ export default function Insights() {
               context="insights-overview"
               hasNewRecommendations={true}
               onNavigateToAnalytics={() => {
-                // Try multiple selectors to find the analytics tab trigger
-                const analyticsTab = document.getElementById('analytics-tab-trigger') || 
-                                   document.querySelector('[value="analytics"]') || 
-                                   document.querySelector('[data-value="analytics"]');
-                if (analyticsTab) {
-                  analyticsTab.click();
-                } else {
-                  // Fallback: trigger a custom event
-                  window.dispatchEvent(new CustomEvent('navigate-to-analytics'));
-                }
+                setActiveTab("analytics");
               }}
             />
 
