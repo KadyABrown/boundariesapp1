@@ -1528,7 +1528,8 @@ export class DatabaseStorage implements IStorage {
           .from(relationshipProfiles)
           .where(eq(relationshipProfiles.userId, user.id));
         
-        // Get last active (last boundary entry or relationship activity)
+        // Get last active - use updatedAt from user record (tracks login activity)
+        // or fall back to last boundary entry
         const lastBoundaryEntry = await db
           .select()
           .from(boundaryEntries)
@@ -1536,7 +1537,11 @@ export class DatabaseStorage implements IStorage {
           .orderBy(desc(boundaryEntries.createdAt))
           .limit(1);
 
-        const lastActivity = lastBoundaryEntry.length > 0 ? lastBoundaryEntry[0].createdAt : null;
+        const lastBoundaryActivity = lastBoundaryEntry.length > 0 ? lastBoundaryEntry[0].createdAt : null;
+        // Use user.updatedAt as it gets updated on each login, or fall back to boundary activity
+        const lastActivity = user.updatedAt && user.updatedAt > (lastBoundaryActivity || new Date(0)) 
+          ? user.updatedAt 
+          : lastBoundaryActivity;
 
         return {
           ...user,
