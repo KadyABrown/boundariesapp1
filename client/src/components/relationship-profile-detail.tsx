@@ -853,7 +853,10 @@ export default function RelationshipProfileDetail({ relationship, onClose }: Rel
               title: "Interaction Logged",
               description: "Your baseline compatibility assessment has been saved.",
             });
+            // Invalidate all related caches to ensure UI updates
             queryClient.invalidateQueries({ queryKey: [`/api/interaction-tracker`, relationship.id] });
+            queryClient.invalidateQueries({ queryKey: [`/api/relationships/${relationship.id}/stats`] });
+            queryClient.invalidateQueries({ queryKey: ["relationship-stats"] });
           } catch (error) {
             console.error("Error logging interaction:", error);
             toast({
