@@ -140,7 +140,7 @@ export default function EmotionalWeather({ relationships, userProfile, showForec
     }
   };
 
-  // Show message when no relationships exist
+  // Always show weather display - if no data, useEffect will populate with sample data
   if (currentWeather.length === 0) {
     return (
       <Card>
@@ -152,11 +152,7 @@ export default function EmotionalWeather({ relationships, userProfile, showForec
         </CardHeader>
         <CardContent>
           <div className="flex items-center justify-center p-8">
-            <div className="text-center space-y-2">
-              <Cloud className="w-12 h-12 text-gray-400 mx-auto mb-4" />
-              <p className="text-gray-600">No relationship data yet</p>
-              <p className="text-sm text-gray-500">Create some relationships to see your emotional weather patterns</p>
-            </div>
+            <div className="animate-spin w-8 h-8 border-4 border-primary border-t-transparent rounded-full" />
           </div>
         </CardContent>
       </Card>
@@ -344,8 +340,21 @@ export default function EmotionalWeather({ relationships, userProfile, showForec
 }
 
 function generateRealisticWeatherData(userProfile?: any): RelationshipWeather[] {
-  // Return empty array when no relationships exist
-  return [];
+  // Create example relationship categories (not actual relationships)
+  const relationships = [
+    { name: "Work Environment", baseTemp: 65, baseTension: 40 },
+    { name: "Social Circle", baseTemp: 80, baseTension: 20 },
+    { name: "Family Dynamics", baseTemp: 70, baseTension: 30 }
+  ];
+
+  return relationships.map(rel => {
+    const weather = generateWeatherFromMetrics(rel.baseTemp, rel.baseTension);
+    return {
+      relationshipName: rel.name,
+      weather,
+      lastUpdated: new Date()
+    };
+  });
 }
 
 function generateWeatherCondition(temperature: number, tension: number): WeatherData['condition'] {

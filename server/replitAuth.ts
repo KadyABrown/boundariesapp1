@@ -57,28 +57,13 @@ function updateUserSession(
 async function upsertUser(
   claims: any,
 ) {
-  // Check if user already exists
-  const existingUser = await storage.getUser(claims["sub"]);
-  
-  if (existingUser) {
-    // User exists, just update their info
-    await storage.updateUser(claims["sub"], {
-      email: claims["email"],
-      firstName: claims["first_name"],
-      lastName: claims["last_name"],
-      profileImageUrl: claims["profile_image_url"],
-    });
-  } else {
-    // Create new user
-    await storage.createUser({
-      id: claims["sub"],
-      email: claims["email"],
-      firstName: claims["first_name"],
-      lastName: claims["last_name"],
-      profileImageUrl: claims["profile_image_url"],
-      accountType: 'replit',
-    });
-  }
+  await storage.upsertUser({
+    id: claims["sub"],
+    email: claims["email"],
+    firstName: claims["first_name"],
+    lastName: claims["last_name"],
+    profileImageUrl: claims["profile_image_url"],
+  });
 }
 
 export async function setupAuth(app: Express) {
@@ -99,14 +84,19 @@ export async function setupAuth(app: Express) {
     verified(null, user);
   };
 
-  for (const domain of process.env
-    .REPLIT_DOMAINS!.split(",")) {
+  // Add localhost for development
+  const domains = process.env.REPLIT_DOMAINS!.split(",");
+  if (process.env.NODE_ENV === 'development') {
+    domains.push('localhost');
+  }
+
+  for (const domain of domains) {
     const strategy = new Strategy(
       {
         name: `replitauth:${domain}`,
         config,
         scope: "openid email profile offline_access",
-        callbackURL: `https://${domain}/api/callback`,
+        callbackURL: domain === 'localhost' ? `http://${domain}:5000/api/callback` : `https://${domain}/api/callback`,
       },
       verify,
     );

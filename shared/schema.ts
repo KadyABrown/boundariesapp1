@@ -25,7 +25,7 @@ export const sessions = pgTable(
   (table) => [index("IDX_session_expire").on(table.expire)],
 );
 
-// User storage table (supports both Replit Auth and local auth)
+// User storage table (required for Replit Auth)
 export const users = pgTable("users", {
   id: varchar("id").primaryKey().notNull(),
   email: varchar("email").unique(),
@@ -34,13 +34,12 @@ export const users = pgTable("users", {
   username: varchar("username").unique(),
   phoneNumber: varchar("phone_number").unique(),
   profileImageUrl: varchar("profile_image_url"),
-  password: varchar("password"), // For admin-created accounts with local auth
-  accountType: varchar("account_type").default("replit"), // "replit" or "local"
   userRole: varchar("user_role").default("standard"), // standard, therapist, guardian, minor
   notificationPreferences: jsonb("notification_preferences").default({ email: true, push: false }),
   defaultPrivacySetting: varchar("default_privacy_setting").default("private"), // private, friends_only, public
   bio: text("bio"),
   isProfileComplete: boolean("is_profile_complete").default(false),
+  subscriptionStatus: varchar("subscription_status").default("trial"), // trial, active, inactive
   accountStatus: varchar("account_status").default("active"), // active, suspended, scheduled_for_deletion
   createdAt: timestamp("created_at").defaultNow(),
   updatedAt: timestamp("updated_at").defaultNow(),
@@ -532,7 +531,7 @@ export const insertRelationshipProfileSchema = createInsertSchema(relationshipPr
   createdAt: true,
   updatedAt: true,
 }).extend({
-  dateMet: z.string().optional().transform((val) => val ? new Date(val) : undefined),
+  dateMet: z.string().nullable().optional().transform((val) => val ? new Date(val) : null),
 });
 export type InsertRelationshipProfile = z.infer<typeof insertRelationshipProfileSchema>;
 export type RelationshipProfile = typeof relationshipProfiles.$inferSelect;

@@ -58,8 +58,8 @@ export default function Admin() {
     retry: false,
   });
 
-  // Create user mutation
-  const createUserMutation = useMutation({
+  // Create premium user mutation
+  const createPremiumUserMutation = useMutation({
     mutationFn: async (userData: any) => {
       const response = await apiRequest("POST", "/api/admin/create-premium-user", userData);
       return response.json();
@@ -362,14 +362,14 @@ export default function Admin() {
                     <DialogTrigger asChild>
                       <Button variant="outline" size="sm" className="flex items-center gap-2">
                         <UserPlus className="w-4 h-4" />
-                        Create User
+                        Create Premium User
                       </Button>
                     </DialogTrigger>
                     <DialogContent className="sm:max-w-[425px]">
                       <DialogHeader>
-                        <DialogTitle>Create User Account</DialogTitle>
+                        <DialogTitle>Create Premium User Account</DialogTitle>
                         <p className="text-sm text-neutral-600">
-                          Create a new user account manually. Payment processing is handled externally.
+                          Create a new user account with immediate premium access. This bypasses the subscription flow.
                         </p>
                       </DialogHeader>
                       <div className="grid gap-4 py-4">
@@ -418,15 +418,15 @@ export default function Admin() {
                         <Button 
                           variant="outline" 
                           onClick={() => setShowCreateUserDialog(false)}
-                          disabled={createUserMutation.isPending}
+                          disabled={createPremiumUserMutation.isPending}
                         >
                           Cancel
                         </Button>
                         <Button 
-                          onClick={() => createUserMutation.mutate(newUserData)}
-                          disabled={!newUserData.email || createUserMutation.isPending}
+                          onClick={() => createPremiumUserMutation.mutate(newUserData)}
+                          disabled={!newUserData.email || createPremiumUserMutation.isPending}
                         >
-                          {createUserMutation.isPending ? "Creating..." : "Create User"}
+                          {createPremiumUserMutation.isPending ? "Creating..." : "Create Premium User"}
                         </Button>
                       </div>
                     </DialogContent>
