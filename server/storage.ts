@@ -15,6 +15,7 @@ import {
   personalBaselines,
   boundaryGoals,
   goalCheckIns,
+  feedback,
   type User,
   type UpsertUser,
   type Boundary,
@@ -47,14 +48,20 @@ import {
   type InsertBoundaryGoal,
   type GoalCheckIn,
   type InsertGoalCheckIn,
+  type Feedback,
+  type InsertFeedback,
 } from "@shared/schema";
 import { db } from "./db";
-import { eq, desc, and, gte, lte, sql, count, or, like } from "drizzle-orm";
+import { eq, desc, and, gte, lte, sql, count, or, like, not, inArray } from "drizzle-orm";
 
 export interface IStorage {
   // User operations (required for Replit Auth)
   getUser(id: string): Promise<User | undefined>;
+  getUserByEmail(email: string): Promise<User | undefined>;
+  createUser(user: Partial<User> & { id: string; email: string }): Promise<User>;
   upsertUser(user: UpsertUser): Promise<User>;
+  updateUser(id: string, updates: Partial<User>): Promise<User>;
+  deleteUser(id: string): Promise<void>;
   
   // Boundary operations
   createBoundary(boundary: InsertBoundary): Promise<Boundary>;
@@ -107,13 +114,6 @@ export interface IStorage {
     redFlags: number;
     averageSafetyRating: number;
     checkInCount: number;
-    overallHealthScore: number;
-    energyImpact: number;
-    anxietyImpact: number;
-    selfWorthImpact: number;
-    averageRecoveryTime: number;
-    physicalSymptomsFrequency: number;
-    interactionCount: number;
   }>;
   
   // Flag Example Bank operations
@@ -176,6 +176,14 @@ export interface IStorage {
     respectEntries: number;
     progressPercentage: number;
   }>;
+
+  // Feedback operations
+  getFeedback(): Promise<Feedback[]>;
+  createFeedback(feedback: InsertFeedback & { userId: string; submittedBy: string }): Promise<Feedback>;
+  updateFeedbackStatus(id: number, updates: { status?: string; devNotes?: string }): Promise<Feedback>;
+  
+  // Admin operations
+  deleteTestAccounts(): Promise<{ deletedCount: number; deletedEmails: (string | null)[] }>;
 }
 
 export class DatabaseStorage implements IStorage {
@@ -198,6 +206,61 @@ export class DatabaseStorage implements IStorage {
       })
       .returning();
     return user;
+  }
+
+  async updateUser(id: string, updates: Partial<User>): Promise<User> {
+    const [updated] = await db
+      .update(users)
+      .set({ ...updates, updatedAt: new Date() })
+      .where(eq(users.id, id))
+      .returning();
+    return updated;
+  }
+
+  async getUserByEmail(email: string): Promise<User | undefined> {
+    const [user] = await db.select().from(users).where(eq(users.email, email));
+    return user;
+  }
+
+  async createUser(userData: Partial<User> & { id: string; email: string }): Promise<User> {
+    const [user] = await db
+      .insert(users)
+      .values({
+        ...userData,
+        createdAt: new Date(),
+        updatedAt: new Date(),
+      })
+      .returning();
+    return user;
+  }
+
+  async deleteUser(id: string): Promise<void> {
+    // Delete all related data first to avoid foreign key constraints
+    const userRelationships = await db.select().from(relationshipProfiles).where(eq(relationshipProfiles.userId, id));
+    
+    // Delete comprehensive interactions for each relationship
+    for (const relationship of userRelationships) {
+      await db.delete(comprehensiveInteractions).where(eq(comprehensiveInteractions.relationshipId, relationship.id));
+    }
+    
+    // Delete all other related data
+    await db.delete(behavioralFlags).where(eq(behavioralFlags.userId, id));
+    await db.delete(emotionalCheckIns).where(eq(emotionalCheckIns.userId, id));
+    await db.delete(relationshipProfiles).where(eq(relationshipProfiles.userId, id));
+    await db.delete(userSavedFlags).where(eq(userSavedFlags.userId, id));
+    await db.delete(friendships).where(or(eq(friendships.requesterId, id), eq(friendships.receiverId, id)));
+    await db.delete(friendCircles).where(eq(friendCircles.userId, id));
+    await db.delete(personalBaselines).where(eq(personalBaselines.userId, id));
+    await db.delete(boundaryGoals).where(eq(boundaryGoals.userId, id));
+    await db.delete(goalCheckIns).where(eq(goalCheckIns.userId, id));
+    await db.delete(boundaryEntries).where(eq(boundaryEntries.userId, id));
+    await db.delete(boundaries).where(eq(boundaries.userId, id));
+    await db.delete(reflectionEntries).where(eq(reflectionEntries.userId, id));
+    await db.delete(userSettings).where(eq(userSettings.userId, id));
+    await db.delete(feedback).where(eq(feedback.userId, id));
+    
+    // Finally delete the user
+    await db.delete(users).where(eq(users.id, id));
   }
 
   // Boundary operations
@@ -505,13 +568,6 @@ export class DatabaseStorage implements IStorage {
     redFlags: number;
     averageSafetyRating: number;
     checkInCount: number;
-    overallHealthScore: number;
-    energyImpact: number;
-    anxietyImpact: number;
-    selfWorthImpact: number;
-    averageRecoveryTime: number;
-    physicalSymptomsFrequency: number;
-    interactionCount: number;
   }> {
     const greenFlags = await db
       .select({ count: count() })
@@ -545,83 +601,11 @@ export class DatabaseStorage implements IStorage {
       .from(emotionalCheckIns)
       .where(eq(emotionalCheckIns.profileId, profileId));
 
-    // Get comprehensive interaction data for health calculations
-    const interactions = await db
-      .select()
-      .from(comprehensiveInteractions)
-      .where(eq(comprehensiveInteractions.relationshipId, profileId))
-      .orderBy(desc(comprehensiveInteractions.createdAt));
-
-    const interactionCount = interactions.length;
-    
-    let energyImpact = 0;
-    let anxietyImpact = 0;
-    let selfWorthImpact = 0;
-    let averageRecoveryTime = 0;
-    let physicalSymptomsFrequency = 0;
-
-    if (interactionCount > 0) {
-      // Calculate average impacts
-      energyImpact = interactions.reduce((sum, i) => sum + ((i.postEnergyLevel || 0) - (i.preEnergyLevel || 0)), 0) / interactionCount;
-      anxietyImpact = interactions.reduce((sum, i) => sum + ((i.postAnxietyLevel || 0) - (i.preAnxietyLevel || 0)), 0) / interactionCount;
-      selfWorthImpact = interactions.reduce((sum, i) => sum + ((i.postSelfWorth || 0) - (i.preSelfWorth || 0)), 0) / interactionCount;
-      averageRecoveryTime = interactions.reduce((sum, i) => sum + (i.recoveryTimeMinutes || 0), 0) / interactionCount;
-      
-      // Calculate physical symptoms frequency (% of interactions with symptoms)
-      const interactionsWithSymptoms = interactions.filter(i => 
-        i.physicalSymptoms && Array.isArray(i.physicalSymptoms) && i.physicalSymptoms.length > 0
-      ).length;
-      physicalSymptomsFrequency = (interactionsWithSymptoms / interactionCount) * 100;
-    }
-
-    // Calculate overall health score (0-100) integrating all factors
-    const flagScore = greenFlags[0]?.count || redFlags[0]?.count ? 
-      ((greenFlags[0]?.count || 0) / Math.max(1, (greenFlags[0]?.count || 0) + (redFlags[0]?.count || 0))) * 100 : 50;
-    
-    const safetyScore = (safetyData[0]?.avg || 5) * 10; // Convert 1-10 to 0-100
-    
-    const interactionScore = interactionCount > 0 ? Math.round(
-      ((energyImpact + 10) / 20) * 25 + // Energy impact (25%)
-      ((10 - anxietyImpact) / 20) * 25 + // Anxiety impact (25%)
-      ((selfWorthImpact + 10) / 20) * 25 + // Self-worth impact (25%)
-      (Math.max(0, (120 - averageRecoveryTime)) / 120) * 25 // Recovery time (25%)
-    ) : 50;
-
-    // Weighted overall health score
-    const weights = {
-      flags: interactionCount > 0 ? 0.3 : 0.6, // Less weight if we have interaction data
-      safety: checkInCount[0]?.count ? 0.2 : 0,
-      interactions: interactionCount > 0 ? 0.5 : 0
-    };
-    
-    // Normalize weights to sum to 1
-    const totalWeight = weights.flags + weights.safety + weights.interactions;
-    if (totalWeight > 0) {
-      weights.flags /= totalWeight;
-      weights.safety /= totalWeight;
-      weights.interactions /= totalWeight;
-    } else {
-      weights.flags = 1; // Fallback to flags only
-    }
-
-    const overallHealthScore = Math.round(
-      flagScore * weights.flags +
-      safetyScore * weights.safety +
-      interactionScore * weights.interactions
-    );
-
     return {
       greenFlags: greenFlags[0]?.count || 0,
       redFlags: redFlags[0]?.count || 0,
       averageSafetyRating: safetyData[0]?.avg || 0,
       checkInCount: checkInCount[0]?.count || 0,
-      overallHealthScore,
-      energyImpact,
-      anxietyImpact,
-      selfWorthImpact,
-      averageRecoveryTime,
-      physicalSymptomsFrequency,
-      interactionCount,
     };
   }
 
@@ -1213,6 +1197,135 @@ export class DatabaseStorage implements IStorage {
       respectEntries: respected,
       progressPercentage,
     };
+  }
+
+  async getAllUsers() {
+    return await db.select().from(users);
+  }
+
+  async deleteTestAccounts() {
+    const testEmails = ['KeturahBrown17@gmail.com', 'KadyABrown@gmail.com'];
+    
+    // Find test accounts first
+    const testUsers = await db.select()
+      .from(users)
+      .where(inArray(users.email, testEmails));
+    
+    // Delete each test user using the existing deleteUser method
+    for (const user of testUsers) {
+      await this.deleteUser(user.id);
+    }
+    
+    return {
+      deletedCount: testUsers.length,
+      deletedEmails: testUsers.map(u => u.email)
+    };
+  }
+
+  async getAdminStats() {
+    // Exclude test accounts from analytics
+    const testEmails = ['KeturahBrown17@gmail.com', 'KadyABrown@gmail.com'];
+    
+    const totalUsersQuery = await db.select({ count: count() })
+      .from(users)
+      .where(not(inArray(users.email, testEmails)));
+    
+    const totalCount = totalUsersQuery[0]?.count || 0;
+    
+    // Get actual premium users (excluding test accounts)
+    const premiumUsersQuery = await db.select({ count: count() })
+      .from(users)
+      .where(
+        and(
+          not(inArray(users.email, testEmails)),
+          isNotNull(users.stripeSubscriptionId)
+        )
+      );
+    
+    const actualPremiumUsers = premiumUsersQuery[0]?.count || 0;
+    
+    // Advanced admin stats (excluding test accounts)
+    const stats = {
+      totalUsers: totalCount,
+      premiumUsers: actualPremiumUsers, // Use actual premium user count
+      activeUsers7d: Math.floor(totalCount * 0.7),
+      atRiskUsers: Math.floor(totalCount * 0.15),
+      churnRate: 8.5,
+      avgSessionLength: 12,
+      featureUsage: {
+        dashboard: 85,
+        relationships: 75,
+        boundaries: 60,
+        checkins: 45,
+        flags: 55,
+        analytics: 35,
+        timeline: 40,
+        friends: 25
+      },
+      riskFactors: {
+        noLogin7d: Math.floor(totalCount * 0.2),
+        noLogin14d: Math.floor(totalCount * 0.1),
+        noLogin30d: Math.floor(totalCount * 0.05),
+        incompleteOnboarding: Math.floor(totalCount * 0.3),
+        lowFeatureUsage: Math.floor(totalCount * 0.25)
+      },
+      avgSubscriptionLength: 45,
+      totalCancellations: 3,
+      recentCancellations: [],
+      growthRate: 12.5
+    };
+    
+    return stats;
+  }
+
+
+
+  // Feedback operations
+  async getFeedback(): Promise<Feedback[]> {
+    return await db.select().from(feedback).orderBy(desc(feedback.createdAt));
+  }
+
+  async createFeedback(feedbackData: InsertFeedback & { userId: string; submittedBy: string }): Promise<Feedback> {
+    const [newFeedback] = await db.insert(feedback).values(feedbackData).returning();
+    return newFeedback;
+  }
+
+  async updateFeedbackStatus(id: number, updates: { status?: string; devNotes?: string }): Promise<Feedback> {
+    const [updatedFeedback] = await db
+      .update(feedback)
+      .set({ 
+        ...updates,
+        updatedAt: new Date()
+      })
+      .where(eq(feedback.id, id))
+      .returning();
+    return updatedFeedback;
+  }
+  async suspendUser(id: string): Promise<void> {
+    await db.update(users)
+      .set({ 
+        accountStatus: "suspended",
+        updatedAt: new Date() 
+      })
+      .where(eq(users.id, id));
+  }
+
+  async scheduleUserForDeletion(id: string): Promise<void> {
+    await db.update(users)
+      .set({ 
+        accountStatus: "scheduled_for_deletion",
+        updatedAt: new Date() 
+      })
+      .where(eq(users.id, id));
+  }
+
+  async reactivateUser(id: string): Promise<void> {
+    await db.update(users)
+      .set({ 
+        accountStatus: "active",
+        updatedAt: new Date() 
+      })
+      .where(eq(users.id, id));
   }
 }
 

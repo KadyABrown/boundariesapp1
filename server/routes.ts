@@ -6,6 +6,7 @@ import { db } from "./db";
 import { flagExamples } from "@shared/schema";
 import fs from 'fs';
 import path from 'path';
+import Stripe from "stripe";
 import {
   insertBoundarySchema,
   insertBoundaryEntrySchema,
@@ -19,8 +20,17 @@ import {
   insertFriendCircleSchema,
   insertComprehensiveInteractionSchema,
   insertPersonalBaselineSchema,
+  insertFeedbackSchema,
 } from "@shared/schema";
 import { z } from "zod";
+
+// Initialize Stripe
+if (!process.env.STRIPE_SECRET_KEY) {
+  throw new Error('Missing required Stripe secret: STRIPE_SECRET_KEY');
+}
+const stripe = new Stripe(process.env.STRIPE_SECRET_KEY, {
+  apiVersion: "2025-06-30.basil",
+});
 
 export async function registerRoutes(app: Express): Promise<Server> {
   // Auth middleware
@@ -723,16 +733,9 @@ export async function registerRoutes(app: Express): Promise<Server> {
   // Enhanced CSV parser for paired flag format
   app.post('/api/import-paired-csv', async (req: any, res) => {
     try {
-      let { csvData } = req.body;
-      
-      // If no CSV data provided, try to read from attached file
+      const { csvData } = req.body;
       if (!csvData) {
-        try {
-          const csvPath = path.join(process.cwd(), 'attached_assets', 'Final Data Training - Red and Green flag data base - Red & Green Flag example bank (1)_1751747397428.csv');
-          csvData = fs.readFileSync(csvPath, 'utf-8');
-        } catch (error) {
-          return res.status(400).json({ message: "CSV data is required and no attached file found" });
-        }
+        return res.status(400).json({ message: "CSV data is required" });
       }
 
       // Advanced CSV parser that handles multi-line cells and quoted content
@@ -740,8 +743,8 @@ export async function registerRoutes(app: Express): Promise<Server> {
         const lines = csvContent.split('\n');
         const flags = [];
         
-        // Skip header row (first line only for new format)
-        let i = 1;
+        // Skip header rows (first 2 lines)
+        let i = 2;
         while (i < lines.length) {
           let currentLine = lines[i];
           let fields = [];
@@ -775,10 +778,9 @@ export async function registerRoutes(app: Express): Promise<Server> {
             }
           }
           
-          // Process the parsed row if we have enough fields for new format:
-          // Theme, Behavior Description, Green flag, Red flag, Red flag Example, Unhealthy Impact, Action steps
-          if (fields.length >= 7) {
-            const [theme, behaviorDesc, greenFlag, redFlag, redExample, unhealthyImpact, actionSteps] = fields;
+          // Process the parsed row if we have enough fields
+          if (fields.length >= 8) {
+            const [greenFlag, redFlag, behaviorDesc, example, impact, worthAddressing, actionSteps, theme] = fields;
             
             // Create paired entry
             if (greenFlag && redFlag && theme) {
@@ -787,16 +789,19 @@ export async function registerRoutes(app: Express): Promise<Server> {
                 greenFlag: {
                   title: greenFlag.replace(/💚/g, '').trim(),
                   description: behaviorDesc,
-                  exampleScenario: `Healthy approach: ${greenFlag}`,
-                  emotionalImpact: 'Builds trust and emotional safety',
-                  actionSteps: 'Continue this positive pattern'
+                  exampleScenario: example,
+                  emotionalImpact: impact,
+                  actionSteps: actionSteps
                 },
                 redFlag: {
                   title: redFlag.replace(/🚩/g, '').trim(),
                   description: behaviorDesc,
-                  exampleScenario: redExample || `Unhealthy approach: ${redFlag}`,
-                  emotionalImpact: unhealthyImpact || 'Creates emotional disconnection',
-                  actionSteps: actionSteps || 'Address this pattern directly'
+                  exampleScenario: example,
+                  emotionalImpact: impact,
+                  actionSteps: actionSteps,
+                  addressability: worthAddressing?.toLowerCase().includes('never') ? 'dealbreaker' :
+                                 worthAddressing?.toLowerCase().includes('always') ? 'always_worth_addressing' :
+                                 'sometimes_worth_addressing'
                 }
               });
             }
@@ -1632,6 +1637,569 @@ export async function registerRoutes(app: Express): Promise<Server> {
     } catch (error) {
       console.error("Error deleting goal check-in:", error);
       res.status(500).json({ message: "Failed to delete goal check-in" });
+    }
+  });
+
+  // Admin endpoints
+  app.get('/api/admin/users', isAuthenticated, async (req: any, res) => {
+    try {
+      // Check if user is admin
+      const userEmail = req.user?.email || req.user?.claims?.email;
+      if (userEmail !== "hello@roxzmedia.com") {
+        return res.status(403).json({ message: "Access denied" });
+      }
+      
+      const users = await storage.getAllUsers();
+      res.json(users);
+    } catch (error) {
+      console.error("Error fetching users:", error);
+      res.status(500).json({ message: "Failed to fetch users" });
+    }
+  });
+
+  app.get('/api/admin/stats', isAuthenticated, async (req: any, res) => {
+    try {
+      // Check if user is admin
+      const userEmail = req.user?.email || req.user?.claims?.email;
+      if (userEmail !== "hello@roxzmedia.com") {
+        return res.status(403).json({ message: "Access denied" });
+      }
+      
+      const stats = await storage.getAdminStats();
+      res.json(stats);
+    } catch (error) {
+      console.error("Error fetching admin stats:", error);
+      res.status(500).json({ message: "Failed to fetch admin stats" });
+    }
+  });
+
+  app.delete('/api/admin/users/:id', isAuthenticated, async (req: any, res) => {
+    try {
+      // Check if user is admin
+      const userEmail = req.user?.email || req.user?.claims?.email;
+      if (userEmail !== "hello@roxzmedia.com") {
+        return res.status(403).json({ message: "Access denied" });
+      }
+      
+      const userId = req.params.id;
+      await storage.deleteUser(userId);
+      res.json({ success: true });
+    } catch (error) {
+      console.error("Error deleting user:", error);
+      res.status(500).json({ message: "Failed to delete user" });
+    }
+  });
+
+  // Suspend user account
+  app.patch('/api/admin/users/:id/suspend', isAuthenticated, async (req: any, res) => {
+    try {
+      // Check if user is admin
+      const userEmail = req.user?.email || req.user?.claims?.email;
+      if (userEmail !== "hello@roxzmedia.com") {
+        return res.status(403).json({ message: "Access denied" });
+      }
+      
+      const userId = req.params.id;
+      await storage.suspendUser(userId);
+      res.json({ success: true });
+    } catch (error) {
+      console.error("Error suspending user:", error);
+      res.status(500).json({ message: "Failed to suspend user" });
+    }
+  });
+
+  // Schedule user for deletion
+  app.patch('/api/admin/users/:id/schedule-deletion', isAuthenticated, async (req: any, res) => {
+    try {
+      // Check if user is admin
+      const userEmail = req.user?.email || req.user?.claims?.email;
+      if (userEmail !== "hello@roxzmedia.com") {
+        return res.status(403).json({ message: "Access denied" });
+      }
+      
+      const userId = req.params.id;
+      await storage.scheduleUserForDeletion(userId);
+      res.json({ success: true });
+    } catch (error) {
+      console.error("Error scheduling user for deletion:", error);
+      res.status(500).json({ message: "Failed to schedule user for deletion" });
+    }
+  });
+
+  // Reactivate user account
+  app.patch('/api/admin/users/:id/reactivate', isAuthenticated, async (req: any, res) => {
+    try {
+      // Check if user is admin
+      const userEmail = req.user?.email || req.user?.claims?.email;
+      if (userEmail !== "hello@roxzmedia.com") {
+        return res.status(403).json({ message: "Access denied" });
+      }
+      
+      const userId = req.params.id;
+      await storage.reactivateUser(userId);
+      res.json({ success: true });
+    } catch (error) {
+      console.error("Error reactivating user:", error);
+      res.status(500).json({ message: "Failed to reactivate user" });
+    }
+  });
+
+  // Delete test accounts endpoint
+  app.delete('/api/admin/delete-test-accounts', isAuthenticated, async (req: any, res) => {
+    try {
+      // Check if user is admin
+      const userEmail = req.user?.email || req.user?.claims?.email;
+      if (userEmail !== "hello@roxzmedia.com") {
+        return res.status(403).json({ message: "Access denied" });
+      }
+      
+      const result = await storage.deleteTestAccounts();
+      res.json({
+        success: true,
+        message: `Deleted ${result.deletedCount} test accounts`,
+        deletedEmails: result.deletedEmails
+      });
+    } catch (error) {
+      console.error("Error deleting test accounts:", error);
+      res.status(500).json({ message: "Failed to delete test accounts" });
+    }
+  });
+
+  // Create premium user endpoint
+  app.post('/api/admin/create-premium-user', isAuthenticated, async (req: any, res) => {
+    try {
+      // Check if user is admin
+      const userEmail = req.user?.email || req.user?.claims?.email;
+      if (userEmail !== "hello@roxzmedia.com") {
+        return res.status(403).json({ message: "Access denied" });
+      }
+      
+      const { email, firstName, lastName, phoneNumber } = req.body;
+      
+      if (!email) {
+        return res.status(400).json({ message: "Email is required" });
+      }
+
+      // Check if user already exists
+      const existingUser = await storage.getUserByEmail(email);
+      if (existingUser) {
+        return res.status(400).json({ message: "User with this email already exists" });
+      }
+
+      // Create Stripe customer
+      const customer = await stripe.customers.create({
+        email: email,
+        name: firstName && lastName ? `${firstName} ${lastName}` : firstName || lastName,
+        phone: phoneNumber || undefined,
+      });
+
+      // Create active subscription
+      const subscription = await stripe.subscriptions.create({
+        customer: customer.id,
+        items: [{
+          price: process.env.STRIPE_PRICE_ID,
+        }],
+        collection_method: 'charge_automatically',
+        default_payment_method: 'pm_card_visa', // Test payment method for manual creation
+      });
+
+      // Generate a unique user ID (similar to how Replit does it)
+      const userId = `admin-${Date.now()}-${Math.random().toString(36).substring(2, 15)}`;
+      
+      // Create user in database with premium status
+      const newUser = await storage.createUser({
+        id: userId,
+        email: email,
+        firstName: firstName || null,
+        lastName: lastName || null,
+        phoneNumber: phoneNumber || null,
+        username: email.split('@')[0], // Use email prefix as username
+        stripeCustomerId: customer.id,
+        stripeSubscriptionId: subscription.id,
+        subscriptionStatus: 'active',
+        isPremium: true,
+        userRole: 'user',
+        profileImageUrl: null,
+        createdAt: new Date(),
+        updatedAt: new Date(),
+      });
+
+      res.json({
+        success: true,
+        user: {
+          id: newUser.id,
+          email: newUser.email,
+          firstName: newUser.firstName,
+          lastName: newUser.lastName,
+          phoneNumber: newUser.phoneNumber,
+          subscriptionStatus: 'active',
+          isPremium: true,
+        },
+        message: `Premium user created successfully for ${email}`,
+      });
+    } catch (error: any) {
+      console.error("Error creating premium user:", error);
+      res.status(500).json({ 
+        message: "Failed to create premium user", 
+        error: error.message 
+      });
+    }
+  });
+
+  // Feedback routes
+  app.get('/api/feedback', isAuthenticated, async (req: any, res) => {
+    try {
+      const feedback = await storage.getFeedback();
+      res.json(feedback);
+    } catch (error) {
+      console.error("Error fetching feedback:", error);
+      res.status(500).json({ message: "Failed to fetch feedback" });
+    }
+  });
+
+  app.post('/api/feedback', isAuthenticated, async (req: any, res) => {
+    try {
+      const validatedData = insertFeedbackSchema.parse(req.body);
+      const user = req.user;
+      
+      const feedbackData = {
+        ...validatedData,
+        userId: user.id,
+        submittedBy: user.username || user.email || 'Anonymous',
+      };
+
+      const feedback = await storage.createFeedback(feedbackData);
+      res.json(feedback);
+    } catch (error) {
+      console.error("Error creating feedback:", error);
+      if (error instanceof z.ZodError) {
+        res.status(400).json({ message: "Invalid feedback data", errors: error.errors });
+      } else {
+        res.status(500).json({ message: "Failed to create feedback" });
+      }
+    }
+  });
+
+  // Admin route to update feedback status
+  app.patch('/api/admin/feedback/:id', isAuthenticated, async (req: any, res) => {
+    try {
+      const userEmail = req.user?.email || req.user?.claims?.email;
+      if (userEmail !== "hello@roxzmedia.com") {
+        return res.status(403).json({ message: "Access denied" });
+      }
+
+      const feedbackId = parseInt(req.params.id);
+      const { status, devNotes } = req.body;
+      
+      const feedback = await storage.updateFeedbackStatus(feedbackId, { status, devNotes });
+      res.json(feedback);
+    } catch (error) {
+      console.error("Error updating feedback:", error);
+      res.status(500).json({ message: "Failed to update feedback" });
+    }
+  });
+
+  // Admin route to submit development updates 
+  app.post('/api/admin/development-update', isAuthenticated, async (req: any, res) => {
+    try {
+      const userEmail = req.user?.email || req.user?.claims?.email;
+      if (userEmail !== "hello@roxzmedia.com") {
+        return res.status(403).json({ message: "Access denied" });
+      }
+
+      const { title, description, status } = req.body;
+      
+      // Map admin status categories to feedback table statuses
+      const feedbackStatus = status === 'completed' ? 'completed' : 
+                           status === 'next' ? 'reported' : 'in_progress';
+      
+      const feedbackData = {
+        userId: req.user.id,
+        title,
+        description,
+        type: 'improvement' as const,
+        priority: 'medium' as const,
+        status: feedbackStatus,
+        submittedBy: 'Admin Development Team',
+        adminNotes: `Admin Update - Category: ${status}`
+      };
+
+      const feedback = await storage.createFeedback(feedbackData);
+      res.json(feedback);
+    } catch (error) {
+      console.error("Error creating development update:", error);
+      res.status(500).json({ message: "Failed to create development update" });
+    }
+  });
+
+  // Stripe subscription routes
+  app.post('/api/create-payment-intent', async (req: any, res) => {
+    try {
+      const { amount } = req.body;
+      const paymentIntent = await stripe.paymentIntents.create({
+        amount: Math.round(amount * 100), // Convert to cents
+        currency: "usd",
+      });
+      res.json({ clientSecret: paymentIntent.client_secret });
+    } catch (error: any) {
+      console.error("Error creating payment intent:", error);
+      res.status(500).json({ message: "Error creating payment intent: " + error.message });
+    }
+  });
+
+  // Create subscription without authentication - creates account automatically
+  app.post('/api/create-subscription-with-account', async (req: any, res) => {
+    try {
+      const { email, firstName, lastName } = req.body;
+      
+      if (!email) {
+        return res.status(400).json({ message: 'Email is required' });
+      }
+
+      // Create Stripe customer
+      const customer = await stripe.customers.create({
+        email: email,
+        name: firstName && lastName ? `${firstName} ${lastName}` : firstName || 'Customer',
+      });
+
+      // Create a price for $12.99/month
+      const price = await stripe.prices.create({
+        unit_amount: 1299, // $12.99 in cents
+        currency: 'usd',
+        recurring: {
+          interval: 'month',
+        },
+        product_data: {
+          name: 'BoundaryCore',
+        },
+      });
+
+      // Create subscription
+      const subscription = await stripe.subscriptions.create({
+        customer: customer.id,
+        items: [{
+          price: price.id,
+        }],
+        payment_behavior: 'default_incomplete',
+        expand: ['latest_invoice.payment_intent'],
+      });
+
+      // Store subscription info in session for later account creation
+      req.session.pendingSubscription = {
+        email,
+        firstName,
+        lastName,
+        stripeCustomerId: customer.id,
+        stripeSubscriptionId: subscription.id,
+      };
+
+      res.json({
+        subscriptionId: subscription.id,
+        clientSecret: subscription.latest_invoice?.payment_intent?.client_secret,
+      });
+    } catch (error: any) {
+      console.error("Error creating subscription:", error);
+      res.status(500).json({ message: "Error creating subscription: " + error.message });
+    }
+  });
+
+  // Webhook to handle successful payments and create accounts
+  app.post('/api/stripe-webhook', async (req: any, res) => {
+    try {
+      const event = req.body;
+      
+      if (event.type === 'payment_intent.succeeded') {
+        const paymentIntent = event.data.object;
+        
+        // Find the subscription associated with this payment
+        const subscriptions = await stripe.subscriptions.list({
+          customer: paymentIntent.customer,
+          status: 'active',
+        });
+        
+        if (subscriptions.data.length > 0) {
+          const subscription = subscriptions.data[0];
+          const customer = await stripe.customers.retrieve(paymentIntent.customer);
+          
+          if (customer && typeof customer === 'object' && customer.email) {
+            // Create user account
+            const userId = `stripe_${customer.id}`;
+            
+            try {
+              await storage.createUser({
+                id: userId,
+                email: customer.email,
+                firstName: customer.name?.split(' ')[0] || 'Customer',
+                lastName: customer.name?.split(' ').slice(1).join(' ') || '',
+                stripeCustomerId: customer.id,
+                stripeSubscriptionId: subscription.id,
+                subscriptionStatus: 'active',
+              });
+              
+              console.log(`Created user account for ${customer.email} with subscription ${subscription.id}`);
+            } catch (error) {
+              console.error('Error creating user account:', error);
+            }
+          }
+        }
+      }
+      
+      res.json({ received: true });
+    } catch (error: any) {
+      console.error("Webhook error:", error);
+      res.status(400).json({ message: "Webhook error: " + error.message });
+    }
+  });
+
+  app.post('/api/get-or-create-subscription', isAuthenticated, async (req: any, res) => {
+    try {
+      const userId = req.user.claims.sub;
+      let user = await storage.getUser(userId);
+      
+      if (!user) {
+        return res.status(404).json({ message: "User not found" });
+      }
+
+      // Check if user already has an active subscription
+      if (user.stripeSubscriptionId) {
+        try {
+          const subscription = await stripe.subscriptions.retrieve(user.stripeSubscriptionId);
+          
+          if (subscription.status === 'active') {
+            return res.json({
+              subscriptionId: subscription.id,
+              status: subscription.status,
+              clientSecret: subscription.latest_invoice?.payment_intent?.client_secret,
+            });
+          }
+        } catch (error) {
+          console.log("Subscription not found, creating new one");
+        }
+      }
+
+      if (!user.email) {
+        return res.status(400).json({ message: 'User email is required for subscription' });
+      }
+
+      // Create or get Stripe customer
+      let customer;
+      if (user.stripeCustomerId) {
+        try {
+          customer = await stripe.customers.retrieve(user.stripeCustomerId);
+        } catch (error) {
+          console.log("Customer not found, creating new one");
+        }
+      }
+
+      if (!customer) {
+        customer = await stripe.customers.create({
+          email: user.email || undefined,
+          name: user.firstName && user.lastName ? `${user.firstName} ${user.lastName}` : user.username || undefined,
+        });
+
+        // Update user with Stripe customer ID
+        await storage.updateUser(userId, { stripeCustomerId: customer.id });
+      }
+
+      // For now, let's create a simple payment intent for $12.99
+      const paymentIntent = await stripe.paymentIntents.create({
+        amount: 1299, // $12.99 in cents
+        currency: 'usd',
+        customer: customer.id,
+        metadata: {
+          type: 'subscription',
+          userId: userId,
+        },
+      });
+
+      // Update user with subscription info (mock for now)
+      await storage.updateUser(userId, {
+        stripeCustomerId: customer.id,
+        subscriptionStatus: 'pending',
+      });
+
+      res.json({
+        clientSecret: paymentIntent.client_secret,
+        paymentIntentId: paymentIntent.id,
+      });
+    } catch (error: any) {
+      console.error("Error creating subscription:", error);
+      res.status(500).json({ message: "Error creating subscription: " + error.message });
+    }
+  });
+
+  // Check subscription status
+  app.get('/api/subscription/status', isAuthenticated, async (req: any, res) => {
+    try {
+      const userId = req.user.claims.sub;
+      const user = await storage.getUser(userId);
+      
+      if (!user || !user.stripeSubscriptionId) {
+        return res.json({ status: 'inactive', hasAccess: false });
+      }
+
+      const subscription = await stripe.subscriptions.retrieve(user.stripeSubscriptionId);
+      
+      // Update user subscription status
+      await storage.updateUser(userId, {
+        subscriptionStatus: subscription.status,
+      });
+
+      res.json({
+        status: subscription.status,
+        hasAccess: subscription.status === 'active',
+        currentPeriodEnd: subscription.current_period_end,
+      });
+    } catch (error: any) {
+      console.error("Error checking subscription status:", error);
+      res.status(500).json({ message: "Error checking subscription status: " + error.message });
+    }
+  });
+
+  // Update payment method - redirect to Stripe customer portal
+  app.post('/api/subscription/update-payment', isAuthenticated, async (req: any, res) => {
+    try {
+      const userId = req.user.claims.sub;
+      const user = await storage.getUser(userId);
+      
+      if (!user || !user.stripeCustomerId) {
+        return res.status(404).json({ message: "No customer found" });
+      }
+
+      // Create customer portal session
+      const session = await stripe.billingPortal.sessions.create({
+        customer: user.stripeCustomerId,
+        return_url: `${process.env.REPLIT_DOMAINS?.split(' ')[0] || 'http://localhost:5000'}/settings`,
+      });
+
+      res.json({ portalUrl: session.url });
+    } catch (error: any) {
+      console.error("Error creating customer portal session:", error);
+      res.status(500).json({ message: "Error opening customer portal: " + error.message });
+    }
+  });
+
+  // Cancel subscription
+  app.post('/api/subscription/cancel', isAuthenticated, async (req: any, res) => {
+    try {
+      const userId = req.user.claims.sub;
+      const user = await storage.getUser(userId);
+      
+      if (!user || !user.stripeSubscriptionId) {
+        return res.status(404).json({ message: "No subscription found" });
+      }
+
+      const subscription = await stripe.subscriptions.cancel(user.stripeSubscriptionId);
+      
+      // Update user subscription status
+      await storage.updateUser(userId, {
+        subscriptionStatus: 'cancelled',
+      });
+
+      res.json({ message: "Subscription cancelled successfully" });
+    } catch (error: any) {
+      console.error("Error cancelling subscription:", error);
+      res.status(500).json({ message: "Error cancelling subscription: " + error.message });
     }
   });
 

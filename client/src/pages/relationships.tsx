@@ -16,7 +16,7 @@ import { Checkbox } from "@/components/ui/checkbox";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from "@/components/ui/collapsible";
 import { Badge } from "@/components/ui/badge";
-import { Plus, Edit2, Trash2, Heart, User, Calendar, MapPin, Flag, Brain, Target, Clock, TrendingUp, BarChart3 } from "lucide-react";
+import { Plus, Edit2, Trash2, Heart, User, Calendar, MapPin, Flag, Brain, Target, Clock, TrendingUp, BarChart3, Settings } from "lucide-react";
 import { Link } from "wouter";
 import ComprehensiveInteractionTracker from "@/components/comprehensive-interaction-tracker";
 import ComprehensiveInteractionsView from "@/components/comprehensive-interactions-view";
@@ -56,41 +56,6 @@ export default function Relationships() {
   const { data: profiles, isLoading: profilesLoading } = useQuery({
     queryKey: ["/api/relationships"],
     retry: false,
-  });
-
-  // Load stats for all relationships
-  const { data: statsData } = useQuery({
-    queryKey: ['/api/relationships/stats'],
-    queryFn: async () => {
-      if (!profiles || !Array.isArray(profiles)) return {};
-      const statsMap: Record<number, any> = {};
-      
-      // Load stats for each relationship
-      await Promise.all(profiles.map(async (profile: any) => {
-        try {
-          const stats = await fetch(`/api/relationships/${profile.id}/stats`).then(r => r.json());
-          statsMap[profile.id] = stats;
-        } catch (error) {
-          console.error(`Failed to load stats for relationship ${profile.id}:`, error);
-          statsMap[profile.id] = {
-            greenFlags: 0,
-            redFlags: 0,
-            averageSafetyRating: 0,
-            checkInCount: 0,
-            overallHealthScore: 0,
-            energyImpact: 0,
-            anxietyImpact: 0,
-            selfWorthImpact: 0,
-            averageRecoveryTime: 0,
-            physicalSymptomsFrequency: 0,
-            interactionCount: 0
-          };
-        }
-      }));
-      
-      return statsMap;
-    },
-    enabled: !!profiles && Array.isArray(profiles) && profiles.length > 0,
   });
 
   const createProfileMutation = useMutation({
@@ -703,59 +668,55 @@ export default function Relationships() {
           </Dialog>
         </div>
 
-        {/* Relationship Quality Summary */}
-        {profiles && Array.isArray(profiles) && profiles.length > 0 && (
-          <Card className="mb-6">
+        {/* Relationships Summary */}
+        {profiles && profiles.length > 0 && (
+          <Card className="mb-8">
             <CardHeader>
-              <CardTitle className="flex items-center gap-2">
-                <BarChart3 className="w-5 h-5 text-primary" />
-                Relationship Quality Overview
+              <CardTitle className="flex items-center">
+                <BarChart3 className="w-5 h-5 mr-2" />
+                Relationships Summary
               </CardTitle>
             </CardHeader>
             <CardContent>
-              <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-                <div className="text-center p-4 bg-green-50 rounded-lg">
-                  <div className="text-2xl font-bold text-green-700">
-                    {profiles.filter((p: any) => p.currentStatus === 'active').length}
-                  </div>
-                  <div className="text-sm text-green-600">Active Relationships</div>
+              <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+                <div className="text-center">
+                  <div className="text-2xl font-bold text-neutral-800">{profiles.length}</div>
+                  <div className="text-sm text-neutral-600">Total Relationships</div>
                 </div>
-                <div className="text-center p-4 bg-blue-50 rounded-lg">
-                  <div className="text-2xl font-bold text-blue-700">
-                    {(() => {
-                      if (!Array.isArray(profiles) || profiles.length === 0) return '0';
-                      const totalHealthScore = profiles.reduce((sum: number, p: any) => {
-                        const stats = statsData?.[p.id];
-                        return sum + (stats?.overallHealthScore || 0);
-                      }, 0);
-                      return Math.round(totalHealthScore / profiles.length);
-                    })()}%
-                  </div>
-                  <div className="text-sm text-blue-600">Average Health Score</div>
-                </div>
-                <div className="text-center p-4 bg-purple-50 rounded-lg">
-                  <div className="text-2xl font-bold text-purple-700">
+                <div className="text-center">
+                  <div className="text-2xl font-bold text-red-600">
                     {profiles.filter((p: any) => p.relationshipType === 'romantic').length}
                   </div>
-                  <div className="text-sm text-purple-600">Romantic Connections</div>
+                  <div className="text-sm text-neutral-600">Romantic</div>
+                </div>
+                <div className="text-center">
+                  <div className="text-2xl font-bold text-blue-600">
+                    {profiles.filter((p: any) => p.relationshipType === 'platonic').length}
+                  </div>
+                  <div className="text-sm text-neutral-600">Platonic</div>
+                </div>
+                <div className="text-center">
+                  <div className="text-2xl font-bold text-green-600">
+                    {profiles.filter((p: any) => p.currentStatus === 'active').length}
+                  </div>
+                  <div className="text-sm text-neutral-600">Active</div>
                 </div>
               </div>
               
-              <div className="mt-4 pt-4 border-t">
-                <div className="flex justify-between items-center text-sm">
-                  <span className="text-neutral-600">Relationship Types:</span>
-                  <div className="flex gap-2">
-                    {Object.entries(
-                      profiles.reduce((acc: any, p: any) => {
-                        acc[p.relationshipType] = (acc[p.relationshipType] || 0) + 1;
-                        return acc;
-                      }, {})
-                    ).map(([type, count]) => (
-                      <Badge key={type} variant="outline" className="text-xs">
-                        {type}: {count}
-                      </Badge>
-                    ))}
-                  </div>
+              {/* Relationship Status Breakdown */}
+              <div className="mt-6 pt-4 border-t">
+                <h4 className="text-sm font-medium text-neutral-700 mb-3">Relationship Status Distribution</h4>
+                <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-2">
+                  {['dating', 'talking', 'interested', 'friendship', 'family', 'over'].map(status => {
+                    const count = profiles.filter((p: any) => p.relationshipStatus === status).length;
+                    if (count === 0) return null;
+                    return (
+                      <div key={status} className="text-center p-2 bg-neutral-100 rounded">
+                        <div className="text-lg font-semibold text-neutral-800">{count}</div>
+                        <div className="text-xs text-neutral-600 capitalize">{status}</div>
+                      </div>
+                    );
+                  })}
                 </div>
               </div>
             </CardContent>

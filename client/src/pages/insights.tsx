@@ -45,6 +45,42 @@ export default function Insights() {
     retry: false,
   });
 
+  // Fetch stats for each relationship to get flag counts
+  const relationshipStatsQueries = useQuery({
+    queryKey: ["relationship-stats", relationships],
+    queryFn: async () => {
+      if (!Array.isArray(relationships) || relationships.length === 0) return [];
+      
+      const statsPromises = relationships.map((rel: any) =>
+        fetch(`/api/relationships/${rel.id}/stats`)
+          .then(res => res.json())
+          .then(stats => ({ ...rel, ...stats }))
+      );
+      
+      return Promise.all(statsPromises);
+    },
+    enabled: !!relationships && Array.isArray(relationships) && relationships.length > 0,
+    retry: false,
+  });
+
+  // Transform relationships data to include both structures for component compatibility
+  const transformedRelationships = useMemo(() => {
+    const relationshipsWithStats = relationshipStatsQueries.data || [];
+    if (!Array.isArray(relationshipsWithStats)) return [];
+    
+    return relationshipsWithStats.map((rel: any) => ({
+      ...rel,
+      greenFlags: rel.greenFlags || 0,
+      redFlags: rel.redFlags || 0,
+      flags: {
+        green: rel.greenFlags || 0,
+        red: rel.redFlags || 0
+      },
+      checkInCount: rel.checkInCount || 0,
+      averageSafetyRating: rel.averageSafetyRating || 5
+    }));
+  }, [relationships]);
+
   const { data: userProfile } = useQuery({
     queryKey: ["/api/profile"],
     retry: false,
@@ -417,7 +453,7 @@ export default function Insights() {
           </TabsContent>
 
           <TabsContent value="weather" className="space-y-6">
-            <EmotionalWeather userProfile={userProfile} relationships={relationships} />
+            <EmotionalWeather userProfile={userProfile} relationships={transformedRelationships} />
           </TabsContent>
 
           <TabsContent value="analytics" className="space-y-6">

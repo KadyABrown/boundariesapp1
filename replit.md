@@ -1,15 +1,8 @@
-# BoundarySpace - Relationship Boundary Tracker
+# BoundaryCore - Relationship Boundary Tracker
 
 ## Overview
 
-BoundarySpace is a comprehensive relationship health tracking application that automatically analyzes relationship patterns through detailed interaction tracking and personal baseline assessment. The core function is to help users understand how their relationships impact their physical health, emotional well-being, and personal boundaries by comparing real interaction data against their established personal needs and values.
-
-**Core App Function:**
-1. **Personal Baseline Assessment** - Users define their communication style, emotional needs, boundary requirements, and core values
-2. **Comprehensive Interaction Tracking (CIT)** - Detailed logging of relationship interactions with pre/post measurements of energy, anxiety, self-worth, and physical symptoms
-3. **Automatic Pattern Recognition** - The app analyzes CIT data against the baseline to automatically identify concerning patterns and positive behaviors
-4. **Intelligent Health Scoring** - Combines interaction data, baseline compatibility, and pattern analysis for meaningful relationship health scores
-5. **Actionable Insights** - Shows how relationships affect physical health, self-esteem, and boundary respect with specific recommendations based on personal baseline
+BoundaryCore is a full-stack web application designed to help users define, track, and reflect on their personal boundaries. The application transforms a traditional boundary tracking journal into an interactive digital experience, enabling users to build healthier relationships through guided self-awareness tools.
 
 The system is built as a modern React SPA with an Express.js backend, using PostgreSQL for data persistence and Replit's authentication system for user management.
 
@@ -328,8 +321,22 @@ Identifies when boundary violations and relationship issues are most likely to o
 - July 1, 2025. Implemented interactive relationship activity timeline visualization with chronological event tracking, expandable details, filtering capabilities, animated transitions, and dual view modes (timeline/list) - successfully tested and working
 - July 1, 2025. Implemented comprehensive gamification system with achievement notifications, sound effects, daily challenges, boundary quotes, and streak recovery features
 - July 1, 2025. Added advanced relationship analysis features: comprehensive interaction tracker (5-step wizard), mood/energy/physical symptoms tracking, recovery time analysis, trigger pattern identification, communication silence tracking, personal baseline assessment, cross-relationship comparison, and time-based pattern analysis
-- July 2, 2025. Restored clean web-only version after mobile app experiment. Removed React Native/Expo mobile components to maintain stable web application. Mobile app development will continue in separate Expo project to preserve web app stability.
+- July 6, 2025. Fixed critical API query path issues in relationship profile detail component - corrected flags and check-ins data fetching, fixed property mapping for behavioral flags display, and restored working health score calculations with real test data (8 green flags, 3 red flags showing 73% health score for Bet profile)
+- July 6, 2025. Created comprehensive public-facing marketing website with mobile-responsive design: landing page with "Know Your Boundaries" hero, interactive demo with pre-populated relationship data and working check-in functionality, detailed pricing page ($12.99/month), comprehensive FAQ with expandable sections, and public routes accessible without authentication
+- July 6, 2025. Perfected demo page layout and functionality: moved Relationship Insights & Analytics above Relationships Summary, integrated real EmotionalWeather and BoundaryBuddy components (removed fake UI), updated demo data structure with both flags.green/flags.red and greenFlags/redFlags properties for component compatibility, removed "Add New Relationship" button for simplicity. Demo now shows authentic app experience with working weather system that reflects actual relationship data. Note: Same EmotionalWeather data structure fix needed in main user app.
+- July 6, 2025. Completed subscription flow without authentication requirement: removed all free trial language from pricing and FAQ pages, added customer information collection form (email, first/last name), created new API endpoint `/api/create-subscription-with-account` that creates Stripe customer and subscription without authentication, updated FAQ to clarify cancellation policy ("can cancel anytime through account settings, no cancellation fees"), implemented two-step subscription process (customer info → payment form)
+- July 6, 2025. Fixed final subscription flow issues: removed "Pro" branding throughout app (now just "BoundaryCore"), corrected subscription success page to guide users to login rather than direct dashboard access, fixed admin user deletion error (corrected table name from friendRequests to friendships), confirmed logout functionality exists for testing subscription flow
+- July 7, 2025. Successfully completed comprehensive rebrand from "BoundarySpace" to "BoundaryCore" throughout entire codebase: updated all React components, TypeScript files, marketing website, navigation systems, demo pages, FAQ content, pricing pages, server routes, Shopify integration, documentation files, mobile app specifications, and welcome email templates. All 100+ instances systematically replaced while preserving existing functionality, design, and user experience. Rebrand completed across frontend, backend, and documentation layers.
+- July 7, 2025. COMPLETED FINAL REBRAND CLEANUP: Performed systematic final cleanup of all remaining "BoundarySpace" instances across marketing pages (FAQ, landing, homepage), completing the 100% rebrand from "BoundarySpace" to "BoundaryCore" with bash verification confirming zero remaining instances in the active codebase.
 
 ## User Preferences
 
 Preferred communication style: Simple, everyday language.
+
+## Future Enhancements for Main User App
+
+From demo page feedback (July 6, 2025):
+- **Custom Tags**: Add descriptive tags like "Communicative", "Ambitious" to relationship cards for quick personality insights
+- **Status Type Display**: Implement clear relationship status badges on main relationship cards  
+- **Flag Count Summaries**: Show green/red flag counts directly on relationship cards for quick health overview
+- **Note**: Don't implement these yet - focus on fixing existing functionality first (EmotionalWeather data structure)

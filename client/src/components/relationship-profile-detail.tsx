@@ -11,6 +11,7 @@ import ComprehensiveInteractionTracker from "./comprehensive-interaction-tracker
 import { apiRequest, queryClient } from "@/lib/queryClient";
 import { useToast } from "@/hooks/use-toast";
 
+
 // Simple analysis component to show CIT data insights
 function InteractionAnalysis({ relationshipId }: { relationshipId: number }) {
   const { data: interactions, isLoading } = useQuery({
@@ -22,7 +23,7 @@ function InteractionAnalysis({ relationshipId }: { relationshipId: number }) {
     return <div className="text-center py-4 text-gray-500">Loading analysis...</div>;
   }
 
-  if (!interactions || !Array.isArray(interactions) || interactions.length === 0) {
+  if (!interactions || interactions.length === 0) {
     return (
       <div className="text-center py-8 text-gray-500">
         <p>No interaction data available yet.</p>
@@ -31,70 +32,22 @@ function InteractionAnalysis({ relationshipId }: { relationshipId: number }) {
     );
   }
 
-  // Calculate comprehensive health metrics from interaction data
+  // Calculate simple metrics from interaction data
   const totalInteractions = interactions.length;
   const avgEnergyBefore = interactions.reduce((sum: number, i: any) => sum + (i.preEnergyLevel || 0), 0) / totalInteractions;
   const avgEnergyAfter = interactions.reduce((sum: number, i: any) => sum + (i.postEnergyLevel || 0), 0) / totalInteractions;
   const energyChange = avgEnergyAfter - avgEnergyBefore;
-  
-  const avgAnxietyBefore = interactions.reduce((sum: number, i: any) => sum + (i.preAnxietyLevel || 0), 0) / totalInteractions;
-  const avgAnxietyAfter = interactions.reduce((sum: number, i: any) => sum + (i.postAnxietyLevel || 0), 0) / totalInteractions;
-  const anxietyChange = avgAnxietyAfter - avgAnxietyBefore;
-  
-  const avgSelfWorthBefore = interactions.reduce((sum: number, i: any) => sum + (i.preSelfWorth || 0), 0) / totalInteractions;
-  const avgSelfWorthAfter = interactions.reduce((sum: number, i: any) => sum + (i.postSelfWorth || 0), 0) / totalInteractions;
-  const selfWorthChange = avgSelfWorthAfter - avgSelfWorthBefore;
-  
-  const avgRecoveryTime = interactions.reduce((sum: number, i: any) => sum + (i.recoveryTimeMinutes || 0), 0) / totalInteractions;
-  
-  // Calculate overall health score (0-100)
-  const healthScore = Math.round(
-    ((energyChange + 10) / 20) * 25 + // Energy impact (25%)
-    ((10 - anxietyChange) / 20) * 25 + // Anxiety impact (25%)
-    ((selfWorthChange + 10) / 20) * 25 + // Self-worth impact (25%)
-    (Math.max(0, (120 - avgRecoveryTime)) / 120) * 25 // Recovery time (25%)
-  );
 
   return (
-    <div className="space-y-6">
-      {/* Overall Health Score */}
-      <Card>
-        <CardHeader>
-          <CardTitle>Relationship Health Score</CardTitle>
-        </CardHeader>
-        <CardContent>
-          <div className="text-center">
-            <div className={`text-4xl font-bold ${healthScore >= 70 ? 'text-green-600' : healthScore >= 40 ? 'text-yellow-600' : 'text-red-600'}`}>
-              {healthScore}%
-            </div>
-            <p className="text-sm text-gray-600 mt-1">
-              Based on {totalInteractions} interaction{totalInteractions !== 1 ? 's' : ''}
-            </p>
-          </div>
-        </CardContent>
-      </Card>
-      
-      {/* Detailed Metrics */}
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+    <div className="space-y-4">
+      <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
         <div className="text-center p-4 bg-blue-50 rounded-lg">
           <div className="text-2xl font-bold text-blue-600">{totalInteractions}</div>
           <div className="text-sm text-gray-600">Total Interactions</div>
         </div>
         <div className="text-center p-4 bg-green-50 rounded-lg">
-          <div className={`text-2xl font-bold ${energyChange >= 0 ? 'text-green-600' : 'text-red-600'}`}>
-            {energyChange > 0 ? '+' : ''}{energyChange.toFixed(1)}
-          </div>
-          <div className="text-sm text-gray-600">Avg Energy Impact</div>
-        </div>
-        <div className="text-center p-4 bg-purple-50 rounded-lg">
-          <div className={`text-2xl font-bold ${anxietyChange <= 0 ? 'text-green-600' : 'text-red-600'}`}>
-            {anxietyChange > 0 ? '+' : ''}{anxietyChange.toFixed(1)}
-          </div>
-          <div className="text-sm text-gray-600">Avg Anxiety Impact</div>
-        </div>
-        <div className="text-center p-4 bg-orange-50 rounded-lg">
-          <div className="text-2xl font-bold text-orange-600">{Math.round(avgRecoveryTime)}</div>
-          <div className="text-sm text-gray-600">Avg Recovery (min)</div>
+          <div className="text-2xl font-bold text-green-600">{avgEnergyBefore.toFixed(1)}</div>
+          <div className="text-sm text-gray-600">Avg Energy Before</div>
         </div>
         <div className="text-center p-4 bg-orange-50 rounded-lg">
           <div className={`text-2xl font-bold ${energyChange >= 0 ? 'text-green-600' : 'text-red-600'}`}>
@@ -125,31 +78,39 @@ interface RelationshipProfileDetailProps {
 export default function RelationshipProfileDetail({ relationship, onClose }: RelationshipProfileDetailProps) {
   const { toast } = useToast();
   const [showCIT, setShowCIT] = useState(false);
+  const [showFlagDialog, setShowFlagDialog] = useState(false);
   const [showCheckInDialog, setShowCheckInDialog] = useState(false);
   const [showSettingsDialog, setShowSettingsDialog] = useState(false);
   
+  // Flag form state
+  const [flagFormData, setFlagFormData] = useState({
+    flagType: 'green',
+    category: 'communication',
+    behavior: '',
+    notes: ''
+  });
+  const [editingFlagId, setEditingFlagId] = useState<number | null>(null);
+  
   const { data: flags, isLoading: flagsLoading } = useQuery({
-    queryKey: ['/api/relationships', relationship.id, 'flags'],
+    queryKey: [`/api/relationships/${relationship.id}/flags`],
     refetchOnWindowFocus: false,
   });
 
   const { data: checkIns, isLoading: checkInsLoading } = useQuery({
-    queryKey: ['/api/relationships', relationship.id, 'check-ins'],
+    queryKey: [`/api/relationships/${relationship.id}/check-ins`],
     refetchOnWindowFocus: false,
   });
 
   const { data: stats, isLoading: statsLoading } = useQuery({
-    queryKey: ['/api/relationships', relationship.id, 'stats'],
+    queryKey: [`/api/relationships/${relationship.id}/stats`],
     refetchOnWindowFocus: false,
   });
 
   const getHealthScore = () => {
-    if (!stats || typeof stats !== 'object') return 0;
-    const greenFlags = (stats as any).greenFlags || 0;
-    const redFlags = (stats as any).redFlags || 0;
-    const totalFlags = greenFlags + redFlags;
-    if (totalFlags === 0) return 0;
-    return Math.round((greenFlags / totalFlags) * 100);
+    if (!stats) return 50; // Default to neutral score when no data
+    const totalFlags = (stats as any).greenFlags + (stats as any).redFlags;
+    if (totalFlags === 0) return 50; // Default to neutral when no flags
+    return Math.round(((stats as any).greenFlags / totalFlags) * 100);
   };
 
   const getHealthColor = (score: number) => {
@@ -222,39 +183,47 @@ export default function RelationshipProfileDetail({ relationship, onClose }: Rel
                       <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
                         <div className="text-center p-4 bg-white rounded-lg shadow-sm">
                           <div className={`text-3xl font-bold ${getHealthColor(getHealthScore())}`}>
-                            {getHealthScore()}%
+                            {statsLoading ? "..." : `${getHealthScore()}%`}
                           </div>
                           <div className="text-sm text-gray-600 mt-1">Health Score</div>
+                          {!statsLoading && (
+                            <div className="text-xs text-gray-500 mt-1">
+                              {((stats as any)?.greenFlags || 0) + ((stats as any)?.redFlags || 0) === 0 
+                                ? "Add flags to calculate"
+                                : `Based on ${((stats as any)?.greenFlags || 0) + ((stats as any)?.redFlags || 0)} flags`
+                              }
+                            </div>
+                          )}
                         </div>
                         <div className="text-center p-4 bg-white rounded-lg shadow-sm">
                           <div className="text-3xl font-bold text-green-600">
-                            {(stats as any)?.greenFlags || 0}
+                            {stats?.greenFlags || 0}
                           </div>
                           <div className="text-sm text-gray-600 mt-1">Green Flags</div>
                         </div>
                         <div className="text-center p-4 bg-white rounded-lg shadow-sm">
                           <div className="text-3xl font-bold text-red-600">
-                            {(stats as any)?.redFlags || 0}
+                            {stats?.redFlags || 0}
                           </div>
                           <div className="text-sm text-gray-600 mt-1">Red Flags</div>
                         </div>
                         <div className="text-center p-4 bg-white rounded-lg shadow-sm">
                           <div className="text-3xl font-bold text-blue-600">
-                            {(stats as any)?.checkInCount || 0}
+                            {stats?.checkInCount || 0}
                           </div>
                           <div className="text-sm text-gray-600 mt-1">Check-ins</div>
                         </div>
                       </div>
-                      {(stats as any)?.averageSafetyRating && (
+                      {stats?.averageSafetyRating && (
                         <div className="mt-4 p-3 bg-white rounded-lg shadow-sm">
                           <div className="flex items-center justify-between">
                             <span className="text-sm text-gray-600">Average Safety Rating</span>
-                            <span className="font-semibold">{(stats as any).averageSafetyRating}/10</span>
+                            <span className="font-semibold">{stats.averageSafetyRating}/10</span>
                           </div>
                           <div className="w-full bg-gray-200 rounded-full h-2 mt-2">
                             <div 
                               className="bg-blue-600 h-2 rounded-full transition-all"
-                              style={{ width: `${((stats as any).averageSafetyRating / 10) * 100}%` }}
+                              style={{ width: `${(stats.averageSafetyRating / 10) * 100}%` }}
                             />
                           </div>
                         </div>
@@ -356,7 +325,10 @@ export default function RelationshipProfileDetail({ relationship, onClose }: Rel
                   <Card>
                     <CardHeader>
                       <CardTitle className="flex items-center justify-between">
-                        <span>Privacy & Sharing</span>
+                        <div className="flex items-center gap-2">
+                          <span>Privacy & Sharing</span>
+                          <Badge variant="secondary" className="text-xs">Coming Soon</Badge>
+                        </div>
                         <Button 
                           size="sm" 
                           variant="outline"
@@ -429,180 +401,165 @@ export default function RelationshipProfileDetail({ relationship, onClose }: Rel
                 </TabsContent>
 
                 <TabsContent value="flags" className="p-6 space-y-6">
-                  <Card>
-                    <CardHeader>
-                      <CardTitle className="flex items-center gap-2">
-                        <Target className="w-5 h-5 text-blue-500" />
-                        Baseline Compatibility Health Score
-                      </CardTitle>
-                    </CardHeader>
-                    <CardContent>
-                      {(() => {
-                        // Get CIT interactions for this relationship
-                        const { data: interactions } = useQuery({
-                          queryKey: ['/api/interactions', relationship.id],
-                          refetchOnWindowFocus: false,
-                        });
-                        
-                        if (!interactions || interactions.length === 0) {
-                          return (
-                            <div className="text-center py-8">
-                              <Brain className="w-12 h-12 mx-auto mb-4 text-gray-400" />
-                              <h3 className="text-lg font-semibold mb-2">No Interaction Data Yet</h3>
-                              <p className="text-gray-600 mb-4">
-                                Use the Comprehensive Interaction Tracker to start analyzing compatibility with your baseline values.
-                              </p>
-                              <Button onClick={() => setShowCIT(true)} className="mt-4">
-                                Start First CIT Session
-                              </Button>
-                            </div>
-                          );
-                        }
-                        
-                        // Calculate health metrics from CIT data
-                        const totalInteractions = interactions.length;
-                        const communicationRespected = interactions.filter((i: any) => i.communicationStyleRespected).length;
-                        const boundariesRespected = interactions.filter((i: any) => i.boundariesRespected).length;
-                        const triggersAvoided = interactions.filter((i: any) => i.triggersAvoided).length;
-                        const valuesAligned = interactions.filter((i: any) => i.coreValuesAligned).length;
-                        const dealBreakers = interactions.filter((i: any) => i.dealBreakersPresent).length;
-                        
-                        const avgEnergyChange = interactions.reduce((sum: number, i: any) => 
-                          sum + ((i.energyAfter || 5) - (i.energyBefore || 5)), 0) / totalInteractions;
-                        const avgSelfWorthChange = interactions.reduce((sum: number, i: any) => 
-                          sum + ((i.selfWorthAfter || 5) - (i.selfWorthBefore || 5)), 0) / totalInteractions;
-                        
-                        // Calculate overall health score based on baseline compatibility
-                        const healthScore = Math.round(
-                          ((communicationRespected / totalInteractions) * 20) +
-                          ((boundariesRespected / totalInteractions) * 25) +
-                          ((triggersAvoided / totalInteractions) * 20) +
-                          ((valuesAligned / totalInteractions) * 15) +
-                          (Math.max(0, (5 + avgEnergyChange) / 10) * 10) +
-                          (Math.max(0, (5 + avgSelfWorthChange) / 10) * 10) -
-                          ((dealBreakers / totalInteractions) * 25)
-                        );
-                        
-                        const finalScore = Math.max(0, Math.min(100, healthScore));
-                        
-                        return (
-                          <div className="space-y-6">
-                            <div className="text-center">
-                              <div className="text-4xl font-bold mb-2 text-blue-600">
-                                {finalScore}%
-                              </div>
-                              <Badge 
-                                variant={finalScore >= 80 ? 'default' : finalScore >= 60 ? 'secondary' : 'destructive'}
-                                className="text-sm"
-                              >
-                                {finalScore >= 80 ? 'Highly Compatible with Your Baseline' : 
-                                 finalScore >= 60 ? 'Moderately Compatible' : 
-                                 finalScore >= 40 ? 'Some Compatibility Issues' : 'Low Baseline Compatibility'}
-                              </Badge>
-                              <p className="text-sm text-gray-600 mt-2">
-                                Based on {totalInteractions} interaction{totalInteractions !== 1 ? 's' : ''}
-                              </p>
-                            </div>
-                            
-                            <div className="grid grid-cols-2 gap-4 text-sm">
-                              <div className="space-y-3">
-                                <div className="flex justify-between items-center">
-                                  <span className="text-gray-600">Communication Respected:</span>
-                                  <div className="flex items-center gap-2">
-                                    <div className="w-16 bg-gray-200 rounded-full h-2">
-                                      <div 
-                                        className="bg-blue-500 h-2 rounded-full"
-                                        style={{ width: `${(communicationRespected / totalInteractions) * 100}%` }}
-                                      />
-                                    </div>
-                                    <span className="font-medium w-8">{Math.round((communicationRespected / totalInteractions) * 100)}%</span>
-                                  </div>
-                                </div>
-                                <div className="flex justify-between items-center">
-                                  <span className="text-gray-600">Boundaries Respected:</span>
-                                  <div className="flex items-center gap-2">
-                                    <div className="w-16 bg-gray-200 rounded-full h-2">
-                                      <div 
-                                        className="bg-green-500 h-2 rounded-full"
-                                        style={{ width: `${(boundariesRespected / totalInteractions) * 100}%` }}
-                                      />
-                                    </div>
-                                    <span className="font-medium w-8">{Math.round((boundariesRespected / totalInteractions) * 100)}%</span>
-                                  </div>
-                                </div>
-                                <div className="flex justify-between items-center">
-                                  <span className="text-gray-600">Triggers Avoided:</span>
-                                  <div className="flex items-center gap-2">
-                                    <div className="w-16 bg-gray-200 rounded-full h-2">
-                                      <div 
-                                        className="bg-yellow-500 h-2 rounded-full"
-                                        style={{ width: `${(triggersAvoided / totalInteractions) * 100}%` }}
-                                      />
-                                    </div>
-                                    <span className="font-medium w-8">{Math.round((triggersAvoided / totalInteractions) * 100)}%</span>
-                                  </div>
-                                </div>
-                              </div>
-                              <div className="space-y-3">
-                                <div className="flex justify-between items-center">
-                                  <span className="text-gray-600">Values Aligned:</span>
-                                  <div className="flex items-center gap-2">
-                                    <div className="w-16 bg-gray-200 rounded-full h-2">
-                                      <div 
-                                        className="bg-purple-500 h-2 rounded-full"
-                                        style={{ width: `${(valuesAligned / totalInteractions) * 100}%` }}
-                                      />
-                                    </div>
-                                    <span className="font-medium w-8">{Math.round((valuesAligned / totalInteractions) * 100)}%</span>
-                                  </div>
-                                </div>
-                                <div className="flex justify-between items-center">
-                                  <span className="text-gray-600">Avg Energy Impact:</span>
-                                  <span className={`font-medium ${avgEnergyChange >= 0 ? 'text-green-600' : 'text-red-600'}`}>
-                                    {avgEnergyChange >= 0 ? '+' : ''}{avgEnergyChange.toFixed(1)}
-                                  </span>
-                                </div>
-                                <div className="flex justify-between items-center">
-                                  <span className="text-gray-600">Avg Self-Worth Impact:</span>
-                                  <span className={`font-medium ${avgSelfWorthChange >= 0 ? 'text-green-600' : 'text-red-600'}`}>
-                                    {avgSelfWorthChange >= 0 ? '+' : ''}{avgSelfWorthChange.toFixed(1)}
-                                  </span>
-                                </div>
-                              </div>
-                            </div>
-                            
-                            {dealBreakers > 0 && (
-                              <div className="bg-red-50 border border-red-200 rounded-lg p-4">
-                                <div className="flex items-center gap-2">
-                                  <AlertTriangle className="w-5 h-5 text-red-600" />
-                                  <span className="text-sm font-medium text-red-800">
-                                    Deal-breakers present in {dealBreakers} of {totalInteractions} interactions
-                                  </span>
-                                </div>
-                                <p className="text-xs text-red-700 mt-1">
-                                  This indicates serious compatibility issues that need immediate attention.
-                                </p>
-                              </div>
-                            )}
-                            
-                            {finalScore < 60 && (
-                              <div className="bg-yellow-50 border border-yellow-200 rounded-lg p-4">
-                                <div className="flex items-center gap-2">
-                                  <AlertTriangle className="w-5 h-5 text-yellow-600" />
-                                  <span className="text-sm font-medium text-yellow-800">
-                                    Low baseline compatibility detected
-                                  </span>
-                                </div>
-                                <p className="text-xs text-yellow-700 mt-1">
-                                  Consider discussing your core needs and boundaries with {relationship.name}.
-                                </p>
-                              </div>
-                            )}
+                  <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+                    {/* Behavioral Flags */}
+                    <Card>
+                      <CardHeader>
+                        <CardTitle className="flex items-center justify-between">
+                          <div className="flex items-center gap-2">
+                            <Flag className="w-5 h-5 text-orange-500" />
+                            Behavioral Flags
                           </div>
-                        );
-                      })()}
-                    </CardContent>
-                  </Card>
+                          <Button 
+                            size="sm" 
+                            variant="outline"
+                            onClick={() => setShowFlagDialog(true)}
+                          >
+                            <Plus className="w-4 h-4 mr-1" />
+                            Add Flag
+                          </Button>
+                        </CardTitle>
+                      </CardHeader>
+                      <CardContent>
+                        {flagsLoading ? (
+                          <div className="space-y-2">
+                            {[1, 2, 3].map((i) => (
+                              <div key={i} className="h-16 bg-gray-200 rounded animate-pulse"></div>
+                            ))}
+                          </div>
+                        ) : flags && flags.length > 0 ? (
+                          <div className="space-y-3">
+                            {flags.map((flag: any) => {
+                              console.log('Flag data:', flag); // Debug log
+                              const isGreen = flag.flag_type === 'green';
+                              return (
+                                <div key={flag.id} className="border rounded-lg p-3">
+                                  <div className="flex items-start justify-between">
+                                    <div className="flex-1">
+                                      <div className="flex items-center gap-2">
+                                        <Badge 
+                                          className={`border ${
+                                            isGreen 
+                                              ? "bg-green-100 text-green-800 border-green-200" 
+                                              : "bg-red-100 text-red-800 border-red-200"
+                                          }`}
+                                        >
+                                          {flag.flag_type} flag
+                                        </Badge>
+                                        <span className="text-sm text-gray-500">{flag.flag_category}</span>
+                                      </div>
+                                      <p className="text-sm font-medium mt-1">{flag.flag_name}</p>
+                                      {flag.notes && (
+                                        <p className="text-xs text-gray-600 mt-1">{flag.notes}</p>
+                                      )}
+                                    </div>
+                                    <div className="flex gap-1 ml-2">
+                                      <Button
+                                        size="sm"
+                                        variant="ghost"
+                                        onClick={() => {
+                                          // Pre-fill form with flag data for editing
+                                          setFlagFormData({
+                                            flagType: flag.flag_type,
+                                            category: flag.flag_category,
+                                            behavior: flag.flag_name,
+                                            notes: flag.notes || ''
+                                          });
+                                          setEditingFlagId(flag.id);
+                                          setShowFlagDialog(true);
+                                        }}
+                                        className="h-8 w-8 p-0"
+                                      >
+                                        <Edit2 className="w-3 h-3" />
+                                      </Button>
+                                      <Button
+                                        size="sm"
+                                        variant="ghost"
+                                        onClick={async () => {
+                                          try {
+                                            await apiRequest("DELETE", `/api/relationships/${relationship.id}/flags/${flag.id}`);
+                                            queryClient.invalidateQueries({ queryKey: [`/api/relationships/${relationship.id}/flags`] });
+                                            queryClient.invalidateQueries({ queryKey: [`/api/relationships/${relationship.id}/stats`] });
+                                            toast({
+                                              title: "Flag Deleted",
+                                              description: "The behavioral flag has been removed.",
+                                            });
+                                          } catch (error) {
+                                            toast({
+                                              title: "Error",
+                                              description: "Failed to delete flag. Please try again.",
+                                              variant: "destructive",
+                                            });
+                                          }
+                                        }}
+                                        className="h-8 w-8 p-0 text-red-600 hover:text-red-800"
+                                      >
+                                        <X className="w-3 h-3" />
+                                      </Button>
+                                    </div>
+                                  </div>
+                                </div>
+                              );
+                            })}
+                          </div>
+                        ) : (
+                          <div className="text-center py-8 text-gray-500">
+                            No flags recorded yet
+                          </div>
+                        )}
+                      </CardContent>
+                    </Card>
+
+                    {/* Check-ins */}
+                    <Card>
+                      <CardHeader>
+                        <CardTitle className="flex items-center justify-between">
+                          <div className="flex items-center gap-2">
+                            <MessageSquare className="w-5 h-5 text-blue-500" />
+                            Recent Check-ins
+                          </div>
+                          <Button 
+                            size="sm" 
+                            variant="outline"
+                            onClick={() => setShowCheckInDialog(true)}
+                          >
+                            <Plus className="w-4 h-4 mr-1" />
+                            Check In
+                          </Button>
+                        </CardTitle>
+                      </CardHeader>
+                      <CardContent>
+                        {checkInsLoading ? (
+                          <div className="space-y-2">
+                            {[1, 2, 3].map((i) => (
+                              <div key={i} className="h-12 bg-gray-200 rounded animate-pulse"></div>
+                            ))}
+                          </div>
+                        ) : checkIns && checkIns.length > 0 ? (
+                          <div className="space-y-3">
+                            {checkIns.slice(0, 5).map((checkIn: any) => (
+                              <div key={checkIn.id} className="border rounded-lg p-3">
+                                <div className="flex items-center justify-between">
+                                  <div>
+                                    <p className="text-sm font-medium">Safety: {checkIn.safetyRating}/10</p>
+                                    <p className="text-xs text-gray-500">
+                                      {format(new Date(checkIn.createdAt), 'MMM d, yyyy')}
+                                    </p>
+                                  </div>
+                                  <Badge variant="outline">Check-in</Badge>
+                                </div>
+                                {checkIn.notes && (
+                                  <p className="text-xs text-gray-600 mt-2">{checkIn.notes}</p>
+                                )}
+                              </div>
+                            ))}
+                          </div>
+                        ) : (
+                          <p className="text-gray-500 text-center py-4">No check-ins recorded yet</p>
+                        )}
+                      </CardContent>
+                    </Card>
+                  </div>
                 </TabsContent>
 
                 <TabsContent value="analysis" className="p-6">
@@ -654,7 +611,144 @@ export default function RelationshipProfileDetail({ relationship, onClose }: Rel
         />
       )}
 
+      {/* Flag Creation Dialog */}
+      {showFlagDialog && (
+        <div className="fixed inset-0 bg-black bg-opacity-50 z-50 flex items-center justify-center p-4">
+          <div className="bg-white rounded-lg p-6 w-full max-w-md">
+            <h3 className="text-lg font-semibold mb-4">
+              {editingFlagId ? 'Edit Behavioral Flag' : 'Add Behavioral Flag'}
+            </h3>
+            <div className="space-y-4">
+              <div>
+                <label className="text-sm font-medium text-gray-700">Flag Type</label>
+                <select 
+                  className="w-full mt-1 p-2 border rounded-md"
+                  value={flagFormData.flagType}
+                  onChange={(e) => setFlagFormData({...flagFormData, flagType: e.target.value})}
+                >
+                  <option value="green">Green Flag (Positive)</option>
+                  <option value="red">Red Flag (Concerning)</option>
+                </select>
+              </div>
+              <div>
+                <label className="text-sm font-medium text-gray-700">Category</label>
+                <select 
+                  className="w-full mt-1 p-2 border rounded-md"
+                  value={flagFormData.category}
+                  onChange={(e) => setFlagFormData({...flagFormData, category: e.target.value})}
+                >
+                  <option value="communication">Communication</option>
+                  <option value="respect">Respect</option>
+                  <option value="trust">Trust & Reliability</option>
+                  <option value="emotional">Emotional Consistency</option>
+                </select>
+              </div>
+              <div>
+                <label className="text-sm font-medium text-gray-700">Behavior Description</label>
+                <textarea 
+                  className="w-full mt-1 p-2 border rounded-md" 
+                  rows={3} 
+                  placeholder="Describe the specific behavior you observed..."
+                  value={flagFormData.behavior}
+                  onChange={(e) => setFlagFormData({...flagFormData, behavior: e.target.value})}
+                />
+              </div>
+              <div>
+                <label className="text-sm font-medium text-gray-700">Notes (Optional)</label>
+                <textarea 
+                  className="w-full mt-1 p-2 border rounded-md" 
+                  rows={2} 
+                  placeholder="Additional context or notes..."
+                  value={flagFormData.notes}
+                  onChange={(e) => setFlagFormData({...flagFormData, notes: e.target.value})}
+                />
+              </div>
+            </div>
+            <div className="flex gap-2 mt-6">
+              <Button 
+                onClick={() => {
+                  setFlagFormData({
+                    flagType: 'green',
+                    category: 'communication',
+                    behavior: '',
+                    notes: ''
+                  });
+                  setEditingFlagId(null);
+                  setShowFlagDialog(false);
+                }} 
+                variant="outline" 
+                className="flex-1"
+              >
+                Cancel
+              </Button>
+              <Button 
+                onClick={async () => {
+                  try {
+                    if (!flagFormData.behavior.trim()) {
+                      toast({
+                        title: "Missing Information",
+                        description: "Please describe the behavior before saving.",
+                        variant: "destructive",
+                      });
+                      return;
+                    }
 
+                    const flagData = {
+                      profileId: relationship.id,
+                      flagCategory: flagFormData.category,
+                      flagName: flagFormData.behavior,
+                      flagType: flagFormData.flagType,
+                      isPresent: true,
+                      notes: flagFormData.notes || null
+                    };
+
+                    if (editingFlagId) {
+                      // Update existing flag
+                      await apiRequest("PUT", `/api/relationships/${relationship.id}/flags/${editingFlagId}`, flagData);
+                      toast({
+                        title: "Flag Updated",
+                        description: "Behavioral flag has been updated successfully.",
+                      });
+                    } else {
+                      // Create new flag
+                      await apiRequest("POST", `/api/relationships/${relationship.id}/flags`, flagData);
+                      toast({
+                        title: "Flag Added",
+                        description: "Behavioral flag has been recorded successfully.",
+                      });
+                    }
+                    
+                    // Reset form
+                    setFlagFormData({
+                      flagType: 'green',
+                      category: 'communication',
+                      behavior: '',
+                      notes: ''
+                    });
+                    setEditingFlagId(null);
+                    setShowFlagDialog(false);
+                    
+                    // Invalidate queries to refresh data
+                    queryClient.invalidateQueries({ queryKey: [`/api/relationships/${relationship.id}/flags`] });
+                    queryClient.invalidateQueries({ queryKey: [`/api/relationships/${relationship.id}/stats`] });
+                  } catch (error) {
+                    console.error("Error saving flag:", error);
+                    toast({
+                      title: "Error",
+                      description: `Failed to ${editingFlagId ? 'update' : 'add'} flag. Please try again.`,
+                      variant: "destructive",
+                    });
+                  }
+                }} 
+                className="flex-1"
+                disabled={!flagFormData.behavior.trim()}
+              >
+                {editingFlagId ? 'Update Flag' : 'Add Flag'}
+              </Button>
+            </div>
+          </div>
+        </div>
+      )}
 
       {/* Simple Check-in Dialog */}
       {showCheckInDialog && (

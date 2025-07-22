@@ -39,6 +39,10 @@ export const users = pgTable("users", {
   defaultPrivacySetting: varchar("default_privacy_setting").default("private"), // private, friends_only, public
   bio: text("bio"),
   isProfileComplete: boolean("is_profile_complete").default(false),
+  stripeCustomerId: varchar("stripe_customer_id"),
+  stripeSubscriptionId: varchar("stripe_subscription_id"),
+  subscriptionStatus: varchar("subscription_status").default("inactive"), // inactive, active, canceled, past_due
+  accountStatus: varchar("account_status").default("active"), // active, suspended, scheduled_for_deletion
   createdAt: timestamp("created_at").defaultNow(),
   updatedAt: timestamp("updated_at").defaultNow(),
 });
@@ -596,3 +600,30 @@ export const insertGoalCheckInSchema = createInsertSchema(goalCheckIns).omit({
 });
 export type InsertGoalCheckIn = z.infer<typeof insertGoalCheckInSchema>;
 export type GoalCheckIn = typeof goalCheckIns.$inferSelect;
+
+// Feedback and bug tracking system
+export const feedback = pgTable("feedback", {
+  id: serial("id").primaryKey(),
+  userId: varchar("user_id").notNull(),
+  title: text("title").notNull(),
+  description: text("description").notNull(),
+  type: varchar("type").notNull(), // bug, feature, improvement
+  priority: varchar("priority").notNull().default("medium"), // low, medium, high
+  status: varchar("status").notNull().default("reported"), // reported, in_progress, completed
+  submittedBy: varchar("submitted_by"), // username/email for display
+  devNotes: text("dev_notes"), // internal development notes
+  createdAt: timestamp("created_at").defaultNow(),
+  updatedAt: timestamp("updated_at").defaultNow(),
+});
+
+export const insertFeedbackSchema = createInsertSchema(feedback).omit({
+  id: true,
+  createdAt: true,
+  updatedAt: true,
+  userId: true,
+  submittedBy: true,
+  devNotes: true,
+  status: true,
+});
+export type InsertFeedback = z.infer<typeof insertFeedbackSchema>;
+export type Feedback = typeof feedback.$inferSelect;
