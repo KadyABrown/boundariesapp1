@@ -110,6 +110,11 @@ export default function RelationshipProfileDetail({ relationship, onClose }: Rel
 
   const getHealthScore = () => {
     if (!stats) return 50; // Default to neutral score when no data
+    // Use the healthScore calculated by the backend if available
+    if ('healthScore' in stats) {
+      return (stats as any).healthScore;
+    }
+    // Fallback to flag-based calculation
     const totalFlags = (stats as any).greenFlags + (stats as any).redFlags;
     if (totalFlags === 0) return 50; // Default to neutral when no flags
     return Math.round(((stats as any).greenFlags / totalFlags) * 100);
@@ -202,12 +207,22 @@ export default function RelationshipProfileDetail({ relationship, onClose }: Rel
                             {stats?.greenFlags || 0}
                           </div>
                           <div className="text-sm text-gray-600 mt-1">Green Flags</div>
+                          {(stats as any)?.interactionBasedFlags?.emotionalNeedsMetCount > 0 && (
+                            <div className="text-xs text-green-500 mt-1">
+                              +{(stats as any).interactionBasedFlags.emotionalNeedsMetCount} from interactions
+                            </div>
+                          )}
                         </div>
                         <div className="text-center p-4 bg-white rounded-lg shadow-sm">
                           <div className="text-3xl font-bold text-red-600">
                             {stats?.redFlags || 0}
                           </div>
                           <div className="text-sm text-gray-600 mt-1">Red Flags</div>
+                          {(stats as any)?.interactionBasedFlags?.triggersOccurredCount > 0 && (
+                            <div className="text-xs text-red-500 mt-1">
+                              +{(stats as any).interactionBasedFlags.triggersOccurredCount} from interactions
+                            </div>
+                          )}
                         </div>
                         <div className="text-center p-4 bg-white rounded-lg shadow-sm">
                           <div className="text-3xl font-bold text-blue-600">

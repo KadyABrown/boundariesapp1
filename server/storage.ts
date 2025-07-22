@@ -571,6 +571,11 @@ export class DatabaseStorage implements IStorage {
     redFlags: number;
     averageSafetyRating: number;
     checkInCount: number;
+    healthScore: number;
+    interactionBasedFlags?: {
+      emotionalNeedsMetCount: number;
+      triggersOccurredCount: number;
+    };
   }> {
     const greenFlags = await db
       .select({ count: count() })
@@ -604,11 +609,63 @@ export class DatabaseStorage implements IStorage {
       .from(emotionalCheckIns)
       .where(eq(emotionalCheckIns.profileId, profileId));
 
+    // Get interaction tracker entries to include in flag calculations
+    const interactions = await db
+      .select()
+      .from(interactionTrackerEntries)
+      .where(eq(interactionTrackerEntries.relationshipId, profileId));
+
+    // Calculate interaction-based flags
+    let emotionalNeedsMetCount = 0;
+    let triggersOccurredCount = 0;
+
+    if (interactions.length > 0) {
+      emotionalNeedsMetCount = interactions.reduce((sum, interaction) => 
+        sum + (interaction.emotionalNeedsMet?.length || 0), 0
+      );
+      triggersOccurredCount = interactions.reduce((sum, interaction) => 
+        sum + (interaction.triggersOccurred?.length || 0), 0
+      );
+    }
+
+    const baseGreenFlags = greenFlags[0]?.count || 0;
+    const baseRedFlags = redFlags[0]?.count || 0;
+    const totalGreenFlags = baseGreenFlags + emotionalNeedsMetCount;
+    const totalRedFlags = baseRedFlags + triggersOccurredCount;
+
+    // Calculate health score
+    const flagScore = totalGreenFlags > 0 
+      ? Math.round((totalGreenFlags / (totalGreenFlags + totalRedFlags)) * 100)
+      : 0;
+    
+    const avgSafety = safetyData[0]?.avg || 5;
+    const safetyScore = avgSafety * 20; // Convert 1-5 scale to 0-100
+    
+    const healthScore = Math.round((flagScore * 0.7) + (safetyScore * 0.3));
+
+    console.log(`Health calculation for relationship ${profileId}:`, {
+      baseGreenFlags,
+      baseRedFlags,
+      emotionalNeedsMetCount,
+      triggersOccurredCount,
+      totalGreenFlags,
+      totalRedFlags,
+      flagScore,
+      avgSafety,
+      safetyScore,
+      healthScore
+    });
+
     return {
-      greenFlags: greenFlags[0]?.count || 0,
-      redFlags: redFlags[0]?.count || 0,
-      averageSafetyRating: safetyData[0]?.avg || 0,
+      greenFlags: totalGreenFlags,
+      redFlags: totalRedFlags,
+      averageSafetyRating: avgSafety,
       checkInCount: checkInCount[0]?.count || 0,
+      healthScore,
+      interactionBasedFlags: {
+        emotionalNeedsMetCount,
+        triggersOccurredCount
+      }
     };
   }
 
