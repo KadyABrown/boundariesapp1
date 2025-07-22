@@ -39,9 +39,6 @@ export const users = pgTable("users", {
   defaultPrivacySetting: varchar("default_privacy_setting").default("private"), // private, friends_only, public
   bio: text("bio"),
   isProfileComplete: boolean("is_profile_complete").default(false),
-  stripeCustomerId: varchar("stripe_customer_id"),
-  stripeSubscriptionId: varchar("stripe_subscription_id"),
-  subscriptionStatus: varchar("subscription_status").default("inactive"), // inactive, active, canceled, past_due
   accountStatus: varchar("account_status").default("active"), // active, suspended, scheduled_for_deletion
   createdAt: timestamp("created_at").defaultNow(),
   updatedAt: timestamp("updated_at").defaultNow(),
