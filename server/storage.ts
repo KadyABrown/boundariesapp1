@@ -52,7 +52,7 @@ import {
   type InsertFeedback,
 } from "@shared/schema";
 import { db } from "./db";
-import { eq, desc, and, gte, lte, sql, count, or, like, not, inArray } from "drizzle-orm";
+import { eq, desc, and, gte, lte, sql, count, or, like, not, inArray, isNotNull } from "drizzle-orm";
 
 export interface IStorage {
   // User operations (required for Replit Auth)
