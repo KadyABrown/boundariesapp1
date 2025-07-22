@@ -1465,12 +1465,16 @@ export async function registerRoutes(app: Express): Promise<Server> {
     try {
       const userId = req.user.claims.sub;
       
-      // Transform the data to match our simple interaction tracker schema
+      // Transform the data to match our enhanced interaction tracker schema
       const transformedData = {
         userId,
         relationshipId: req.body.relationshipId,
         timestamp: new Date(req.body.timestamp || new Date()),
         communicationMet: req.body.communicationMet || false,
+        emotionalNeedsMet: req.body.emotionalNeedsMet || [],
+        triggersOccurred: req.body.triggersOccurred || [],
+        dealBreakersCrossed: req.body.dealBreakersCrossed || [],
+        repeatedTriggers: req.body.repeatedTriggers || [],
         overallCompatibility: req.body.overallCompatibility,
         notes: req.body.notes || '',
       };

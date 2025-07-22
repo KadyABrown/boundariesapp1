@@ -205,6 +205,23 @@ export default function InteractionTracker({
       .map(trigger => trigger.replace('-', ' '));
   };
 
+  const getDealBreakers = () => {
+    if (!baseline) return [];
+    
+    // Use baseline deal breaker behaviors
+    const dealBreakers = [...(baseline.dealBreakerBehaviors || [])];
+    
+    // Add non-negotiable boundaries as potential deal breakers
+    if (baseline.nonNegotiableBoundaries) {
+      dealBreakers.push(...baseline.nonNegotiableBoundaries);
+    }
+    
+    // Remove duplicates and return formatted for display
+    return Array.from(new Set(dealBreakers))
+      .filter(Boolean)
+      .map(db => db.replace('-', ' '));
+  };
+
   const handleSubmit = async () => {
     try {
       await onSubmit(data as InteractionTrackerData);
@@ -354,6 +371,38 @@ export default function InteractionTracker({
               ))}
             </div>
           </div>
+
+          {/* Deal Breaker Section */}
+          {getDealBreakers().length > 0 && (
+            <div className="border-t pt-4">
+              <Label className="text-sm font-medium mb-3 block text-red-600">
+                <AlertTriangle className="inline-block w-4 h-4 mr-2" />
+                ⚠️ Deal breakers that occurred (select if any):
+              </Label>
+              <div className="grid grid-cols-1 gap-2">
+                {getDealBreakers().map((dealBreaker, index) => (
+                  <div key={index} className="flex items-center space-x-2 p-2 bg-red-50 rounded-lg border border-red-200">
+                    <Checkbox
+                      id={`dealbreaker-${index}`}
+                      checked={data.dealBreakersCrossed?.includes(dealBreaker)}
+                      onCheckedChange={() => toggleArrayField('dealBreakersCrossed', dealBreaker)}
+                    />
+                    <Label htmlFor={`dealbreaker-${index}`} className="text-sm font-medium text-red-800">
+                      {dealBreaker}
+                    </Label>
+                  </div>
+                ))}
+              </div>
+              
+              {data.dealBreakersCrossed && data.dealBreakersCrossed.length > 0 && (
+                <div className="mt-3 p-3 bg-red-100 border border-red-300 rounded-lg">
+                  <p className="text-sm text-red-700 font-medium">
+                    ⚠️ Warning: You've identified deal breaker behavior(s). Consider if this relationship aligns with your core values and boundaries.
+                  </p>
+                </div>
+              )}
+            </div>
+          )}
         </div>
       </div>
     );
