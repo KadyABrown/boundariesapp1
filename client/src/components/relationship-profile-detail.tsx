@@ -5,7 +5,7 @@ import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { X, Calendar, Heart, Flag, TrendingUp, MessageSquare, Brain, Plus, Edit2, BarChart3 } from "lucide-react";
-import BoundaryBuddy from "@/components/boundary-buddy";
+
 import { format } from "date-fns";
 import ComprehensiveInteractionsView from "./comprehensive-interactions-view";
 import ComprehensiveInteractionTracker from "./comprehensive-interaction-tracker";
@@ -179,18 +179,7 @@ export default function RelationshipProfileDetail({ relationship, onClose }: Rel
                     <TabsTrigger value="flags">Flags & Check-ins</TabsTrigger>
                     <TabsTrigger value="analysis">Analysis</TabsTrigger>
                   </TabsList>
-                  <BoundaryBuddy 
-                    context="relationship-profile"
-                    trigger={
-                      <Button variant="outline" size="sm" className="text-blue-600 border-blue-200 hover:bg-blue-50 ml-4">
-                        <MessageSquare className="h-4 w-4 mr-2" />
-                        Help
-                      </Button>
-                    }
-                    onNavigateToInsights={() => {
-                      window.location.href = '/insights';
-                    }}
-                  />
+
                 </div>
               </div>
 
