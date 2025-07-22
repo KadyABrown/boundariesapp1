@@ -270,44 +270,7 @@ export default function BaselineIntegration({
         </Card>
       )}
 
-      {/* Boundary Analysis for Manual Boundaries */}
-      {boundaries.length > 0 && (
-        <Card>
-          <CardHeader>
-            <CardTitle className="flex items-center gap-2">
-              <Shield className="w-5 h-5 text-green-500" />
-              Boundary-Baseline Alignment
-            </CardTitle>
-          </CardHeader>
-          <CardContent>
-            <div className="space-y-3">
-              {boundaries.slice(0, 5).map((boundary: any) => {
-                const compatibility = getBoundaryCompatibility(boundary.title);
-                return (
-                  <div key={boundary.id} className="flex items-center justify-between p-3 border rounded-lg">
-                    <div className="flex-1">
-                      <h4 className="font-medium">{boundary.title}</h4>
-                      <p className="text-sm text-gray-600">{boundary.category}</p>
-                    </div>
-                    <div className="flex items-center gap-2">
-                      <Badge className={compatibility.color}>
-                        {compatibility.level} priority
-                      </Badge>
-                      <div className="w-2 h-2 rounded-full bg-gray-300" />
-                    </div>
-                  </div>
-                );
-              })}
-              
-              {boundaries.length > 5 && (
-                <p className="text-sm text-gray-500 text-center pt-2">
-                  ... and {boundaries.length - 5} more boundaries
-                </p>
-              )}
-            </div>
-          </CardContent>
-        </Card>
-      )}
+
 
       {/* Relationship Compatibility Analysis */}
       {userBaseline && relationships.length > 0 && (
@@ -376,46 +339,7 @@ export default function BaselineIntegration({
         </Card>
       )}
 
-      {/* Non-Negotiable vs Flexible Boundaries - Only show if baseline exists */}
-      {userBaseline && (userBaseline.nonNegotiableBoundaries?.length > 0 || userBaseline.flexibleBoundaries?.length > 0) && (
-        <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
-          {userBaseline.nonNegotiableBoundaries?.length > 0 && (
-            <Card className="border-red-200">
-              <CardHeader>
-                <CardTitle className="text-red-700 text-sm">Non-Negotiable Boundaries</CardTitle>
-              </CardHeader>
-              <CardContent>
-                <div className="space-y-2">
-                  {userBaseline.nonNegotiableBoundaries.map((boundary: string, index: number) => (
-                    <div key={index} className="flex items-center gap-2 text-sm">
-                      <div className="w-2 h-2 bg-red-500 rounded-full flex-shrink-0" />
-                      <span>{boundary}</span>
-                    </div>
-                  ))}
-                </div>
-              </CardContent>
-            </Card>
-          )}
-          
-          {userBaseline.flexibleBoundaries?.length > 0 && (
-            <Card className="border-yellow-200">
-              <CardHeader>
-                <CardTitle className="text-yellow-700 text-sm">Flexible Boundaries</CardTitle>
-              </CardHeader>
-              <CardContent>
-                <div className="space-y-2">
-                  {userBaseline.flexibleBoundaries.map((boundary: string, index: number) => (
-                    <div key={index} className="flex items-center gap-2 text-sm">
-                      <div className="w-2 h-2 bg-yellow-500 rounded-full flex-shrink-0" />
-                      <span>{boundary}</span>
-                    </div>
-                  ))}
-                </div>
-              </CardContent>
-            </Card>
-          )}
-        </div>
-      )}
+
     </div>
   );
 }
