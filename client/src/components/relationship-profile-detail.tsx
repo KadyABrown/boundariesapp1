@@ -8,6 +8,7 @@ import { X, Calendar, Heart, Flag, TrendingUp, MessageSquare, Brain, Plus, Edit2
 import { format } from "date-fns";
 import ComprehensiveInteractionsView from "./comprehensive-interactions-view";
 import ComprehensiveInteractionTracker from "./comprehensive-interaction-tracker";
+import InteractionAnalytics from "./interaction-analytics";
 import { apiRequest, queryClient } from "@/lib/queryClient";
 import { useToast } from "@/hooks/use-toast";
 
@@ -103,6 +104,11 @@ export default function RelationshipProfileDetail({ relationship, onClose }: Rel
 
   const { data: stats, isLoading: statsLoading } = useQuery({
     queryKey: [`/api/relationships/${relationship.id}/stats`],
+    refetchOnWindowFocus: false,
+  });
+
+  const { data: interactions } = useQuery({
+    queryKey: [`/api/interactions/${relationship.id}`],
     refetchOnWindowFocus: false,
   });
 
@@ -378,6 +384,12 @@ export default function RelationshipProfileDetail({ relationship, onClose }: Rel
                       </div>
                     </CardContent>
                   </Card>
+
+                  {/* Interaction Analytics */}
+                  <InteractionAnalytics 
+                    interactions={interactions || []} 
+                    relationshipName={relationship.name}
+                  />
                 </TabsContent>
 
                 <TabsContent value="interactions" className="p-0">
