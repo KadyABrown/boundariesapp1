@@ -5,7 +5,7 @@ import { useToast } from "@/hooks/use-toast";
 import { apiRequest, queryClient } from "@/lib/queryClient";
 import Navigation from "@/components/navigation";
 import BaselineIntegration from "@/components/baseline-integration";
-import BaselineAssessmentModal from "@/components/baseline-assessment-modal";
+import SimpleBaselineModal from "@/components/simple-baseline-modal";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Brain, Target, Heart, MessageCircle, Shield } from "lucide-react";
@@ -170,7 +170,7 @@ export default function BaselinePage() {
         </Card>
         
         {/* Baseline Assessment Modal */}
-        <BaselineAssessmentModal
+        <SimpleBaselineModal
           isOpen={isModalOpen}
           onClose={() => setIsModalOpen(false)}
           baseline={currentBaseline}

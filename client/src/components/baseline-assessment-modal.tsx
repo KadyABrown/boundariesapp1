@@ -112,7 +112,29 @@ export default function BaselineAssessmentModal({
 
   useEffect(() => {
     if (baseline && isOpen) {
-      setData(baseline);
+      setData({
+        // Communication preferences
+        communicationStyle: baseline.communicationStyle || '',
+        conflictResolution: baseline.conflictResolution || '',
+        
+        // Energy Impact
+        energyGivers: baseline.energyGivers || [],
+        energyDrainers: baseline.energyDrainers || [],
+        
+        // Triggers & Deal-breakers
+        emotionalTriggers: baseline.emotionalTriggers || [],
+        dealBreakerBehaviors: baseline.dealBreakerBehaviors || [],
+        
+        // Boundary Requirements
+        personalSpaceNeeds: baseline.personalSpaceNeeds || '',
+        privacyPreferences: baseline.privacyPreferences || '',
+        decisionMakingStyle: baseline.decisionMakingStyle || '',
+        
+        // Emotional Needs
+        emotionalSupportLevel: baseline.emotionalSupportLevel || '',
+        affectionStyles: baseline.affectionStyles || [],
+        validationFrequency: baseline.validationFrequency || ''
+      });
       setShowResults(true);
     } else {
       setShowResults(false);
