@@ -177,7 +177,7 @@ export default function BaselinePage() {
 
         {/* Baseline Assessment */}
         <PersonalBaselineAssessment
-          baseline={currentBaseline || userBaseline || undefined}
+          baseline={currentBaseline as any || userBaseline || undefined}
           onSaveBaseline={handleSaveBaseline}
           relationshipData={Array.isArray(relationshipStats) ? relationshipStats : (Array.isArray(relationships) ? relationships : [])}
         />

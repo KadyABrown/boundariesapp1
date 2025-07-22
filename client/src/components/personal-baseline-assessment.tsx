@@ -23,42 +23,7 @@ import {
   Star
 } from "lucide-react";
 
-interface PersonalBaseline {
-  // Communication Preferences
-  communicationStyle: 'direct' | 'gentle' | 'collaborative' | 'assertive';
-  conflictResolution: 'discuss-immediately' | 'need-time-to-process' | 'avoid-conflict' | 'address-when-calm';
-  feedbackPreference: 'frequent-check-ins' | 'only-when-needed' | 'scheduled-discussions' | 'in-the-moment';
-  listeningNeeds: string[];
-  communicationDealBreakers: string[];
-  
-  // Emotional Needs
-  emotionalSupport: 'high' | 'medium' | 'low';
-  affectionStyle: string[];
-  validationNeeds: 'frequent' | 'moderate' | 'minimal';
-  emotionalProcessingTime: number; // hours
-  triggers: string[];
-  comfortingSources: string[];
-  
-  // Boundary Requirements
-  personalSpaceNeeds: 'high' | 'medium' | 'low';
-  aloneTimeFrequency: 'daily' | 'few-times-week' | 'weekly' | 'rarely';
-  decisionMakingStyle: 'independent' | 'collaborative' | 'seek-input' | 'guided';
-  privacyLevels: string[];
-  nonNegotiableBoundaries: string[];
-  flexibleBoundaries: string[];
-  
-  // Time and Availability
-  responseTimeExpectation: number; // hours
-  availabilityWindows: string[];
-  socialEnergyLevel: 'high' | 'medium' | 'low';
-  recoveryTimeNeeded: number; // hours after social interaction
-  
-  // Growth and Values
-  personalGrowthPriorities: string[];
-  relationshipGoals: string[];
-  valueAlignment: string[];
-  dealBreakerBehaviors: string[];
-}
+import type { PersonalBaseline } from "@/../../shared/schema";
 
 interface CompatibilityScore {
   overall: number;
