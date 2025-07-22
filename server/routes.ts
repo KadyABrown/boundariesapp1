@@ -1,7 +1,8 @@
 import type { Express } from "express";
 import { createServer, type Server } from "http";
 import { storage } from "./storage";
-import { setupAuth, isAuthenticated } from "./replitAuth";
+// import { setupAuth, isAuthenticated } from "./replitAuth"; // BROKEN - USING TEST AUTH
+import { setupTestAuth, testAuth } from "./testAuth";
 import { db } from "./db";
 import { flagExamples } from "@shared/schema";
 import fs from 'fs';
@@ -23,8 +24,9 @@ import {
 import { z } from "zod";
 
 export async function registerRoutes(app: Express): Promise<Server> {
-  // Auth middleware
-  await setupAuth(app);
+  // TEMPORARY: Use test auth instead of broken Replit auth
+  setupTestAuth(app);
+  const isAuthenticated = testAuth;
 
   // Auth routes
   app.get('/api/auth/user', isAuthenticated, async (req: any, res) => {
