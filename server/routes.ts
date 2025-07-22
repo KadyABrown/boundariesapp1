@@ -1362,9 +1362,20 @@ export async function registerRoutes(app: Express): Promise<Server> {
   });
 
   // Comprehensive interactions routes
-  app.get('/api/interactions/:relationshipId', async (req: any, res) => {
+  app.get('/api/interactions', isAuthenticated, async (req: any, res) => {
     try {
-      const userId = req.user?.claims?.sub || "44415082";
+      const userId = req.user.claims.sub;
+      const interactions = await storage.getComprehensiveInteractionsByUser(userId);
+      res.json(interactions);
+    } catch (error) {
+      console.error("Error fetching all interactions:", error);
+      res.status(500).json({ message: "Failed to fetch interactions" });
+    }
+  });
+
+  app.get('/api/interactions/:relationshipId', isAuthenticated, async (req: any, res) => {
+    try {
+      const userId = req.user.claims.sub;
       const relationshipId = parseInt(req.params.relationshipId);
       
       const interactions = await storage.getComprehensiveInteractionsByRelationship(relationshipId, userId);

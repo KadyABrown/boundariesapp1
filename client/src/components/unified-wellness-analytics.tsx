@@ -41,6 +41,11 @@ interface Relationship {
   name: string;
   relationshipType: string;
   relationshipStatus: string;
+  greenFlags?: number;
+  redFlags?: number;
+  averageSafetyRating?: number;
+  checkInCount?: number;
+  overallHealthScore?: number;
 }
 
 interface UnifiedWellnessAnalyticsProps {
@@ -48,18 +53,31 @@ interface UnifiedWellnessAnalyticsProps {
   relationships: Relationship[];
 }
 
-export default function UnifiedWellnessAnalytics({ interactions, relationships }: UnifiedWellnessAnalyticsProps) {
+export default function UnifiedWellnessAnalytics({ interactions = [], relationships = [] }: UnifiedWellnessAnalyticsProps) {
   const analytics = useMemo(() => {
     if (!interactions || interactions.length === 0 || !relationships || relationships.length === 0) {
-      return null;
+      return {
+        wellnessScore: 0,
+        energyImpact: 0,
+        relationshipTypeAnalysis: {},
+        riskFactors: [],
+        recommendations: []
+      };
     }
 
     const validInteractions = interactions.filter(i => 
+      i.preEnergyLevel !== undefined && i.postEnergyLevel !== undefined && 
       i.preEnergyLevel !== null && i.postEnergyLevel !== null
     );
 
     if (validInteractions.length === 0) {
-      return null;
+      return {
+        wellnessScore: 0,
+        energyImpact: 0,
+        relationshipTypeAnalysis: {},
+        riskFactors: [],
+        recommendations: []
+      };
     }
 
     // Create relationship lookup
@@ -223,21 +241,52 @@ export default function UnifiedWellnessAnalytics({ interactions, relationships }
     };
   }, [interactions, relationships]);
 
-  if (!analytics) {
+  // Show meaningful analytics or helpful explanation
+  const hasData = interactions.length > 0 && relationships.length > 0;
+  
+  if (!hasData) {
     return (
-      <Card>
-        <CardHeader>
-          <CardTitle className="flex items-center gap-2">
-            <Brain className="h-5 w-5" />
-            Unified Wellness Analytics
-          </CardTitle>
-        </CardHeader>
-        <CardContent>
-          <p className="text-muted-foreground">
-            No comprehensive interaction data available yet. Use the CIT tracker to log interactions across different relationships.
-          </p>
-        </CardContent>
-      </Card>
+      <div className="space-y-6">
+        <Card>
+          <CardHeader>
+            <CardTitle className="flex items-center gap-2">
+              <Activity className="h-5 w-5" />
+              Unified Wellness Analytics
+            </CardTitle>
+          </CardHeader>
+          <CardContent>
+            <div className="text-center py-8 space-y-4">
+              <div className="text-2xl font-bold text-neutral-400">Getting Started</div>
+              <p className="text-neutral-600">
+                Track more interactions to unlock comprehensive wellness insights including:
+              </p>
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4 text-sm text-neutral-500">
+                <div className="p-4 bg-neutral-50 rounded-lg">
+                  <div className="font-medium mb-2">Energy Analysis</div>
+                  <p>How different relationships affect your daily energy levels</p>
+                </div>
+                <div className="p-4 bg-neutral-50 rounded-lg">
+                  <div className="font-medium mb-2">Recovery Patterns</div>
+                  <p>Time needed to feel normal after challenging interactions</p>
+                </div>
+                <div className="p-4 bg-neutral-50 rounded-lg">
+                  <div className="font-medium mb-2">Boundary Success</div>
+                  <p>Which relationships support vs challenge your boundaries</p>
+                </div>
+                <div className="p-4 bg-neutral-50 rounded-lg">
+                  <div className="font-medium mb-2">Personal Recommendations</div>
+                  <p>Actionable strategies based on your specific patterns</p>
+                </div>
+              </div>
+              <div className="pt-4">
+                <p className="text-sm text-neutral-500">
+                  Currently showing: {relationships.length} relationships, {interactions.length} interactions tracked
+                </p>
+              </div>
+            </div>
+          </CardContent>
+        </Card>
+      </div>
     );
   }
 

@@ -13,6 +13,38 @@ import { TrendingUp, Calendar, BarChart3, Download, Activity } from "lucide-reac
 import UnifiedWellnessAnalytics from "@/components/unified-wellness-analytics";
 import InsightsActivitySummary from "@/components/insights-activity-summary";
 
+// Type definitions
+interface ComprehensiveInteraction {
+  id: number;
+  relationshipId: number;
+  userId: string;
+  preEnergyLevel?: number;
+  postEnergyLevel?: number;
+  preAnxietyLevel?: number;
+  postAnxietyLevel?: number;
+  preSelfWorth?: number;
+  postSelfWorth?: number;
+  physicalSymptoms?: string[];
+  emotionalStates?: string[];
+  recoveryTimeMinutes?: number;
+  interactionType?: string;
+  durationMinutes?: number;
+  boundaryTesting?: boolean;
+  createdAt: string;
+}
+
+interface RelationshipWithStats {
+  id: number;
+  name: string;
+  relationshipType: string;
+  relationshipStatus: string;
+  greenFlags: number;
+  redFlags: number;
+  averageSafetyRating: number;
+  checkInCount: number;
+  overallHealthScore: number;
+}
+
 export default function Insights() {
   const { toast } = useToast();
   const { isAuthenticated, isLoading } = useAuth();
@@ -87,7 +119,7 @@ export default function Insights() {
       checkInCount: rel.checkInCount || 0,
       averageSafetyRating: rel.averageSafetyRating || 5
     }));
-  }, [relationships]);
+  }, [relationshipStatsQueries.data]);
 
   const { data: userProfile } = useQuery({
     queryKey: ["/api/profile"],
@@ -422,7 +454,7 @@ export default function Insights() {
                             style={{ width: `${percentage}%` }}
                           ></div>
                         </div>
-                        <span className="text-sm font-medium w-12 text-right">{count}</span>
+                        <span className="text-sm font-medium w-12 text-right">{count as number}</span>
                       </div>
                     </div>
                   );
@@ -455,7 +487,7 @@ export default function Insights() {
                       <div className="p-3 bg-blue-50 rounded-lg border border-blue-200">
                         <p className="text-sm text-blue-800">
                           <strong>Most Active:</strong> Your "{(topCategories[0][0] as string).replace('-', ' ')}" 
-                          boundaries need the most attention with {topCategories[0][1]} entries.
+                          boundaries need the most attention with {topCategories[0][1] as number} entries.
                         </p>
                       </div>
                     )}
@@ -488,8 +520,8 @@ export default function Insights() {
 
           <TabsContent value="analytics" className="space-y-6">
             <UnifiedWellnessAnalytics 
-              interactions={Array.isArray(interactions) ? interactions : []} 
-              relationships={Array.isArray(relationships) ? relationships : []}
+              interactions={(Array.isArray(interactions) ? interactions : []) as ComprehensiveInteraction[]} 
+              relationships={(Array.isArray(transformedRelationships) ? transformedRelationships : []) as RelationshipWithStats[]}
             />
           </TabsContent>
         </Tabs>
