@@ -28,15 +28,15 @@ export default function BaselineIntegration({
   const analyzeCompatibility = () => {
     if (!userBaseline || !boundaries.length) return null;
 
-    const nonNegotiableCount = userBaseline.nonNegotiableBoundaries?.length || 0;
-    const flexibleCount = userBaseline.flexibleBoundaries?.length || 0;
+    const nonNegotiableCount = (userBaseline as any).nonNegotiableBoundaries?.length || 0;
+    const flexibleCount = (userBaseline as any).flexibleBoundaries?.length || 0;
     const totalBoundaries = boundaries.length;
     
     // Calculate compatibility based on boundary alignment
     const alignedBoundaries = boundaries.filter(boundary => {
       const boundaryType = boundary.importance >= 8 ? 'non-negotiable' : 'flexible';
       return boundaryType === 'non-negotiable' ? 
-        userBaseline.nonNegotiableBoundaries?.some((nb: string) => 
+        (userBaseline as any).nonNegotiableBoundaries?.some((nb: string) => 
           nb.toLowerCase().includes(boundary.category.toLowerCase()) ||
           boundary.title.toLowerCase().includes(nb.toLowerCase())
         ) : true;
@@ -58,13 +58,13 @@ export default function BaselineIntegration({
     
     const title = boundaryTitle.toLowerCase();
     
-    if (userBaseline.nonNegotiableBoundaries?.some((b: string) => 
+    if ((userBaseline as any).nonNegotiableBoundaries?.some((b: string) => 
       title.includes(b.toLowerCase().split(' ')[0]) || title.includes(b.toLowerCase().split(' ')[1])
     )) {
       return { level: 'high', color: 'bg-green-100 text-green-800' };
     }
     
-    if (userBaseline.flexibleBoundaries?.some((b: string) => 
+    if ((userBaseline as any).flexibleBoundaries?.some((b: string) => 
       title.includes(b.toLowerCase().split(' ')[0])
     )) {
       return { level: 'medium', color: 'bg-yellow-100 text-yellow-800' };
@@ -102,7 +102,7 @@ export default function BaselineIntegration({
                   <Heart className="w-4 h-4 text-pink-500" />
                   <div>
                     <p className="text-sm font-medium">Communication Style</p>
-                    <p className="text-xs text-gray-600 capitalize">{userBaseline.communicationStyle || 'Not set'}</p>
+                    <p className="text-xs text-gray-600 capitalize">{(userBaseline as any).communicationStyle || 'Not set'}</p>
                   </div>
                 </div>
                 
@@ -110,7 +110,7 @@ export default function BaselineIntegration({
                   <Shield className="w-4 h-4 text-green-500" />
                   <div>
                     <p className="text-sm font-medium">Space Needs</p>
-                    <p className="text-xs text-gray-600 capitalize">{userBaseline.personalSpaceNeeds || 'Not set'}</p>
+                    <p className="text-xs text-gray-600 capitalize">{(userBaseline as any).personalSpaceNeeds || 'Not set'}</p>
                   </div>
                 </div>
                 
@@ -118,7 +118,7 @@ export default function BaselineIntegration({
                   <Clock className="w-4 h-4 text-orange-500" />
                   <div>
                     <p className="text-sm font-medium">Recovery Time</p>
-                    <p className="text-xs text-gray-600">{userBaseline.recoveryTimeNeeded || 0}h after interaction</p>
+                    <p className="text-xs text-gray-600">{(userBaseline as any).recoveryTimeNeeded || 0}h after interaction</p>
                   </div>
                 </div>
                 
@@ -126,7 +126,7 @@ export default function BaselineIntegration({
                   <Users className="w-4 h-4 text-purple-500" />
                   <div>
                     <p className="text-sm font-medium">Social Energy</p>
-                    <p className="text-xs text-gray-600 capitalize">{userBaseline.socialEnergyLevel || 'Not set'}</p>
+                    <p className="text-xs text-gray-600 capitalize">{(userBaseline as any).socialEnergyLevel || 'Not set'}</p>
                   </div>
                 </div>
                 
@@ -134,7 +134,7 @@ export default function BaselineIntegration({
                   <Target className="w-4 h-4 text-red-500" />
                   <div>
                     <p className="text-sm font-medium">Conflict Style</p>
-                    <p className="text-xs text-gray-600">{userBaseline.conflictResolution?.replace('-', ' ') || 'Not set'}</p>
+                    <p className="text-xs text-gray-600">{(userBaseline as any).conflictResolution?.replace('-', ' ') || 'Not set'}</p>
                   </div>
                 </div>
               </div>
@@ -171,7 +171,106 @@ export default function BaselineIntegration({
         </CardContent>
       </Card>
 
-      {/* Boundary Analysis */}
+      {/* Baseline-Derived Boundaries */}
+      {userBaseline && (
+        <Card className="border-green-200 bg-green-50">
+          <CardHeader>
+            <CardTitle className="flex items-center gap-2 text-green-800">
+              <Shield className="w-5 h-5" />
+              Boundary-Baseline Alignment
+            </CardTitle>
+            <p className="text-sm text-green-700">
+              Boundaries derived from your personal baseline assessment
+            </p>
+          </CardHeader>
+          <CardContent>
+            <div className="space-y-3">
+              {/* Non-negotiable boundaries */}
+              {(userBaseline as any).nonNegotiableBoundaries && (userBaseline as any).nonNegotiableBoundaries.length > 0 && (
+                <div>
+                  <h4 className="text-sm font-medium text-green-800 mb-2 flex items-center gap-1">
+                    <Shield className="w-4 h-4" />
+                    Non-Negotiable Boundaries
+                  </h4>
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-2">
+                    {(userBaseline as any).nonNegotiableBoundaries.map((boundary: string, index: number) => (
+                      <div key={index} className="bg-white rounded-lg p-3 border border-green-200">
+                        <div className="flex items-start justify-between">
+                          <div className="flex-1">
+                            <p className="text-sm font-medium text-gray-900">{boundary}</p>
+                            <Badge className="mt-1 bg-red-100 text-red-800 text-xs">Critical</Badge>
+                          </div>
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+              )}
+              
+              {/* Flexible boundaries */}
+              {(userBaseline as any).flexibleBoundaries && (userBaseline as any).flexibleBoundaries.length > 0 && (
+                <div>
+                  <h4 className="text-sm font-medium text-green-800 mb-2 flex items-center gap-1">
+                    <Target className="w-4 h-4" />
+                    Flexible Boundaries
+                  </h4>
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-2">
+                    {(userBaseline as any).flexibleBoundaries.map((boundary: string, index: number) => (
+                      <div key={index} className="bg-white rounded-lg p-3 border border-green-200">
+                        <div className="flex items-start justify-between">
+                          <div className="flex-1">
+                            <p className="text-sm font-medium text-gray-900">{boundary}</p>
+                            <Badge className="mt-1 bg-yellow-100 text-yellow-800 text-xs">Flexible</Badge>
+                          </div>
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+              )}
+              
+              {/* Communication deal-breakers */}
+              {(userBaseline as any).communicationDealBreakers && (userBaseline as any).communicationDealBreakers.length > 0 && (
+                <div>
+                  <h4 className="text-sm font-medium text-green-800 mb-2 flex items-center gap-1">
+                    <Heart className="w-4 h-4" />
+                    Communication Deal-Breakers
+                  </h4>
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-2">
+                    {(userBaseline as any).communicationDealBreakers.map((boundary: string, index: number) => (
+                      <div key={index} className="bg-white rounded-lg p-3 border border-green-200">
+                        <div className="flex items-start justify-between">
+                          <div className="flex-1">
+                            <p className="text-sm font-medium text-gray-900">{boundary}</p>
+                            <Badge className="mt-1 bg-red-100 text-red-800 text-xs">Deal-breaker</Badge>
+                          </div>
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+              )}
+              
+              {(!(userBaseline as any).nonNegotiableBoundaries?.length && !(userBaseline as any).flexibleBoundaries?.length && !(userBaseline as any).communicationDealBreakers?.length) && (
+                <div className="text-center py-6">
+                  <Shield className="w-12 h-12 text-green-400 mx-auto mb-3" />
+                  <p className="text-sm text-green-700 mb-2">No baseline boundaries set</p>
+                  <p className="text-xs text-green-600">Complete your baseline assessment to see boundaries here</p>
+                  <Button 
+                    size="sm" 
+                    onClick={() => setLocation('/baseline')}
+                    className="mt-3 bg-green-600 hover:bg-green-700"
+                  >
+                    Update Baseline
+                  </Button>
+                </div>
+              )}
+            </div>
+          </CardContent>
+        </Card>
+      )}
+
+      {/* Boundary Analysis for Manual Boundaries */}
       {boundaries.length > 0 && (
         <Card>
           <CardHeader>

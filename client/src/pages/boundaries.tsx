@@ -337,23 +337,23 @@ export default function Boundaries() {
               </CardHeader>
               <CardContent>
                 {boundariesLoading ? (
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-            {[...Array(6)].map((_, i) => (
-              <Card key={i} className="animate-pulse">
-                <CardHeader>
-                  <div className="h-4 bg-neutral-200 rounded w-3/4"></div>
-                  <div className="h-3 bg-neutral-200 rounded w-1/2"></div>
-                </CardHeader>
-                <CardContent>
-                  <div className="space-y-2">
-                    <div className="h-3 bg-neutral-200 rounded"></div>
-                    <div className="h-3 bg-neutral-200 rounded w-2/3"></div>
+                  <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                    {[...Array(6)].map((_, i) => (
+                      <Card key={i} className="animate-pulse">
+                        <CardHeader>
+                          <div className="h-4 bg-neutral-200 rounded w-3/4"></div>
+                          <div className="h-3 bg-neutral-200 rounded w-1/2"></div>
+                        </CardHeader>
+                        <CardContent>
+                          <div className="space-y-2">
+                            <div className="h-3 bg-neutral-200 rounded"></div>
+                            <div className="h-3 bg-neutral-200 rounded w-2/3"></div>
+                          </div>
+                        </CardContent>
+                      </Card>
+                    ))}
                   </div>
-                </CardContent>
-              </Card>
-            ))}
-          </div>
-        ) : boundaries && boundaries.length > 0 ? (
+                ) : boundaries && boundaries.length > 0 ? (
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
             {boundaries.map((boundary: any) => (
               <Card key={boundary.id} className="relative">
