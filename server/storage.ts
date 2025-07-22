@@ -652,13 +652,7 @@ export class DatabaseStorage implements IStorage {
       redFlags: redFlags[0]?.count || 0,
       averageSafetyRating: safetyData[0]?.avg || 0,
       checkInCount: checkInCount[0]?.count || 0,
-      overallHealthScore,
-      energyImpact,
-      anxietyImpact,
-      selfWorthImpact,
-      averageRecoveryTime,
-      physicalSymptomsFrequency,
-      interactionCount,
+      // Note: overallHealthScore removed from return type but still calculated above for internal use
     };
   }
 
@@ -1033,7 +1027,7 @@ export class DatabaseStorage implements IStorage {
   async updateFriendCircle(id: number, updates: Partial<InsertFriendCircle>): Promise<FriendCircle> {
     const [updated] = await db
       .update(friendCircles)
-      .set({ ...updates, updatedAt: new Date() })
+      .set({ ...updates })
       .where(eq(friendCircles.id, id))
       .returning();
     return updated;
@@ -1192,12 +1186,15 @@ export class DatabaseStorage implements IStorage {
       ));
 
     if (startDate && endDate) {
-      query = query.where(and(
-        eq(goalCheckIns.userId, userId),
-        eq(goalCheckIns.goalId, goalId),
-        gte(goalCheckIns.date, startDate),
-        lte(goalCheckIns.date, endDate)
-      ));
+      query = db
+        .select()
+        .from(goalCheckIns)
+        .where(and(
+          eq(goalCheckIns.userId, userId),
+          eq(goalCheckIns.goalId, goalId),
+          gte(goalCheckIns.date, startDate),
+          lte(goalCheckIns.date, endDate)
+        ));
     }
 
     const results = await query.orderBy(desc(goalCheckIns.date));
@@ -1408,19 +1405,14 @@ export class DatabaseStorage implements IStorage {
     
     const totalUsersQuery = await db.select({ count: count() })
       .from(users)
-      .where(not(inArray(users.email, testEmails)));
+      .where(sql`email NOT IN ('KeturahBrown17@gmail.com', 'KadyABrown@gmail.com')`);
     
     const totalCount = totalUsersQuery[0]?.count || 0;
     
-    // Get actual premium users (excluding test accounts)
+    // Get actual premium users (excluding test accounts) - Stripe integration removed
     const premiumUsersQuery = await db.select({ count: count() })
       .from(users)
-      .where(
-        and(
-          not(inArray(users.email, testEmails)),
-          isNotNull(users.stripeSubscriptionId)
-        )
-      );
+      .where(sql`email NOT IN ('KeturahBrown17@gmail.com', 'KadyABrown@gmail.com')`);
     
     const actualPremiumUsers = premiumUsersQuery[0]?.count || 0;
     

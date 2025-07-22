@@ -183,7 +183,7 @@ export default function Insights() {
   const positivityRate = totalEntries > 0 ? Math.round((positiveEmotions / totalEntries) * 100) : 0;
 
   // Get category breakdown
-  const categoryStats = Array.isArray(entries) ? entries.reduce((acc: any, entry: any) => {
+  const categoryStats: Record<string, number> = Array.isArray(entries) ? entries.reduce((acc: Record<string, number>, entry: any) => {
     const category = entry.category || 'other';
     acc[category] = (acc[category] || 0) + 1;
     return acc;
@@ -391,7 +391,7 @@ export default function Insights() {
             <CardContent>
               <div className="space-y-4">
                 {['very-positive', 'positive', 'neutral', 'negative', 'very-negative'].map((impact) => {
-                  const count = entries?.filter((e: any) => e.emotionalImpact === impact).length || 0;
+                  const count = (entries || []).filter((e: any) => e.emotionalImpact === impact).length;
                   const percentage = totalEntries > 0 ? (count / totalEntries) * 100 : 0;
                   
                   const colors = {
@@ -455,7 +455,7 @@ export default function Insights() {
                       <div className="p-3 bg-blue-50 rounded-lg border border-blue-200">
                         <p className="text-sm text-blue-800">
                           <strong>Most Active:</strong> Your "{(topCategories[0][0] as string).replace('-', ' ')}" 
-                          boundaries need the most attention with {topCategories[0][1]} entries.
+                          boundaries need the most attention with {topCategories[0][1] as number} entries.
                         </p>
                       </div>
                     )}
