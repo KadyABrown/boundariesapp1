@@ -760,7 +760,7 @@ export default function Relationships() {
                         </p>
                       </div>
                     </div>
-                    <div className="flex space-x-1">
+                    <div className="flex space-x-1 flex-shrink-0">
                       <Button
                         variant="ghost"
                         size="sm"
@@ -769,23 +769,26 @@ export default function Relationships() {
                           setActiveView('profile-detail');
                         }}
                         title="View Profile & Interactions"
+                        className="p-1 sm:p-2"
                       >
-                        <User className="w-4 h-4" />
+                        <User className="w-3 h-3 sm:w-4 sm:h-4" />
                       </Button>
                       <Button
                         variant="ghost"
                         size="sm"
                         onClick={() => openEditDialog(profile)}
+                        className="p-1 sm:p-2"
                       >
-                        <Edit2 className="w-4 h-4" />
+                        <Edit2 className="w-3 h-3 sm:w-4 sm:h-4" />
                       </Button>
                       <Button
                         variant="ghost"
                         size="sm"
                         onClick={() => deleteProfileMutation.mutate(profile.id)}
                         disabled={deleteProfileMutation.isPending}
+                        className="p-1 sm:p-2"
                       >
-                        <Trash2 className="w-4 h-4" />
+                        <Trash2 className="w-3 h-3 sm:w-4 sm:h-4" />
                       </Button>
                     </div>
                   </div>

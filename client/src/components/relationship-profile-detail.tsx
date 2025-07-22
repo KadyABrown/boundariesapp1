@@ -172,12 +172,12 @@ export default function RelationshipProfileDetail({ relationship, onClose }: Rel
             <Tabs defaultValue="overview" className="h-full flex flex-col">
               <div className="px-6 pt-4">
                 <div className="flex items-center justify-between mb-4">
-                  <TabsList className="grid w-full grid-cols-5 max-w-2xl">
-                    <TabsTrigger value="overview">Overview</TabsTrigger>
-                    <TabsTrigger value="interactions">Interactions</TabsTrigger>
-                    <TabsTrigger value="log-new">Log New</TabsTrigger>
-                    <TabsTrigger value="flags">Flags & Check-ins</TabsTrigger>
-                    <TabsTrigger value="analysis">Analysis</TabsTrigger>
+                  <TabsList className="grid w-full grid-cols-2 sm:grid-cols-3 lg:grid-cols-5 max-w-4xl">
+                    <TabsTrigger value="overview" className="text-xs sm:text-sm">Overview</TabsTrigger>
+                    <TabsTrigger value="interactions" className="text-xs sm:text-sm">Interactions</TabsTrigger>
+                    <TabsTrigger value="log-new" className="text-xs sm:text-sm">Log New</TabsTrigger>
+                    <TabsTrigger value="flags" className="text-xs sm:text-sm">Flags & Check-ins</TabsTrigger>
+                    <TabsTrigger value="analysis" className="text-xs sm:text-sm">Analysis</TabsTrigger>
                   </TabsList>
 
                 </div>
