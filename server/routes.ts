@@ -1454,6 +1454,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
       const userId = req.user.claims.sub;
       const relationshipId = parseInt(req.params.relationshipId);
       const interactions = await storage.getInteractionTrackerEntries(userId, relationshipId);
+      console.log(`Fetching interactions for relationship ${relationshipId}:`, JSON.stringify(interactions, null, 2));
       res.json(interactions);
     } catch (error) {
       console.error("Error fetching interaction tracker entries:", error);

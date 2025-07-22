@@ -24,9 +24,11 @@ export default function DealBreakerAlert({
 
   // Fetch recent interactions with deal breakers
   const { data: recentInteractions } = useQuery({
-    queryKey: ['/api/interaction-tracker', relationshipId],
+    queryKey: [`/api/interaction-tracker/${relationshipId}`],
     refetchOnWindowFocus: false,
   });
+  
+  console.log("DealBreakerAlert - recentInteractions data:", recentInteractions);
 
   // Get user's baseline to understand what their deal breakers are
   const { data: baseline } = useQuery({
