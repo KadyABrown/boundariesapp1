@@ -3,7 +3,6 @@ import { motion } from "framer-motion";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Label } from "@/components/ui/label";
-import { Textarea } from "@/components/ui/textarea";
 import { Checkbox } from "@/components/ui/checkbox";
 import { Badge } from "@/components/ui/badge";
 import { Progress } from "@/components/ui/progress";
@@ -18,8 +17,10 @@ import {
   Target,
   Brain,
   CheckCircle,
-  X
+  X,
+  AlertTriangle
 } from "lucide-react";
+import { BASELINE_OPTIONS } from "@/data/baseline-options";
 
 interface BaselineAssessmentModalProps {
   isOpen: boolean;
