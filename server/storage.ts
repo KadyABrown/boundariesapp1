@@ -1056,17 +1056,30 @@ export class DatabaseStorage implements IStorage {
   }
 
   async updatePersonalBaseline(userId: string, updates: Partial<InsertPersonalBaseline>): Promise<PersonalBaseline> {
-    // Create new version instead of updating existing one
-    const currentBaseline = await this.getPersonalBaseline(userId);
-    const newVersion = currentBaseline ? currentBaseline.version + 1 : 1;
+    // Check if baseline exists
+    const existingBaseline = await this.getPersonalBaseline(userId);
     
-    const newBaseline = await this.createPersonalBaseline({
-      ...updates,
-      userId,
-      version: newVersion,
-    });
-    
-    return newBaseline;
+    if (existingBaseline) {
+      // Update existing baseline
+      const [updatedBaseline] = await db
+        .update(personalBaselines)
+        .set({
+          ...updates,
+          version: existingBaseline.version + 1,
+          updatedAt: new Date(),
+        })
+        .where(eq(personalBaselines.userId, userId))
+        .returning();
+      return updatedBaseline;
+    } else {
+      // Create new baseline if none exists
+      const newBaseline = await this.createPersonalBaseline({
+        ...updates,
+        userId,
+        version: 1,
+      });
+      return newBaseline;
+    }
   }
 
   async createBoundaryGoal(goal: InsertBoundaryGoal): Promise<BoundaryGoal> {

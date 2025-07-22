@@ -129,6 +129,13 @@ export default function ComprehensiveInteractionTracker({
   onSubmit
 }: ComprehensiveInteractionTrackerProps) {
   const [step, setStep] = useState(1);
+  
+  // Fetch user's baseline assessment to customize questions
+  const { data: baseline } = useQuery({
+    queryKey: ['/api/baseline'],
+    refetchOnWindowFocus: false,
+  });
+  
   const [data, setData] = useState<Partial<ComprehensiveInteractionData>>({
     relationshipId,
     timestamp: new Date().toISOString(),
