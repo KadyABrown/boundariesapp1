@@ -8,9 +8,7 @@ import BoundaryForm from "@/components/boundary-form";
 import ActivityTimeline from "@/components/activity-timeline";
 import WeeklyProgress from "@/components/weekly-progress";
 import BoundaryBuddy from "@/components/boundary-buddy";
-import DailyChallenges from "@/components/daily-challenges";
-import BoundaryQuotes from "@/components/boundary-quotes";
-import StreakRecovery from "@/components/streak-recovery";
+import SmartGamificationSystem from "@/components/smart-gamification-system";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { CheckCircle, AlertTriangle, Smile, Plus, BookOpen, TrendingUp, Heart, Users } from "lucide-react";
@@ -144,23 +142,12 @@ export default function Dashboard() {
           </div>
         </div>
 
+        {/* Smart Gamification System */}
+        <SmartGamificationSystem />
+
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
           {/* Main Content Area */}
           <div className="lg:col-span-2 space-y-8">
-            {/* Streak Recovery - Shows when user hasn't logged entries for 2+ days */}
-            <StreakRecovery 
-              currentStreak={3} // Mock data - would come from real stats
-              longestStreak={14}
-              daysSinceLastEntry={3} // Mock: 3 days since last entry to show recovery
-              onStartRecovery={() => {
-                // Handle recovery start
-                console.log('Starting streak recovery');
-              }}
-              onQuickEntry={() => {
-                // Handle quick entry
-                window.location.href = '/boundaries';
-              }}
-            />
 
             {/* Today's Overview */}
             <Card>
@@ -309,13 +296,10 @@ export default function Dashboard() {
               </CardContent>
             </Card>
 
-            {/* Daily Challenges */}
-            <DailyChallenges />
-
-            {/* Boundary Inspiration */}
-            <BoundaryQuotes 
-              userProgress={75} // Based on user's boundary tracking progress
-              compact={false}
+            {/* Boundary Buddy Helper */}
+            <BoundaryBuddy 
+              context="general"
+              position="inline"
             />
           </div>
         </div>
