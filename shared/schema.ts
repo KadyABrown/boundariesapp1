@@ -531,7 +531,7 @@ export const insertRelationshipProfileSchema = createInsertSchema(relationshipPr
   createdAt: true,
   updatedAt: true,
 }).extend({
-  dateMet: z.string().optional().transform((val) => val ? new Date(val) : undefined),
+  dateMet: z.string().nullable().optional().transform((val) => val ? new Date(val) : null),
 });
 export type InsertRelationshipProfile = z.infer<typeof insertRelationshipProfileSchema>;
 export type RelationshipProfile = typeof relationshipProfiles.$inferSelect;
