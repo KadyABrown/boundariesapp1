@@ -150,6 +150,24 @@ export const relationshipProfiles = pgTable("relationship_profiles", {
   importantNotes: text("important_notes"),
   customTags: text("custom_tags").array(),
   
+  // Relationship Profile Assessment (from your perspective about them)
+  communicationStyle: varchar("communication_style"), // listens_first, jumps_to_solutions, asks_questions, changes_subject
+  conflictStyle: varchar("conflict_style"), // stays_calm, gets_defensive, shuts_down, escalates
+  feedbackStyle: varchar("feedback_style"), // direct_honest, gentle_encouraging, critical, avoids_feedback
+  emotionalSupportStyle: varchar("emotional_support_style"), // comfort_listen, fix_problems, give_advice, uncomfortable
+  emotionalAvailability: varchar("emotional_availability"), // very_present, available_when_asked, inconsistent, distracted
+  careExpression: text("care_expression").array(), // words, touch, acts_of_service, quality_time, gifts
+  conflictResolution: varchar("conflict_resolution"), // address_immediately, cool_down_first, avoid_entirely, need_mediator
+  conflictBehavior: varchar("conflict_behavior"), // stays_engaged, withdraws, defensive, redirects_blame
+  postConflictStyle: varchar("post_conflict_style"), // resolve_quickly, needs_processing, acts_normal, holds_grudges
+  boundaryRespect: varchar("boundary_respect"), // always, usually, sometimes, rarely
+  decisionMaking: varchar("decision_making"), // independent, collaborative, seeks_advice, defers
+  boundaryResponse: varchar("boundary_response"), // respects_immediately, pushes_back, ignores, gets_defensive
+  
+  // Derived archetype and compatibility
+  profileArchetype: varchar("profile_archetype"), // Will be calculated from assessment answers
+  baselineCompatibility: integer("baseline_compatibility"), // 0-100 predictive score
+  
   createdAt: timestamp("created_at").defaultNow(),
   updatedAt: timestamp("updated_at").defaultNow(),
 });
