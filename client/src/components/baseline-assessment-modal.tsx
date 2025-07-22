@@ -37,22 +37,45 @@ const communicationOptions = [
 ];
 
 const conflictOptions = [
-  { value: 'discuss-immediately', label: 'Address right away when issues come up' },
-  { value: 'need-time-to-process', label: 'Give me time to think before discussing' },
-  { value: 'avoid-conflict', label: 'Prefer to avoid confrontation when possible' },
-  { value: 'address-when-calm', label: 'Wait until we\'re both calm to discuss' }
+  { value: 'immediate-discussion', label: 'Address right away when issues come up' },
+  { value: 'cool-down-first', label: 'Give me time to think before discussing' },
+  { value: 'written-communication', label: 'Prefer to discuss via text/writing' },
+  { value: 'with-mediator', label: 'Sometimes need a neutral third party' }
 ];
 
 const emotionalSupportOptions = [
   { value: 'high', label: 'High - I need lots of emotional check-ins' },
-  { value: 'medium', label: 'Medium - Regular support but not constantly' },
-  { value: 'low', label: 'Low - I mostly handle things independently' }
+  { value: 'moderate', label: 'Moderate - Regular support but not constantly' },
+  { value: 'low', label: 'Low - I mostly handle things independently' },
+  { value: 'variable', label: 'Variable - Depends on the situation' }
 ];
 
 const validationOptions = [
-  { value: 'frequent', label: 'Frequent - I like regular affirmation' },
-  { value: 'moderate', label: 'Moderate - Some validation is nice' },
-  { value: 'minimal', label: 'Minimal - I don\'t need much external validation' }
+  { value: 'daily', label: 'Daily - I like regular affirmation' },
+  { value: 'weekly', label: 'Weekly - Some validation is nice' },
+  { value: 'monthly', label: 'Monthly - Occasional is enough' },
+  { value: 'rarely', label: 'Rarely - I don\'t need much external validation' }
+];
+
+const personalSpaceOptions = [
+  { value: 'high', label: 'High - I need lots of alone time and space' },
+  { value: 'moderate', label: 'Moderate - Some personal time is important' },
+  { value: 'low', label: 'Low - I prefer togetherness most of the time' },
+  { value: 'flexible', label: 'Flexible - Depends on my mood and energy' }
+];
+
+const privacyOptions = [
+  { value: 'very-private', label: 'Very Private - I keep most things to myself' },
+  { value: 'moderately-private', label: 'Moderately Private - I share selectively' },
+  { value: 'open-book', label: 'Open Book - I\'m comfortable sharing openly' },
+  { value: 'situational', label: 'Situational - Depends on the topic' }
+];
+
+const decisionMakingOptions = [
+  { value: 'independently', label: 'Independently - I prefer making my own choices' },
+  { value: 'collaboratively', label: 'Collaboratively - Let\'s decide together' },
+  { value: 'seek-advice-first', label: 'Seek Advice First - I like input before deciding' },
+  { value: 'depends-on-decision', label: 'Depends on Decision - Varies by importance' }
 ];
 
 export default function BaselineAssessmentModal({
@@ -68,17 +91,23 @@ export default function BaselineAssessmentModal({
     communicationStyle: '',
     conflictResolution: '',
     
-    // Emotional needs
-    emotionalSupport: '',
-    validationNeeds: '',
-    triggers: [] as string[],
+    // Energy Impact
+    energyGivers: [] as string[],
+    energyDrainers: [] as string[],
     
-    // Boundary requirements
+    // Triggers & Deal-breakers
+    emotionalTriggers: [] as string[],
+    dealBreakerBehaviors: [] as string[],
+    
+    // Boundary Requirements
     personalSpaceNeeds: '',
-    nonNegotiableBoundaries: [] as string[],
+    privacyPreferences: '',
+    decisionMakingStyle: '',
     
-    // Values
-    dealBreakerBehaviors: [] as string[]
+    // Emotional Needs
+    emotionalSupportLevel: '',
+    affectionStyles: [] as string[],
+    validationFrequency: ''
   });
 
   useEffect(() => {
@@ -96,12 +125,15 @@ export default function BaselineAssessmentModal({
   };
 
   const handleArrayToggle = (key: string, value: string) => {
-    setData(prev => ({
-      ...prev,
-      [key]: prev[key as keyof typeof prev].includes(value)
-        ? (prev[key as keyof typeof prev] as string[]).filter(item => item !== value)
-        : [...(prev[key as keyof typeof prev] as string[]), value]
-    }));
+    setData(prev => {
+      const currentArray = prev[key as keyof typeof prev] as string[] || [];
+      return {
+        ...prev,
+        [key]: currentArray.includes(value)
+          ? currentArray.filter(item => item !== value)
+          : [...currentArray, value]
+      };
+    });
   };
 
   const handleSubmit = () => {

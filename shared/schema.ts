@@ -259,38 +259,25 @@ export const personalBaselines = pgTable("personal_baselines", {
   
   // Communication Preferences
   communicationStyle: varchar("communication_style"), // direct, gentle, collaborative, assertive
-  conflictResolution: varchar("conflict_resolution"), // discuss-immediately, need-time-to-process, avoid-conflict, address-when-calm
-  feedbackPreference: varchar("feedback_preference"), // frequent-check-ins, only-when-needed, scheduled-discussions, in-the-moment
-  listeningNeeds: text("listening_needs").array(),
-  communicationDealBreakers: text("communication_deal_breakers").array(),
+  conflictResolution: varchar("conflict_resolution"), // immediate-discussion, cool-down-first, written-communication, with-mediator
   
-  // Emotional Needs
-  emotionalSupport: varchar("emotional_support"), // high, medium, low
-  affectionStyle: text("affection_style").array(),
-  validationNeeds: varchar("validation_needs"), // frequent, moderate, minimal
-  emotionalProcessingTime: integer("emotional_processing_time"), // hours
-  triggers: text("triggers").array(),
-  comfortingSources: text("comforting_sources").array(),
+  // Energy Impact (trackable arrays)
+  energyGivers: text("energy_givers").array(), // deep-conversations, physical-affection, shared-activities, individual-time, problem-solving-together
+  energyDrainers: text("energy_drainers").array(), // conflict, neediness, dishonesty, drama, lack-of-communication, different-values
+  
+  // Triggers & Deal-breakers (trackable arrays)
+  emotionalTriggers: text("emotional_triggers").array(), // criticism, being-ignored, dishonesty, controlling-behavior, disrespect, manipulation
+  dealBreakerBehaviors: text("deal_breaker_behaviors").array(), // dishonesty, infidelity, abuse, addiction-issues, incompatible-values, poor-communication
   
   // Boundary Requirements
-  personalSpaceNeeds: varchar("personal_space_needs"), // high, medium, low
-  aloneTimeFrequency: varchar("alone_time_frequency"), // daily, few-times-week, weekly, rarely
-  decisionMakingStyle: varchar("decision_making_style"), // independent, collaborative, seek-input, guided
-  privacyLevels: text("privacy_levels").array(),
-  nonNegotiableBoundaries: text("non_negotiable_boundaries").array(),
-  flexibleBoundaries: text("flexible_boundaries").array(),
+  personalSpaceNeeds: varchar("personal_space_needs"), // high, moderate, low, flexible
+  privacyPreferences: varchar("privacy_preferences"), // very-private, moderately-private, open-book, situational
+  decisionMakingStyle: varchar("decision_making_style"), // independently, collaboratively, seek-advice-first, depends-on-decision
   
-  // Time and Availability
-  responseTimeExpectation: integer("response_time_expectation"), // hours
-  availabilityWindows: text("availability_windows").array(),
-  socialEnergyLevel: varchar("social_energy_level"), // high, medium, low
-  recoveryTimeNeeded: integer("recovery_time_needed"), // hours
-  
-  // Growth and Values
-  personalGrowthPriorities: text("personal_growth_priorities").array(),
-  relationshipGoals: text("relationship_goals").array(),
-  valueAlignment: text("value_alignment").array(),
-  dealBreakerBehaviors: text("deal_breaker_behaviors").array(),
+  // Emotional Needs
+  emotionalSupportLevel: varchar("emotional_support_level"), // high, moderate, low, variable
+  affectionStyles: text("affection_styles").array(), // physical-touch, words-of-affirmation, quality-time, acts-of-service, gifts
+  validationFrequency: varchar("validation_frequency"), // daily, weekly, monthly, rarely
   
   createdAt: timestamp("created_at").defaultNow(),
   updatedAt: timestamp("updated_at").defaultNow(),

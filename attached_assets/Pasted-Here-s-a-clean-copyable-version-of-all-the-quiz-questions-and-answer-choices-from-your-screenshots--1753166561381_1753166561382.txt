@@ -1,0 +1,131 @@
+Here’s a clean, copyable version of all the quiz questions and answer choices from your screenshots:
+
+---
+
+### **Baseline Assessment Questions & Answers**
+
+---
+
+#### **1. Energy Impact**
+
+**What energizes or drains you in relationships?**
+
+**What gives you energy in relationships?** (Select all that apply)
+
+* Deep conversations
+* Physical affection
+* Shared activities
+* Individual time
+* Problem solving together
+
+**What drains your energy?** (Select all that apply)
+
+* Conflict
+* Neediness
+* Dishonesty
+* Drama
+* Lack of communication
+* Different values
+
+---
+
+#### **2. Triggers & Deal-breakers**
+
+**What behaviors are concerning for you?**
+
+**What are your main emotional triggers?** (Select all that apply)
+
+* Criticism
+* Being ignored
+* Dishonesty
+* Controlling behavior
+* Disrespect
+* Manipulation
+
+**What are absolute deal-breakers?** (Select all that apply)
+
+* Dishonesty
+* Infidelity
+* Abuse
+* Addiction issues
+* Incompatible values
+* Poor communication
+
+---
+
+#### **3. Boundary Requirements**
+
+**What are your personal boundaries?**
+
+**How much personal space do you need?**
+
+* High – need lots of alone time
+* Moderate – some alone time
+* Low – prefer being together
+* Flexible
+
+**What’s your privacy preference?**
+
+* Very private
+* Moderately private
+* Open book
+* Situational
+
+**How do you prefer to make decisions?**
+
+* Independently
+* Collaboratively
+* Seek advice first
+* Depends on decision
+
+---
+
+#### **4. Emotional Needs**
+
+**What do you need emotionally from relationships?**
+
+**What level of emotional support do you need?**
+
+* High – constant check-ins
+* Moderate – regular support
+* Low – minimal support
+* Variable – depends on situation
+
+**What’s your preferred way to show/receive affection?** (Select all that apply)
+
+* Physical touch
+* Words of affirmation
+* Quality time
+* Acts of service
+* Gifts
+
+**How often do you need validation?**
+
+* Daily
+* Weekly
+* Monthly
+* Rarely
+
+---
+
+#### **5. Communication Preferences**
+
+**How do you prefer to communicate in relationships?**
+
+**What’s your preferred communication style?**
+
+* Direct
+* Gentle
+* Collaborative
+* Assertive
+
+**How do you prefer to handle conflicts?**
+
+* Immediate discussion
+* Cool down first
+* Written communication
+* With mediator
+
+---
+
+Let me know if you want these turned into a CSV, JSON structure, or form template next.

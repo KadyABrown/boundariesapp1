@@ -1,15 +1,19 @@
-import { useEffect } from "react";
+import { useEffect, useState } from "react";
 import { useQuery } from "@tanstack/react-query";
 import { useAuth } from "@/hooks/useAuth";
 import { useToast } from "@/hooks/use-toast";
+import { apiRequest, queryClient } from "@/lib/queryClient";
 import Navigation from "@/components/navigation";
 import BaselineIntegration from "@/components/baseline-integration";
+import BaselineAssessmentModal from "@/components/baseline-assessment-modal";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Button } from "@/components/ui/button";
 import { Brain, Target, Heart, MessageCircle, Shield } from "lucide-react";
 
 export default function BaselinePage() {
   const { toast } = useToast();
   const { isAuthenticated, isLoading } = useAuth();
+  const [isModalOpen, setIsModalOpen] = useState(false);
 
   // Fetch relationships data for compatibility analysis
   const { data: relationships = [] } = useQuery({
@@ -144,6 +148,49 @@ export default function BaselinePage() {
         <BaselineIntegration 
           boundaries={[]}
           relationships={Array.isArray(relationshipStats) ? relationshipStats : (Array.isArray(relationships) ? relationships : [])}
+        />
+        
+        {/* Edit Assessment Button - Always Show */}
+        <Card className="mt-6">
+          <CardContent className="p-6">
+            <div className="flex items-center justify-between">
+              <div>
+                <h3 className="text-lg font-semibold text-gray-900">Edit Your Baseline Assessment</h3>
+                <p className="text-sm text-gray-600 mt-1">Update your preferences, triggers, and deal-breakers</p>
+              </div>
+              <Button 
+                size="sm"
+                onClick={() => setIsModalOpen(true)}
+                className="bg-purple-600 hover:bg-purple-700"
+              >
+                Edit Assessment
+              </Button>
+            </div>
+          </CardContent>
+        </Card>
+        
+        {/* Baseline Assessment Modal */}
+        <BaselineAssessmentModal
+          isOpen={isModalOpen}
+          onClose={() => setIsModalOpen(false)}
+          baseline={currentBaseline}
+          onSave={async (baseline) => {
+            try {
+              await apiRequest("POST", "/api/baseline", baseline);
+              queryClient.invalidateQueries({ queryKey: ["/api/baseline"] });
+              setIsModalOpen(false);
+              toast({
+                title: "Baseline Saved",
+                description: "Your baseline assessment has been updated successfully.",
+              });
+            } catch (error) {
+              toast({
+                title: "Error",
+                description: "Failed to save baseline assessment. Please try again.",
+                variant: "destructive",
+              });
+            }
+          }}
         />
       </div>
     </div>
