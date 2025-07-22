@@ -1464,13 +1464,18 @@ export async function registerRoutes(app: Express): Promise<Server> {
   app.post('/api/interaction-tracker', isAuthenticated, async (req: any, res) => {
     try {
       const userId = req.user.claims.sub;
-      const validatedData = insertInteractionTrackerEntrySchema.parse(req.body);
       
-      const interaction = await storage.createInteractionTrackerEntry({
-        ...validatedData,
+      // Transform the data to match our simple interaction tracker schema
+      const transformedData = {
         userId,
-      });
+        relationshipId: req.body.relationshipId,
+        timestamp: new Date(req.body.timestamp || new Date()),
+        communicationMet: req.body.communicationMet || false,
+        overallCompatibility: req.body.overallCompatibility,
+        notes: req.body.notes || '',
+      };
       
+      const interaction = await storage.createInteractionTrackerEntry(transformedData);
       res.json(interaction);
     } catch (error) {
       console.error("Error creating interaction tracker entry:", error);

@@ -118,18 +118,26 @@ export default function InteractionTracker({
   if (!isOpen) return null;
 
   const renderStep1 = () => {
-    const topCommunicationNeed = getTopCommunicationNeed();
-    
+    if (!baseline) {
+      return (
+        <div className="text-center py-8">
+          <p className="text-gray-600 mb-4">Complete your Personal Baseline Assessment first to get personalized questions.</p>
+          <Button onClick={onClose}>Complete Baseline Assessment</Button>
+        </div>
+      );
+    }
+
     return (
       <div className="space-y-6">
         <div className="text-center">
-          <h3 className="text-lg font-semibold mb-2">Communication Alignment</h3>
+          <h3 className="text-lg font-semibold mb-2">Communication Check</h3>
           <p className="text-sm text-muted-foreground">
-            How well did this interaction match your communication preferences?
+            Based on your personal baseline preferences
           </p>
         </div>
 
-        {topCommunicationNeed && (
+        {/* Direct Communication Style Question */}
+        {baseline.communicationStyle && (
           <div className="p-4 bg-blue-50 dark:bg-blue-900/20 rounded-lg">
             <div className="flex items-center space-x-3">
               <Checkbox
@@ -138,15 +146,30 @@ export default function InteractionTracker({
                 onCheckedChange={(checked) => updateData('communicationMet', checked)}
               />
               <Label htmlFor="communication-met" className="text-sm">
-                Your top communication need is <span className="font-semibold">{topCommunicationNeed.label}</span>. 
-                Did they communicate this way with you today?
+                You prefer <span className="font-semibold">{baseline.communicationStyle}</span> communication. 
+                Did they communicate with you in this way today?
               </Label>
             </div>
           </div>
         )}
 
+        {/* Conflict Resolution Question */}
+        {baseline.conflictResolution && (
+          <div className="p-4 bg-yellow-50 dark:bg-yellow-900/20 rounded-lg">
+            <Label className="text-sm font-medium mb-2 block">
+              You handle conflict by wanting to <span className="font-semibold">{baseline.conflictResolution.replace(/-/g, ' ')}</span>.
+            </Label>
+            <p className="text-xs text-gray-600">
+              {baseline.conflictResolution === 'discuss-immediately' && 'Did any conflicts get addressed right away as you prefer?'}
+              {baseline.conflictResolution === 'need-time-to-process' && 'Were you given time to process any disagreements?'}
+              {baseline.conflictResolution === 'avoid-conflict' && 'Did they respect your preference to avoid confrontation?'}
+              {baseline.conflictResolution === 'address-when-calm' && 'Were conflicts handled calmly when you were both ready?'}
+            </p>
+          </div>
+        )}
+
         <div className="space-y-4">
-          <Label className="text-sm font-medium">Overall compatibility with your communication style (1-10):</Label>
+          <Label className="text-sm font-medium">How well did they honor your communication preferences today? (1-10):</Label>
           <div className="flex space-x-2">
             {[1, 2, 3, 4, 5, 6, 7, 8, 9, 10].map((num) => (
               <Button
