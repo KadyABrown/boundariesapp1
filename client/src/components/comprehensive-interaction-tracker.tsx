@@ -478,15 +478,7 @@ export default function ComprehensiveInteractionTracker({
               <Label htmlFor="witnesses">Others were present during this interaction</Label>
             </div>
 
-            {/* Boundaries Tested */}
-            <div className="flex items-center space-x-2">
-              <Checkbox
-                id="boundaries"
-                checked={data.boundariesTested}
-                onCheckedChange={(checked) => updateData('boundariesTested', checked)}
-              />
-              <Label htmlFor="boundaries">They tested or violated my boundaries</Label>
-            </div>
+
 
             {/* Topics Discussed */}
             <div className="space-y-3">
@@ -863,6 +855,8 @@ export default function ComprehensiveInteractionTracker({
                             const newMet = (data.boundariesMet || []).filter(b => b !== boundary);
                             updateData('boundaryViolations', newViolated);
                             updateData('boundariesMet', newMet);
+                            // Automatically set boundariesTested to true if any boundary is violated
+                            updateData('boundariesTested', newViolated.length > 0);
                           }}
                         />
                         <Label htmlFor={`${boundary}-violated`} className="text-sm text-red-700 font-medium">

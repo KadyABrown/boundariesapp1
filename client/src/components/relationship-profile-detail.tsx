@@ -610,7 +610,30 @@ export default function RelationshipProfileDetail({ relationship, onClose }: Rel
           onClose={() => setShowCIT(false)}
           onSubmit={async (data: any) => {
             try {
-              await apiRequest("POST", "/api/interactions", data);
+              // Transform array fields to strings where needed for schema validation
+              const transformedData = {
+                ...data,
+                whatHelped: Array.isArray(data.whatHelped) ? data.whatHelped.join(', ') : data.whatHelped || '',
+                whatMadeItWorse: Array.isArray(data.whatMadeItWorse) ? data.whatMadeItWorse.join(', ') : data.whatMadeItWorse || '',
+                futurePreparation: Array.isArray(data.futurePreparation) ? data.futurePreparation.join(', ') : data.futurePreparation || '',
+                lessonsLearned: data.lessonsLearned || '',
+                location: data.location || '',
+                // Ensure array fields that should be arrays stay as arrays
+                physicalSymptomsAfter: Array.isArray(data.physicalSymptomsAfter) ? data.physicalSymptomsAfter : [],
+                emotionalStateAfter: Array.isArray(data.emotionalStateAfter) ? data.emotionalStateAfter : [],
+                topicsDiscussed: Array.isArray(data.topicsDiscussed) ? data.topicsDiscussed : [],
+                recoveryStrategies: Array.isArray(data.recoveryStrategies) ? data.recoveryStrategies : [],
+                copingSkillsUsed: Array.isArray(data.copingSkillsUsed) ? data.copingSkillsUsed : [],
+                selfAdvocacyActions: Array.isArray(data.selfAdvocacyActions) ? data.selfAdvocacyActions : [],
+                warningSignsNoticed: Array.isArray(data.warningSignsNoticed) ? data.warningSignsNoticed : [],
+                emotionalWarningSignsPresent: Array.isArray(data.emotionalWarningSignsPresent) ? data.emotionalWarningSignsPresent : [],
+                communicationIssues: Array.isArray(data.communicationIssues) ? data.communicationIssues : [],
+                boundariesMet: Array.isArray(data.boundariesMet) ? data.boundariesMet : [],
+                boundaryViolations: Array.isArray(data.boundaryViolations) ? data.boundaryViolations : [],
+                boundariesMaintained: Array.isArray(data.boundariesMaintained) ? data.boundariesMaintained : []
+              };
+              
+              await apiRequest("POST", "/api/interactions", transformedData);
               queryClient.invalidateQueries({ queryKey: ['/api/interactions', relationship.id] });
               setShowCIT(false);
               toast({
