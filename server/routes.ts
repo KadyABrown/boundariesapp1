@@ -6,7 +6,7 @@ import { db } from "./db";
 import { flagExamples } from "@shared/schema";
 import fs from 'fs';
 import path from 'path';
-import Stripe from "stripe";
+// Stripe integration removed - handled externally
 import {
   insertBoundarySchema,
   insertBoundaryEntrySchema,
@@ -24,13 +24,7 @@ import {
 } from "@shared/schema";
 import { z } from "zod";
 
-// Initialize Stripe
-if (!process.env.STRIPE_SECRET_KEY) {
-  throw new Error('Missing required Stripe secret: STRIPE_SECRET_KEY');
-}
-const stripe = new Stripe(process.env.STRIPE_SECRET_KEY, {
-  apiVersion: "2025-06-30.basil",
-});
+// Stripe initialization removed - payment processing handled externally
 
 export async function registerRoutes(app: Express): Promise<Server> {
   // Auth middleware
@@ -1839,27 +1833,10 @@ export async function registerRoutes(app: Express): Promise<Server> {
         return res.status(400).json({ message: "User with this email already exists" });
       }
 
-      // Create Stripe customer
-      const customer = await stripe.customers.create({
-        email: email,
-        name: firstName && lastName ? `${firstName} ${lastName}` : firstName || lastName,
-        phone: phoneNumber || undefined,
-      });
-
-      // Create active subscription
-      const subscription = await stripe.subscriptions.create({
-        customer: customer.id,
-        items: [{
-          price: process.env.STRIPE_PRICE_ID,
-        }],
-        collection_method: 'charge_automatically',
-        default_payment_method: 'pm_card_visa', // Test payment method for manual creation
-      });
-
       // Generate a unique user ID (similar to how Replit does it)
       const userId = `admin-${Date.now()}-${Math.random().toString(36).substring(2, 15)}`;
       
-      // Create user in database with premium status
+      // Create user in database - Stripe integration removed, external payment handling
       const newUser = await storage.createUser({
         id: userId,
         email: email,
@@ -1867,11 +1844,6 @@ export async function registerRoutes(app: Express): Promise<Server> {
         lastName: lastName || null,
         phoneNumber: phoneNumber || null,
         username: email.split('@')[0], // Use email prefix as username
-        stripeCustomerId: customer.id,
-        stripeSubscriptionId: subscription.id,
-        subscriptionStatus: 'active',
-        isPremium: true,
-        userRole: 'user',
         profileImageUrl: null,
         createdAt: new Date(),
         updatedAt: new Date(),
@@ -1885,10 +1857,8 @@ export async function registerRoutes(app: Express): Promise<Server> {
           firstName: newUser.firstName,
           lastName: newUser.lastName,
           phoneNumber: newUser.phoneNumber,
-          subscriptionStatus: 'active',
-          isPremium: true,
         },
-        message: `Premium user created successfully for ${email}`,
+        message: `User account created successfully for ${email}`,
       });
     } catch (error: any) {
       console.error("Error creating premium user:", error);
