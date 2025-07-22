@@ -54,6 +54,10 @@ interface PersonalBaseline {
   socialEnergyLevel: 'high' | 'medium' | 'low';
   recoveryTimeNeeded: number; // hours after social interaction
   
+  // Social Energy Impact Assessment
+  socialEnergyPreference?: 'large-groups-energizing' | 'small-groups-ideal' | 'one-on-one-energizing' | 'quiet-activities' | 'significant-alone-time';
+  socialRecoveryTime?: 'no-recovery-needed' | 'thirty-minutes' | 'one-to-two-hours' | 'several-hours' | 'full-day';
+  
   // Growth and Values
   personalGrowthPriorities: string[];
   relationshipGoals: string[];
@@ -139,6 +143,8 @@ export default function PersonalBaselineAssessment({
     relationshipGoals: [],
     valueAlignment: [],
     dealBreakerBehaviors: [],
+    socialEnergyPreference: undefined,
+    socialRecoveryTime: undefined,
     ...baseline
   });
 
@@ -329,6 +335,60 @@ export default function PersonalBaselineAssessment({
               onChange={(comfortingSources) => setFormData(prev => ({ ...prev, comfortingSources }))}
               maxTags={8}
             />
+
+            {/* Social Energy Preference */}
+            <div className="space-y-3">
+              <Label className="text-base font-medium">How do social interactions typically affect your energy levels?</Label>
+              <div className="space-y-2">
+                {[
+                  { value: 'large-groups-energizing', label: 'Large groups energize me' },
+                  { value: 'small-groups-ideal', label: 'Small groups are ideal for me' },
+                  { value: 'one-on-one-energizing', label: 'One-on-one conversations energize me most' },
+                  { value: 'quiet-activities', label: 'I prefer quiet activities to recharge' },
+                  { value: 'significant-alone-time', label: 'I need significant alone time after social events' }
+                ].map(option => (
+                  <div key={option.value} className="flex items-center space-x-2">
+                    <input
+                      type="radio"
+                      id={option.value}
+                      name="socialEnergyPreference"
+                      value={option.value}
+                      checked={formData.socialEnergyPreference === option.value}
+                      onChange={(e) => setFormData(prev => ({ ...prev, socialEnergyPreference: e.target.value as any }))}
+                      className="w-4 h-4"
+                    />
+                    <Label htmlFor={option.value} className="text-sm">{option.label}</Label>
+                  </div>
+                ))}
+              </div>
+            </div>
+
+            {/* Social Recovery Time */}
+            <div className="space-y-3">
+              <Label className="text-base font-medium">After spending time with people, how much recovery time do you typically need?</Label>
+              <div className="space-y-2">
+                {[
+                  { value: 'no-recovery-needed', label: 'No recovery needed - I feel more energized' },
+                  { value: 'thirty-minutes', label: '30 minutes to reset' },
+                  { value: 'one-to-two-hours', label: '1-2 hours of quiet time' },
+                  { value: 'several-hours', label: 'Several hours of alone time' },
+                  { value: 'full-day', label: 'A full day to recharge' }
+                ].map(option => (
+                  <div key={option.value} className="flex items-center space-x-2">
+                    <input
+                      type="radio"
+                      id={option.value}
+                      name="socialRecoveryTime"
+                      value={option.value}
+                      checked={formData.socialRecoveryTime === option.value}
+                      onChange={(e) => setFormData(prev => ({ ...prev, socialRecoveryTime: e.target.value as any }))}
+                      className="w-4 h-4"
+                    />
+                    <Label htmlFor={option.value} className="text-sm">{option.label}</Label>
+                  </div>
+                ))}
+              </div>
+            </div>
           </div>
         );
 
