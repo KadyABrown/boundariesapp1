@@ -8,6 +8,7 @@ import { Slider } from "@/components/ui/slider";
 import { Checkbox } from "@/components/ui/checkbox";
 import { Badge } from "@/components/ui/badge";
 import { Progress } from "@/components/ui/progress";
+import { TagInput } from "@/components/ui/tag-input";
 import { 
   Heart, 
   MessageCircle, 
@@ -317,32 +318,22 @@ export default function PersonalBaselineAssessment({
             </div>
 
             {/* Triggers */}
-            <div className="space-y-3">
-              <Label className="text-base font-medium">My emotional triggers (things that upset me)</Label>
-              <Textarea
-                value={formData.triggers.join('\n')}
-                onChange={(e) => setFormData(prev => ({ 
-                  ...prev, 
-                  triggers: e.target.value.split('\n').filter(Boolean) 
-                }))}
-                placeholder="e.g., Being ignored or dismissed&#10;Criticism about appearance&#10;Feeling controlled"
-                className="min-h-[100px]"
-              />
-            </div>
+            <TagInput
+              label="My emotional triggers (things that upset me)"
+              placeholder="e.g., Being ignored or dismissed"
+              value={formData.triggers}
+              onChange={(triggers) => setFormData(prev => ({ ...prev, triggers }))}
+              maxTags={8}
+            />
 
             {/* Comforting Sources */}
-            <div className="space-y-3">
-              <Label className="text-base font-medium">What comforts me when I'm upset</Label>
-              <Textarea
-                value={formData.comfortingSources.join('\n')}
-                onChange={(e) => setFormData(prev => ({ 
-                  ...prev, 
-                  comfortingSources: e.target.value.split('\n').filter(Boolean) 
-                }))}
-                placeholder="e.g., Physical comfort (hugs, holding hands)&#10;Verbal reassurance&#10;Quality time together&#10;Space to process alone"
-                className="min-h-[100px]"
-              />
-            </div>
+            <TagInput
+              label="What comforts me when I'm upset"
+              placeholder="e.g., Physical comfort (hugs, holding hands)"
+              value={formData.comfortingSources}
+              onChange={(comfortingSources) => setFormData(prev => ({ ...prev, comfortingSources }))}
+              maxTags={8}
+            />
           </div>
         );
 
@@ -394,32 +385,22 @@ export default function PersonalBaselineAssessment({
             </div>
 
             {/* Non-Negotiable Boundaries */}
-            <div className="space-y-3">
-              <Label className="text-base font-medium">Non-negotiable boundaries (absolute requirements)</Label>
-              <Textarea
-                value={formData.nonNegotiableBoundaries.join('\n')}
-                onChange={(e) => setFormData(prev => ({ 
-                  ...prev, 
-                  nonNegotiableBoundaries: e.target.value.split('\n').filter(Boolean) 
-                }))}
-                placeholder="e.g., No yelling or verbal abuse&#10;Respect my 'no' without arguing&#10;No checking my phone without permission"
-                className="min-h-[100px]"
-              />
-            </div>
+            <TagInput
+              label="Non-negotiable boundaries (absolute requirements)"
+              placeholder="e.g., No yelling or verbal abuse"
+              value={formData.nonNegotiableBoundaries}
+              onChange={(nonNegotiableBoundaries) => setFormData(prev => ({ ...prev, nonNegotiableBoundaries }))}
+              maxTags={10}
+            />
 
             {/* Flexible Boundaries */}
-            <div className="space-y-3">
-              <Label className="text-base font-medium">Flexible boundaries (can be discussed and adjusted)</Label>
-              <Textarea
-                value={formData.flexibleBoundaries.join('\n')}
-                onChange={(e) => setFormData(prev => ({ 
-                  ...prev, 
-                  flexibleBoundaries: e.target.value.split('\n').filter(Boolean) 
-                }))}
-                placeholder="e.g., How much time we spend together&#10;Social media boundaries&#10;Time with friends"
-                className="min-h-[100px]"
-              />
-            </div>
+            <TagInput
+              label="Flexible boundaries (can be discussed and adjusted)"
+              placeholder="e.g., How much time we spend together"
+              value={formData.flexibleBoundaries}
+              onChange={(flexibleBoundaries) => setFormData(prev => ({ ...prev, flexibleBoundaries }))}
+              maxTags={10}
+            />
           </div>
         );
 
@@ -446,32 +427,22 @@ export default function PersonalBaselineAssessment({
             </div>
 
             {/* Relationship Goals */}
-            <div className="space-y-3">
-              <Label className="text-base font-medium">What I want from my relationships</Label>
-              <Textarea
-                value={formData.relationshipGoals.join('\n')}
-                onChange={(e) => setFormData(prev => ({ 
-                  ...prev, 
-                  relationshipGoals: e.target.value.split('\n').filter(Boolean) 
-                }))}
-                placeholder="e.g., Mutual growth and support&#10;Building a life together&#10;Having fun and enjoying each other&#10;Deep emotional connection"
-                className="min-h-[100px]"
-              />
-            </div>
+            <TagInput
+              label="What I want from my relationships"
+              placeholder="e.g., Mutual growth and support"
+              value={formData.relationshipGoals}
+              onChange={(relationshipGoals) => setFormData(prev => ({ ...prev, relationshipGoals }))}
+              maxTags={8}
+            />
 
             {/* Deal Breaker Behaviors */}
-            <div className="space-y-3">
-              <Label className="text-base font-medium">Behaviors that would end a relationship for me</Label>
-              <Textarea
-                value={formData.dealBreakerBehaviors.join('\n')}
-                onChange={(e) => setFormData(prev => ({ 
-                  ...prev, 
-                  dealBreakerBehaviors: e.target.value.split('\n').filter(Boolean) 
-                }))}
-                placeholder="e.g., Any form of abuse&#10;Cheating or betrayal&#10;Addiction without seeking help&#10;Consistent disrespect of boundaries"
-                className="min-h-[100px]"
-              />
-            </div>
+            <TagInput
+              label="Behaviors that would end a relationship for me"
+              placeholder="e.g., Any form of abuse"
+              value={formData.dealBreakerBehaviors}
+              onChange={(dealBreakerBehaviors) => setFormData(prev => ({ ...prev, dealBreakerBehaviors }))}
+              maxTags={10}
+            />
           </div>
         );
 
