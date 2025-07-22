@@ -1,18 +1,15 @@
-import { useState, useEffect } from "react";
+import { useEffect } from "react";
 import { useQuery } from "@tanstack/react-query";
 import { useAuth } from "@/hooks/useAuth";
 import { useToast } from "@/hooks/use-toast";
-import { queryClient } from "@/lib/queryClient";
 import Navigation from "@/components/navigation";
-import PersonalBaselineAssessment from "@/components/personal-baseline-assessment";
+import BaselineIntegration from "@/components/baseline-integration";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { Button } from "@/components/ui/button";
 import { Brain, Target, Heart, MessageCircle, Shield } from "lucide-react";
 
 export default function BaselinePage() {
   const { toast } = useToast();
   const { isAuthenticated, isLoading } = useAuth();
-  const [userBaseline, setUserBaseline] = useState(null);
 
   // Fetch relationships data for compatibility analysis
   const { data: relationships = [] } = useQuery({
@@ -65,39 +62,7 @@ export default function BaselinePage() {
     }
   }, [isAuthenticated, isLoading, toast]);
 
-  const handleSaveBaseline = async (baseline: any) => {
-    try {
-      const response = await fetch('/api/baseline', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify(baseline),
-      });
 
-      if (!response.ok) {
-        throw new Error('Failed to save baseline');
-      }
-
-      const savedBaseline = await response.json();
-      setUserBaseline(savedBaseline);
-      
-      // Invalidate baseline cache to refresh the data
-      queryClient.invalidateQueries({ queryKey: ["/api/baseline"] });
-      
-      toast({
-        title: "Baseline Saved",
-        description: "Your personal baseline has been saved and will be used for relationship compatibility analysis.",
-      });
-    } catch (error) {
-      console.error('Error saving baseline:', error);
-      toast({
-        title: "Error",
-        description: "Failed to save your baseline. Please try again.",
-        variant: "destructive",
-      });
-    }
-  };
 
   if (isLoading) {
     return (
@@ -175,11 +140,10 @@ export default function BaselinePage() {
           </Card>
         </div>
 
-        {/* Baseline Assessment */}
-        <PersonalBaselineAssessment
-          baseline={currentBaseline as any || userBaseline || undefined}
-          onSaveBaseline={handleSaveBaseline}
-          relationshipData={Array.isArray(relationshipStats) ? relationshipStats : (Array.isArray(relationships) ? relationships : [])}
+        {/* Baseline Summary */}
+        <BaselineIntegration 
+          boundaries={[]}
+          relationships={Array.isArray(relationshipStats) ? relationshipStats : (Array.isArray(relationships) ? relationships : [])}
         />
       </div>
     </div>
